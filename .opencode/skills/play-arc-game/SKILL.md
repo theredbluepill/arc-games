@@ -28,6 +28,69 @@ result = env.step(GameAction.ACTION1, reasoning={'test': 0})
 print(f"State: {result.state}")
 ```
 
+## ACTION6: Click/Coordinate Actions
+
+For games using ACTION6 (click), coordinates are in **display space** (0-63), not grid space.
+
+### Display to Grid Conversion
+
+For a 32×32 grid on a 64×64 camera:
+```python
+# Grid to display (what you send in action.data)
+display_x = grid_x * 2 + 1
+display_y = grid_y * 2 + 1
+
+# Display to grid (what you receive)
+grid_x = (display_x - 1) // 2
+grid_y = (display_y - 1) // 2
+```
+
+### Helper Function for Clicking
+```python
+def click_at(env, grid_x, grid_y, camera_width=64):
+    """Execute a click action at grid coordinates."""
+    scale = camera_width // 32  # 2 for 64x64 camera
+    display_x = grid_x * scale + (scale // 2)
+    display_y = grid_y * scale + (scale // 2)
+    return env.step(
+        GameAction.ACTION6,
+        data={"x": display_x, "y": display_y},
+        reasoning={"click": f"at ({grid_x}, {grid_y})"}
+    )
+```
+
+### Click Cursor for GIFs
+
+To make clicking visible in GIF captures, add a click indicator to your game's UI:
+
+```python
+class GameUI(RenderableUserDisplay):
+    def __init__(self):
+        self._click_pos = None
+        self._click_frames = 0
+    
+    def set_click(self, x, y):
+        """Show click cursor at grid position."""
+        self._click_pos = (x, y)
+        self._click_frames = 10  # Show for 10 frames
+    
+    def render_interface(self, frame):
+        if self._click_pos and self._click_frames > 0:
+            cx, cy = self._click_pos
+            scale = 2  # Match your grid-to-display ratio
+            # Draw crosshair cursor
+            for dx in range(-2, 3):
+                for dy in range(-2, 3):
+                    if abs(dx) == 2 or abs(dy) == 2:
+                        px, py = cx * scale + dx, cy * scale + dy
+                        if 0 <= px < 64 and 0 <= py < 64:
+                            frame[py, px] = 7  # Navy color
+            self._click_frames -= 1
+        return frame
+```
+
+Then call `self._ui.set_click(grid_x, grid_y)` when ACTION6 is executed.
+
 ## Action Mapping
 
 - **ACTION1**: Up
