@@ -85,75 +85,45 @@ def make_wall_level(
     )
 
 
+# Five levels: size / block count / wall blockers ramp up. Layouts BFS-verified solvable.
 levels = [
+    # L1 — tutorial: one block, open floor
+    make_wall_level((8, 8), (1, 1), [(3, 3)], [(5, 5)], [], 1),
+    # L2 — one block, corner wall posts (forces routing, block stays movable)
     make_wall_level(
         (8, 8),
         (1, 1),
         [(3, 3)],
         [(5, 5)],
-        [],
-        1,
-    ),
-    make_wall_level(
-        (8, 8),
-        (0, 0),
-        [(3, 2)],
-        [(6, 5)],
-        [],
+        [(2, 2), (4, 2), (4, 4), (2, 4)],
         2,
     ),
+    # L3 — two blocks + partial barrier
     make_wall_level(
         (8, 8),
         (1, 1),
-        [(3, 3)],
-        [(5, 5)],
-        [(2, 3), (3, 2), (4, 3), (3, 4)],
+        [(2, 4), (5, 2)],
+        [(6, 6), (6, 4)],
+        [(4, 3), (4, 4), (4, 5), (3, 5), (5, 5)],
         3,
     ),
+    # L4 — larger grid, two blocks, vertical barrier with a single gap
+    make_wall_level(
+        (12, 12),
+        (1, 1),
+        [(3, 4), (4, 3)],
+        [(9, 9), (10, 8)],
+        [(6, y) for y in range(12) if y != 5],
+        4,
+    ),
+    # L5 — three blocks on 8×8 + split corridor (hardest routing)
     make_wall_level(
         (8, 8),
         (0, 0),
-        [(2, 2)],
-        [(6, 6)],
-        [(1, 2), (2, 1), (3, 2), (2, 3), (5, 5)],
-        4,
-    ),
-    make_wall_level(
-        (16, 16),
-        (1, 1),
-        [(4, 4), (6, 8)],
-        [(12, 12), (10, 10)],
-        [
-            (3, 4),
-            (4, 3),
-            (5, 4),
-            (4, 5),
-            (5, 8),
-            (6, 7),
-            (7, 8),
-            (6, 9),
-            (9, 10),
-            (10, 9),
-            (11, 10),
-            (10, 11),
-        ],
+        [(1, 1), (2, 2), (3, 1)],
+        [(5, 5), (6, 6), (5, 6)],
+        [(4, y) for y in range(8) if y != 3],
         5,
-    ),
-    make_wall_level(
-        (16, 16),
-        (0, 0),
-        [(3, 3), (7, 5), (11, 7)],
-        [(14, 14), (12, 12), (10, 10)],
-        [(2, 3), (3, 2), (6, 5), (5, 6), (10, 7), (11, 6)],
-        6,
-    ),
-    make_wall_level(
-        (16, 16),
-        (7, 7),
-        [(5, 5), (9, 5), (7, 3), (7, 9)],
-        [(2, 2), (13, 2), (2, 13), (13, 13)],
-        [(4, 5), (6, 5), (8, 5), (10, 5), (5, 4), (5, 6), (9, 4), (9, 6)],
-        7,
     ),
 ]
 

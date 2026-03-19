@@ -1,6 +1,7 @@
 from arcengine import (
     ARCBaseGame,
     Camera,
+    GameAction,
     Level,
     RenderableUserDisplay,
     Sprite,
@@ -47,28 +48,20 @@ class Wm01UI(RenderableUserDisplay):
             return frame
         h, w = frame.shape
 
-        # Show click cursor (green circle outline - generalizable)
+        # Brief click marker — small yellow + (not green; avoids "flare" vs checkpoint dots)
         if self._click_pos and self._click_frames > 0:
             cx, cy = self._click_pos
-            # Coordinates are already in display space (0-63)
             if 0 <= cx < w and 0 <= cy < h:
-                # Draw green circle outline (just the ring)
-                for r in [3, 5]:  # Two circles
-                    for ox, oy in [
-                        (0, -r),
-                        (0, r),
-                        (-r, 0),
-                        (r, 0),
-                        (-r, -r),
-                        (-r, r),
-                        (r, -r),
-                        (r, r),
-                    ]:
-                        px, py = cx + ox, cy + oy
-                        if 0 <= px < w and 0 <= py < h:
-                            frame[py, px] = 14  # Green
-                # Center dot
-                frame[cy, cx] = 14
+                hit = 11  # yellow
+                for px, py in (
+                    (cx, cy),
+                    (cx - 1, cy),
+                    (cx + 1, cy),
+                    (cx, cy - 1),
+                    (cx, cy + 1),
+                ):
+                    if 0 <= px < w and 0 <= py < h:
+                        frame[py, px] = hit
             self._click_frames -= 1
         else:
             self._click_pos = None
@@ -105,47 +98,6 @@ class Wm01UI(RenderableUserDisplay):
                     frame[h - 3, 2 + i] = 8  # Red = waiting/missed
                 else:
                     frame[h - 3, 2 + i] = 3  # Gray = not yet
-
-        return frame
-        h, w = frame.shape
-
-        # Show click cursor briefly (just a flash)
-        if self._click_pos and self._click_frames > 0:
-            cx, cy = self._click_pos
-            if 0 <= cx < w and 0 <= cy < h:
-                # Draw a bright cyan circle
-                for r in range(4):
-                    for angle in range(0, 360, 45):
-                        rad = angle * 3.14159 / 180
-                        px = int(cx + r * 1.3 * (rad - 3.14159 / 2) / 3)
-                        py = int(cy + r)
-                        if 0 <= px < w and 0 <= py < h:
-                            frame[py, px] = 6  # Cyan
-            self._click_frames -= 1
-        else:
-            self._click_pos = None
-
-        # Show level in top-left with letter L
-        frame[2, 2] = 9  # Blue L marker
-
-        # Show score in top-right with S
-        score_display = min(self._score, 9)  # Max 9 for single digit
-        frame[2, w - 3] = 4 if score_display > 0 else 5  # Yellow if score, gray if 0
-
-        # Show lives as red hearts/markers on right side (5 = full)
-        for i in range(5):
-            if i < self._lives:
-                frame[h - 3, w - 4 - i] = 2  # Red = alive
-            else:
-                frame[h - 3, w - 4 - i] = 5  # Gray = lost
-
-        # Show checkpoint progress as bar on left side
-        # Yellow = needed per checkpoint, Green = achieved
-        if self._checkpoint_total > 0:
-            for i in range(self._checkpoint_total):
-                frame[h - 3, 2 + i] = 4  # Yellow background
-            for i in range(min(self._checkpoint_score, self._checkpoint_total)):
-                frame[h - 3, 2 + i] = 3  # Green = achieved
 
         return frame
 
@@ -192,19 +144,20 @@ sprites = {
 def create_level(difficulty: int):
     # Generate holes based on level: 3x3, 4x4, 5x5, 6x6, 7x7
     grid_size = 2 + difficulty  # Level 1=3, Level 2=4, etc.
-    num_holes = grid_size * grid_size
 
-    # Calculate spacing to evenly distribute holes across 32x32 grid
-    spacing = 28 / (grid_size - 1) if grid_size > 1 else 32
-    start_offset = 2
+    # Moles are 5×5 and share the hole's top-left; keep y+4,x+4 ≤ 31 on 32×32 grid.
+    margin = 2
+    max_tl = 32 - 5  # 27 — top-left must leave room for mole footprint
+    usable = max_tl - margin
+    step = usable / (grid_size - 1) if grid_size > 1 else 0.0
 
     hole_positions = []
     for row in range(grid_size):
         for col in range(grid_size):
-            x = int(start_offset + col * spacing)
-            y = int(start_offset + row * spacing)
-            x = max(0, min(31, x))
-            y = max(0, min(31, y))
+            x = int(round(margin + col * step))
+            y = int(round(margin + row * step))
+            x = max(margin, min(max_tl, x))
+            y = max(margin, min(max_tl, y))
             hole_positions.append((x, y))
 
     level_sprites = []
@@ -259,7 +212,6 @@ class Wm01(ARCBaseGame):
         self._mole_display_time = self.current_level.get_data("mole_display_time")
         self._mole_interval = self.current_level.get_data("mole_interval")
         self._moles_per_checkpoint = self.current_level.get_data("moles_per_checkpoint")
-        self._required_score = self.current_level.get_data("required_score")
         self._update_ui()
 
     def _spawn_mole(self):
@@ -350,7 +302,7 @@ class Wm01(ARCBaseGame):
                 self._update_ui()
 
         # Handle ACTION6 - click to whack
-        if self.action.id.value == 6:
+        if self.action.id == GameAction.ACTION6:
             x = self.action.data.get("x", 0)
             y = self.action.data.get("y", 0)
 

@@ -71,19 +71,108 @@ sprites = {
 
 
 class Ms01UI(RenderableUserDisplay):
+    """HUD + mine-hit burst in final 64×64 frame space (matches Camera letterbox math)."""
+
+    CAMERA_W = 16
+    CAMERA_H = 16
+
     def __init__(self, revealed_count: int, mine_count: int) -> None:
         self._revealed = revealed_count
         self._mine_count = mine_count
+        self._difficulty = 1
+        self._fail_active = False
+        self._fail_k = 0
+        self._fail_cx = 32
+        self._fail_cy = 32
 
-    def update(self, revealed: int, mine_count: int) -> None:
+    def update(self, revealed: int, mine_count: int, difficulty: int = 1) -> None:
         self._revealed = revealed
         self._mine_count = mine_count
+        self._difficulty = difficulty
+
+    def clear_fail(self) -> None:
+        self._fail_active = False
+        self._fail_k = 0
+
+    def trigger_fail(self, grid_x: int, grid_y: int) -> None:
+        self._fail_cx, self._fail_cy = self._grid_to_frame_pixel(grid_x, grid_y)
+        self._fail_active = True
+
+    def set_fail_frame(self, k: int) -> None:
+        self._fail_k = max(0, k)
+
+    @classmethod
+    def _grid_to_frame_pixel(cls, gx: int, gy: int) -> tuple[int, int]:
+        cw, ch = cls.CAMERA_W, cls.CAMERA_H
+        scale = min(64 // cw, 64 // ch)
+        x_pad = (64 - cw * scale) // 2
+        y_pad = (64 - ch * scale) // 2
+        return gx * scale + scale // 2 + x_pad, gy * scale + scale // 2 + y_pad
+
+    @staticmethod
+    def _plot_px(frame, h: int, w: int, px: int, py: int, color: int) -> None:
+        if 0 <= px < w and 0 <= py < h:
+            frame[py, px] = color
+
+    @classmethod
+    def _chebyshev_ring(
+        cls, frame, h: int, w: int, cx: int, cy: int, r: int, color: int
+    ) -> None:
+        if r <= 0:
+            return
+        for dy in range(-r, r + 1):
+            for dx in range(-r, r + 1):
+                if max(abs(dx), abs(dy)) != r:
+                    continue
+                cls._plot_px(frame, h, w, cx + dx, cy + dy, color)
+
+    @classmethod
+    def _draw_plus(cls, frame, h: int, w: int, cx: int, cy: int, arm: int, color: int) -> None:
+        cls._plot_px(frame, h, w, cx, cy, color)
+        for a in range(1, arm + 1):
+            cls._plot_px(frame, h, w, cx - a, cy, color)
+            cls._plot_px(frame, h, w, cx + a, cy, color)
+            cls._plot_px(frame, h, w, cx, cy - a, color)
+            cls._plot_px(frame, h, w, cx, cy + a, color)
 
     def render_interface(self, frame):
+        import numpy as np
+
+        if not isinstance(frame, np.ndarray):
+            return frame
+        h, w = frame.shape
+        # Top-left in letterbox padding: level / difficulty cue (64×64-style HUD strip)
+        frame[1, 2] = 9
+        level_colors = [10, 11, 12, 14, 15]
+        frame[1, 3] = level_colors[(self._difficulty - 1) % len(level_colors)]
+        # Bottom: exploration ticks (capped) — safe cells uncovered
+        tick = min(w - 4, max(0, self._revealed))
+        for i in range(tick):
+            frame[h - 2, 2 + i] = 10
+
+        if self._fail_active:
+            ph = self._fail_k
+            thick = 2 + min(3, ph // 2)
+            for t in range(thick):
+                for x in range(w):
+                    self._plot_px(frame, h, w, x, t, 8)
+                    self._plot_px(frame, h, w, x, h - 1 - t, 8)
+                for y in range(h):
+                    self._plot_px(frame, h, w, t, y, 8)
+                    self._plot_px(frame, h, w, w - 1 - t, y, 8)
+            for r in range(2, min(12, 3 + ph * 2), 2):
+                c = 8 if (r // 2) % 2 == 1 else 11
+                self._chebyshev_ring(frame, h, w, self._fail_cx, self._fail_cy, r, c)
+            arm = min(3 + ph, 10)
+            self._draw_plus(frame, h, w, self._fail_cx, self._fail_cy, arm, 8)
+            self._plot_px(frame, h, w, self._fail_cx, self._fail_cy, 11)
+
         return frame
 
 
 class Ms01(ARCBaseGame):
+    DEATH_ANIM_STEPS = 8
+
     def __init__(self) -> None:
         self._ui = Ms01UI(0, 0)
         super().__init__(
@@ -97,6 +186,7 @@ class Ms01(ARCBaseGame):
         self._minefield = {}
         self._revealed = set()
         self._mine_count = {}
+        self._death_ticks = 0
 
     def on_set_level(self, level: Level) -> None:
         self._player = self.current_level.get_sprites_by_tag("player")[0]
@@ -112,7 +202,9 @@ class Ms01(ARCBaseGame):
                 if (x, y) not in self._minefield:
                     count = self._count_adjacent_mines(x, y)
                     self._mine_count[(x, y)] = count
-        self._ui.update(0, len(self._minefield))
+        self._death_ticks = 0
+        self._ui.clear_fail()
+        self._ui.update(0, len(self._minefield), level.get_data("difficulty"))
 
     def _count_adjacent_mines(self, x: int, y: int) -> int:
         count = 0
@@ -137,6 +229,14 @@ class Ms01(ARCBaseGame):
             return 15
 
     def step(self) -> None:
+        if self._death_ticks > 0:
+            self._death_ticks -= 1
+            self._ui.set_fail_frame(Ms01.DEATH_ANIM_STEPS - 1 - self._death_ticks)
+            if self._death_ticks == 0:
+                self.lose()
+                self.complete_action()
+            return
+
         dx = dy = 0
         if self.action.id.value == 1:
             dy = -1
@@ -168,8 +268,9 @@ class Ms01(ARCBaseGame):
                     m.set_visible(True)
                     break
             self._player.set_position(new_x, new_y)
-            self.lose()
-            self.complete_action()
+            self._death_ticks = Ms01.DEATH_ANIM_STEPS - 1
+            self._ui.trigger_fail(new_x, new_y)
+            self._ui.set_fail_frame(0)
             return
 
         self._player.set_position(new_x, new_y)
@@ -181,7 +282,11 @@ class Ms01(ARCBaseGame):
                 if s.x == new_x and s.y == new_y and "tile" in s.tags:
                     s.color_remap(s.pixels[0][0], self._get_clue_color(count))
                     break
-            self._ui.update(len(self._revealed), len(self._minefield))
+            self._ui.update(
+                len(self._revealed),
+                len(self._minefield),
+                self.current_level.get_data("difficulty"),
+            )
 
         if sprite and "goal" in sprite.tags:
             self.next_level()

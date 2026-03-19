@@ -95,15 +95,53 @@ class Mm01UI(RenderableUserDisplay):
     def __init__(self, pairs_remaining: int) -> None:
         self._pairs_remaining = pairs_remaining
         self._steps_remaining = MAX_STEPS
+        self._level = 1
+        self._click_pos: tuple[int, int] | None = None
+        self._click_frames = 0
 
-    def update(self, pairs_remaining: int, steps_remaining: int) -> None:
+    def update(self, pairs_remaining: int, steps_remaining: int, level: int = 1) -> None:
         self._pairs_remaining = pairs_remaining
         self._steps_remaining = steps_remaining
+        self._level = level
+
+    def set_click(self, x: int, y: int) -> None:
+        """Tap marker in final 64×64 frame space (same coords as ACTION6)."""
+        self._click_pos = (x, y)
+        self._click_frames = 8
 
     def render_interface(self, frame):
+        import numpy as np
+
+        if not isinstance(frame, np.ndarray):
+            return frame
+        h, w = frame.shape
+
         bar_width = max(0, min(20, self._steps_remaining * 20 // MAX_STEPS))
         for i in range(bar_width):
             frame[3, 2 + i] = 3
+
+        # Level marker (blue + accent) — does not overlap the 2×2/L2+ tile grids
+        frame[1, 2] = 9
+        level_colors = [10, 11, 12, 14, 15, 6, 7]
+        frame[1, 3] = level_colors[(self._level - 1) % len(level_colors)]
+
+        if self._click_pos and self._click_frames > 0:
+            cx, cy = self._click_pos
+            if 0 <= cx < w and 0 <= cy < h:
+                hit = 11
+                for px, py in (
+                    (cx, cy),
+                    (cx - 1, cy),
+                    (cx + 1, cy),
+                    (cx, cy - 1),
+                    (cx, cy + 1),
+                ):
+                    if 0 <= px < w and 0 <= py < h:
+                        frame[py, px] = hit
+            self._click_frames -= 1
+        else:
+            self._click_pos = None
+
         return frame
 
 
@@ -144,6 +182,7 @@ def create_level(level_index: int) -> Level:
 class Mm01(ARCBaseGame):
     def __init__(self) -> None:
         self._ui = Mm01UI(2)
+        self._display_level = 1
         super().__init__(
             "mm01",
             [create_level(i) for i in range(7)],
@@ -185,7 +224,8 @@ class Mm01(ARCBaseGame):
                     slot_idx = int(tag.split("_")[1])
                     self._slots[slot_idx] = sprite
 
-        self._ui.update(self._pairs_remaining, self._steps_remaining)
+        self._display_level = level.get_data("level_index") + 1
+        self._ui.update(self._pairs_remaining, self._steps_remaining, self._display_level)
 
     def _get_slot_from_click(self, click_x: int, click_y: int):
         col = (click_x - self._offset_x) // self._tile_size
@@ -223,7 +263,7 @@ class Mm01(ARCBaseGame):
 
     def step(self) -> None:
         self._steps_remaining -= 1
-        self._ui.update(self._pairs_remaining, self._steps_remaining)
+        self._ui.update(self._pairs_remaining, self._steps_remaining, self._display_level)
 
         if self._steps_remaining <= 0:
             self.lose()
@@ -241,6 +281,8 @@ class Mm01(ARCBaseGame):
         if self.action.id.value == 6:
             x = self.action.data.get("x", 0)
             y = self.action.data.get("y", 0)
+            if 0 <= int(x) < CAMERA_SIZE and 0 <= int(y) < CAMERA_SIZE:
+                self._ui.set_click(int(x), int(y))
 
             row, col, slot_idx = self._get_slot_from_click(x, y)
             if row is None:
@@ -277,7 +319,9 @@ class Mm01(ARCBaseGame):
                     self._matched[second[2]] = True
                     self._pairs_remaining -= 1
                     self._flipped = []
-                    self._ui.update(self._pairs_remaining, self._steps_remaining)
+                    self._ui.update(
+                        self._pairs_remaining, self._steps_remaining, self._display_level
+                    )
 
                     if self._pairs_remaining == 0:
                         self.next_level()

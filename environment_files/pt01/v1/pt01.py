@@ -1,3 +1,5 @@
+import random
+
 from arcengine import (
     ARCBaseGame,
     Camera,
@@ -212,21 +214,37 @@ def create_rotatable(sprite_type: str, rotation: int, x: int, y: int):
     return sprite
 
 
+# Playfield stays left of the hint column (separator ~44); tiles are 3×3.
+_PLAYFIELD_MAX_X = 43
+
+
+def _wrong_rotation(target_rot: int, rng: random.Random) -> int:
+    """1–3 quarter-turns clockwise from target so the piece never starts solved."""
+    return (target_rot + 90 * rng.randint(1, 3)) % 360
+
+
+def _layout_centered(n_tiles: int, ncols: int, stride: int) -> list[tuple[int, int]]:
+    nrows = (n_tiles + ncols - 1) // ncols
+    board_w = (ncols - 1) * stride + 3
+    board_h = (nrows - 1) * stride + 3
+    ox = max(2, (_PLAYFIELD_MAX_X - board_w) // 2)
+    oy = max(7, (58 - board_h) // 2)
+    out: list[tuple[int, int]] = []
+    for i in range(n_tiles):
+        col, row = i % ncols, i // ncols
+        out.append((ox + col * stride, oy + row * stride))
+    return out
+
+
 def create_level_1():
     target_pattern = {
         "rotations_by_color": {11: 90},
     }
-    positions = [
-        (2, 2),
-        (14, 2),
-        (2, 14),
-        (14, 14),
-    ]
-    import random
-
+    rng = random.Random(7101)
+    positions = _layout_centered(4, 2, stride=14)
     sprites = []
     for x, y in positions:
-        start_rot = (90 + random.choice([0, 90, 180, 270])) % 360
+        start_rot = _wrong_rotation(90, rng)
         sprites.append(create_rotatable("arrow", start_rot, x, y))
 
     return Level(
@@ -244,27 +262,17 @@ def create_level_2():
     target_pattern = {
         "rotations_by_color": {11: 90, 14: 180},
     }
-    positions = [
-        (2, 2),
-        (14, 2),
-        (2, 14),
-        (14, 14),
-        (2, 26),
-        (14, 26),
-        (2, 38),
-        (14, 38),
-    ]
-    import random
-
+    rng = random.Random(7102)
+    positions = _layout_centered(6, 3, stride=12)
     sprites = []
     for i, (x, y) in enumerate(positions):
         if i < 4:
             sprite_type = "arrow"
-            start_rot = (90 + random.choice([0, 90, 180, 270])) % 360
+            tgt = 90
         else:
             sprite_type = "lshape"
-            start_rot = (180 + random.choice([0, 90, 180, 270])) % 360
-        sprites.append(create_rotatable(sprite_type, start_rot, x, y))
+            tgt = 180
+        sprites.append(create_rotatable(sprite_type, _wrong_rotation(tgt, rng), x, y))
 
     return Level(
         sprites=sprites,
@@ -281,34 +289,17 @@ def create_level_3():
     target_pattern = {
         "rotations_by_color": {11: 90, 14: 180, 15: 0},
     }
-    positions = [
-        (2, 2),
-        (14, 2),
-        (2, 14),
-        (14, 14),
-        (2, 26),
-        (14, 26),
-        (2, 38),
-        (14, 38),
-        (26, 2),
-        (38, 2),
-        (26, 14),
-        (38, 14),
-    ]
-    import random
-
+    rng = random.Random(7103)
+    positions = _layout_centered(10, 5, stride=8)
     sprites = []
     for i, (x, y) in enumerate(positions):
         if i < 4:
-            sprite_type = "arrow"
-            start_rot = (90 + random.choice([0, 90, 180, 270])) % 360
+            sprite_type, tgt = "arrow", 90
         elif i < 8:
-            sprite_type = "lshape"
-            start_rot = (180 + random.choice([0, 90, 180, 270])) % 360
+            sprite_type, tgt = "lshape", 180
         else:
-            sprite_type = "tshape"
-            start_rot = (0 + random.choice([0, 90, 180, 270])) % 360
-        sprites.append(create_rotatable(sprite_type, start_rot, x, y))
+            sprite_type, tgt = "tshape", 0
+        sprites.append(create_rotatable(sprite_type, _wrong_rotation(tgt, rng), x, y))
 
     return Level(
         sprites=sprites,
@@ -325,41 +316,19 @@ def create_level_4():
     target_pattern = {
         "rotations_by_color": {11: 90, 14: 180, 15: 0, 12: 270},
     }
-    positions = [
-        (2, 2),
-        (14, 2),
-        (26, 2),
-        (38, 2),
-        (2, 14),
-        (14, 14),
-        (26, 14),
-        (38, 14),
-        (2, 26),
-        (14, 26),
-        (26, 26),
-        (38, 26),
-        (2, 38),
-        (14, 38),
-        (26, 38),
-        (38, 38),
-    ]
-    import random
-
+    rng = random.Random(7104)
+    positions = _layout_centered(16, 4, stride=10)
     sprites = []
     for i, (x, y) in enumerate(positions):
         if i < 4:
-            sprite_type = "arrow"
-            start_rot = (90 + random.choice([0, 90, 180, 270])) % 360
+            sprite_type, tgt = "arrow", 90
         elif i < 8:
-            sprite_type = "lshape"
-            start_rot = (180 + random.choice([0, 90, 180, 270])) % 360
+            sprite_type, tgt = "lshape", 180
         elif i < 12:
-            sprite_type = "tshape"
-            start_rot = (0 + random.choice([0, 90, 180, 270])) % 360
+            sprite_type, tgt = "tshape", 0
         else:
-            sprite_type = "cross"
-            start_rot = (270 + random.choice([0, 90, 180, 270])) % 360
-        sprites.append(create_rotatable(sprite_type, start_rot, x, y))
+            sprite_type, tgt = "cross", 270
+        sprites.append(create_rotatable(sprite_type, _wrong_rotation(tgt, rng), x, y))
 
     return Level(
         sprites=sprites,
@@ -376,44 +345,21 @@ def create_level_5():
     target_pattern = {
         "rotations_by_color": {11: 90, 14: 180, 15: 0, 12: 270, 10: 90},
     }
-    positions = [
-        (2, 2),
-        (14, 2),
-        (26, 2),
-        (38, 2),
-        (2, 14),
-        (14, 14),
-        (26, 14),
-        (38, 14),
-        (2, 26),
-        (14, 26),
-        (26, 26),
-        (38, 26),
-        (2, 38),
-        (14, 38),
-        (26, 38),
-        (38, 38),
-    ]
-    import random
-
+    rng = random.Random(7105)
+    positions = _layout_centered(16, 4, stride=10)
     sprites = []
     for i, (x, y) in enumerate(positions):
         if i < 4:
-            sprite_type = "arrow"
-            start_rot = (90 + random.choice([0, 90, 180, 270])) % 360
+            sprite_type, tgt = "arrow", 90
         elif i < 8:
-            sprite_type = "lshape"
-            start_rot = (180 + random.choice([0, 90, 180, 270])) % 360
+            sprite_type, tgt = "lshape", 180
         elif i < 12:
-            sprite_type = "tshape"
-            start_rot = (0 + random.choice([0, 90, 180, 270])) % 360
+            sprite_type, tgt = "tshape", 0
         elif i < 14:
-            sprite_type = "cross"
-            start_rot = (270 + random.choice([0, 90, 180, 270])) % 360
+            sprite_type, tgt = "cross", 270
         else:
-            sprite_type = "corner"
-            start_rot = (90 + random.choice([0, 90, 180, 270])) % 360
-        sprites.append(create_rotatable(sprite_type, start_rot, x, y))
+            sprite_type, tgt = "corner", 90
+        sprites.append(create_rotatable(sprite_type, _wrong_rotation(tgt, rng), x, y))
 
     return Level(
         sprites=sprites,
@@ -435,7 +381,7 @@ levels = [
 ]
 
 BACKGROUND_COLOR = 5
-PADDING_COLOR = 5
+PADDING_COLOR = 4
 
 
 class Pt01UI(RenderableUserDisplay):
@@ -519,11 +465,11 @@ class Pt01UI(RenderableUserDisplay):
 
         if self._rotations_by_color and self._rotatables:
             scale = 2
-            hint_x = 50
-            separator_x = 48
+            hint_x = 46
+            separator_x = 44
             hint_spacing = 10
 
-            current_y = 4
+            current_y = 5
             for color in self._colors:
                 target_rot = self._rotations_by_color.get(color, 0)
                 sprite_type = COLOR_TO_TYPE.get(color, "arrow")
@@ -642,18 +588,17 @@ class Pt01(ARCBaseGame):
 
             self._ui.set_click(x, y)
 
-            grid_x = x
-            grid_y = y
+            coords = self.camera.display_to_grid(x, y)
+            if coords is None:
+                self.complete_action()
+                return
+
+            grid_x, grid_y = int(coords[0]), int(coords[1])
 
             clicked_sprite = None
             for sprite in self._rotatables:
                 sx, sy = sprite.x, sprite.y
-                sprite_type = get_sprite_type(sprite)
-                sprite_size = 3
-                if (
-                    sx <= grid_x <= sx + sprite_size
-                    and sy <= grid_y <= sy + sprite_size
-                ):
+                if sx <= grid_x < sx + 3 and sy <= grid_y < sy + 3:
                     clicked_sprite = sprite
                     break
 

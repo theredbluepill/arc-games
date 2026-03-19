@@ -314,6 +314,7 @@ class Sq01(ARCBaseGame):
         self._end_frames = 0
         self._pending_advance = False
         self._pending_lose = False
+        self._ripple_tail = 0
 
         super().__init__(
             "sq01",
@@ -335,6 +336,7 @@ class Sq01(ARCBaseGame):
         self._end_frames = 0
         self._pending_advance = False
         self._pending_lose = False
+        self._ripple_tail = 0
 
         self._ui.update(self._sequence, self._progress, self._lives)
 
@@ -383,14 +385,29 @@ class Sq01(ARCBaseGame):
             self.complete_action()
             return
 
+        # Let click ripple animate across inner frames (one env.step → many renders)
+        if self._ripple_tail > 0:
+            self._ripple_tail -= 1
+            if self._ripple_tail == 0:
+                self.complete_action()
+            return
+
         if self.action.id == GameAction.ACTION6:
             x = self.action.data.get("x", 0)
             y = self.action.data.get("y", 0)
 
             coords = self.camera.display_to_grid(x, y)
             if not coords:
+                cx = max(0, min(63, int(x)))
+                cy = max(0, min(63, int(y)))
+                self._ui.set_click(cx, cy)
                 self._handle_wrong_click()
-                self.complete_action()
+                self._steps += 1
+                self._check_step_limit()
+                if self._pending_lose and self._end_frames > 0:
+                    self.complete_action()
+                    return
+                self._ripple_tail = Sq01UI.CLICK_ANIM_FRAMES - 1
                 return
 
             gx, gy = coords
@@ -409,7 +426,12 @@ class Sq01(ARCBaseGame):
 
             if not clicked_sprite or clicked_color is None:
                 self._handle_wrong_click()
-                self.complete_action()
+                self._steps += 1
+                self._check_step_limit()
+                if self._pending_lose and self._end_frames > 0:
+                    self.complete_action()
+                    return
+                self._ripple_tail = Sq01UI.CLICK_ANIM_FRAMES - 1
                 return
 
             # Correct?
@@ -425,10 +447,30 @@ class Sq01(ARCBaseGame):
                     self._pending_advance = True
                     self._end_frames = 12
                     self._ui.flash(14, frames=12)
-            else:
-                self._handle_wrong_click()
+                    self._steps += 1
+                    self._check_step_limit()
+                    self.complete_action()
+                    return
+
+                self._steps += 1
+                self._check_step_limit()
+                self._ripple_tail = Sq01UI.CLICK_ANIM_FRAMES - 1
+                return
+
+            self._handle_wrong_click()
+            self._steps += 1
+            self._check_step_limit()
+            if self._pending_lose and self._end_frames > 0:
+                self.complete_action()
+                return
+            self._ripple_tail = Sq01UI.CLICK_ANIM_FRAMES - 1
+            return
 
         self._steps += 1
+        self._check_step_limit()
+        self.complete_action()
+
+    def _check_step_limit(self) -> None:
         if (
             self._steps >= self._step_limit
             and not self._pending_advance
@@ -437,5 +479,3 @@ class Sq01(ARCBaseGame):
             self._pending_lose = True
             self._end_frames = 12
             self._ui.flash(8, frames=12)
-
-        self.complete_action()

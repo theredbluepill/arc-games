@@ -39,7 +39,7 @@ class Sv01UI(RenderableUserDisplay):
 
         bar_width = max(0, min(20, self._warmth * 20 // 100))
         for i in range(bar_width):
-            frame[2, 2 + i] = 9
+            frame[2, 2 + i] = 12
 
         bar_width = max(0, min(20, self._steps_remaining * 20 // 60))
         for i in range(bar_width):
@@ -61,7 +61,7 @@ sprites = {
         layer=1,
     ),
     "food": Sprite(
-        pixels=[[11]],
+        pixels=[[14]],
         name="food",
         visible=True,
         collidable=False,
@@ -69,7 +69,7 @@ sprites = {
         layer=0,
     ),
     "warm_zone": Sprite(
-        pixels=[[8]],
+        pixels=[[12]],
         name="warm_zone",
         visible=True,
         collidable=False,
@@ -173,10 +173,11 @@ class Sv01(ARCBaseGame):
         super().__init__(
             "sv01",
             levels,
-            Camera(0, 0, 16, 16, BACKGROUND_COLOR, PADDING_COLOR, [self._ui]),
+            # Match largest level grid (24×24) so later levels are fully visible
+            Camera(0, 0, 24, 24, BACKGROUND_COLOR, PADDING_COLOR, [self._ui]),
             False,
             1,
-            [1, 2, 3, 4],
+            [1, 2, 3, 4, 5],
         )
 
     def on_set_level(self, level: Level) -> None:
@@ -194,34 +195,36 @@ class Sv01(ARCBaseGame):
         )
 
     def step(self) -> None:
-        dx = 0
-        dy = 0
+        # ACTION5 = idle: advance decay/survival timers without moving or eating.
+        if self.action.id.value != 5:
+            dx = 0
+            dy = 0
 
-        if self.action.id.value == 1:
-            dy = -1
-        elif self.action.id.value == 2:
-            dy = 1
-        elif self.action.id.value == 3:
-            dx = -1
-        elif self.action.id.value == 4:
-            dx = 1
+            if self.action.id.value == 1:
+                dy = -1
+            elif self.action.id.value == 2:
+                dy = 1
+            elif self.action.id.value == 3:
+                dx = -1
+            elif self.action.id.value == 4:
+                dx = 1
 
-        new_x = self._player.x + dx
-        new_y = self._player.y + dy
+            new_x = self._player.x + dx
+            new_y = self._player.y + dy
 
-        grid_w, grid_h = self.current_level.grid_size
-        if 0 <= new_x < grid_w and 0 <= new_y < grid_h:
-            sprite = self.current_level.get_sprite_at(
-                new_x, new_y, ignore_collidable=True
-            )
+            grid_w, grid_h = self.current_level.grid_size
+            if 0 <= new_x < grid_w and 0 <= new_y < grid_h:
+                sprite = self.current_level.get_sprite_at(
+                    new_x, new_y, ignore_collidable=True
+                )
 
-            if sprite and "food" in sprite.tags:
-                self._hunger = min(100, self._hunger + 20)
-                self.current_level.remove_sprite(sprite)
-                self._foods.remove(sprite)
-                self._player.set_position(new_x, new_y)
-            elif not sprite or not sprite.is_collidable:
-                self._player.set_position(new_x, new_y)
+                if sprite and "food" in sprite.tags:
+                    self._hunger = min(100, self._hunger + 20)
+                    self.current_level.remove_sprite(sprite)
+                    self._foods.remove(sprite)
+                    self._player.set_position(new_x, new_y)
+                elif not sprite or not sprite.is_collidable:
+                    self._player.set_position(new_x, new_y)
 
         self._decay()
         self._check_survival()

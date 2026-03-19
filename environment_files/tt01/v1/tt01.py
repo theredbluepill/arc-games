@@ -130,29 +130,29 @@ class Tt01(ARCBaseGame):
         self._ui.update(len(self._targets))
 
     def step(self) -> None:
-        lgr = 0
-        kyr = 0
+        dx = 0
+        dy = 0
         moved = False
 
         if self.action.id.value == 1:
-            kyr = -1
+            dy = -1
             moved = True
         elif self.action.id.value == 2:
-            kyr = 1
+            dy = 1
             moved = True
         elif self.action.id.value == 3:
-            lgr = -1
+            dx = -1
             moved = True
         elif self.action.id.value == 4:
-            lgr = 1
+            dx = 1
             moved = True
 
         if not moved:
             self.complete_action()
             return
 
-        new_x = self._player.x + lgr
-        new_y = self._player.y + kyr
+        new_x = self._player.x + dx
+        new_y = self._player.y + dy
 
         grid_w, grid_h = self.current_level.grid_size
         if 0 <= new_x < grid_w and 0 <= new_y < grid_h:

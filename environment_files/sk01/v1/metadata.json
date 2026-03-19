@@ -1,7 +1,7 @@
 {
   "game_id": "sk01-v1",
   "title": "Sokoban Push",
-  "description": "Push blocks onto target pads. Green color indicates block placed on target.",
+  "description": "Push blocks onto target pads. Green indicates a block on a target. Five levels with increasing wall blockers; grids 8×8 or 12×12 (16×16 camera).",
   "default_fps": 20,
   "baseline_actions": [15],
   "tags": ["static", "puzzle", "sokoban", "environmental"],
@@ -9,7 +9,7 @@
   "date_created": "2026-03-19",
   "training_metadata": {
     "pcg_type": [],
-    "grid_range": [8, 16],
+    "grid_range": [8, 12],
     "action_space": 4,
     "physics_rules": ["movement", "push", "collision"],
     "reward_structure": "checkpoint-on-level-pass",

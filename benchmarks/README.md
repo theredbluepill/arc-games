@@ -35,6 +35,12 @@ To verify the wrapper without the Kaggle proxy (mock LLM, always moves up):
 uv run python -m benchmarks.run_task_test
 ```
 
+To verify the same game loop through the real `@kbench.task` decorator (still no proxy calls if you pass `MockLLM`; placeholder env vars are set only when missing):
+
+```bash
+uv run python -m benchmarks.kaggle.run_task_kbench_mock
+```
+
 ### Publishing to a Kaggle Benchmark (including private)
 
 1. **Create a dataset** with the game files:

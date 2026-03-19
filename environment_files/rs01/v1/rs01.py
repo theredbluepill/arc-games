@@ -1,6 +1,7 @@
 from arcengine import (
     ARCBaseGame,
     Camera,
+    GameAction,
     Level,
     RenderableUserDisplay,
     Sprite,
@@ -8,11 +9,36 @@ from arcengine import (
 
 
 class Rs01UI(RenderableUserDisplay):
-    def __init__(self, safe_color: int) -> None:
-        self._safe_color = safe_color
+    """Top HUD: level marker, rule-cycle strip (active slot highlighted), targets-left ticks."""
 
-    def update(self, safe_color: int) -> None:
+    HUD_ROWS = 5
+
+    def __init__(self) -> None:
+        self._safe_color = 8
+        self._safe_colors: tuple[int, ...] = (8,)
+        self._cycle_index = 0
+        self._all_cycled = False
+        self._targets_left = 0
+        self._difficulty = 1
+        self._win_holding = False
+
+    def update(
+        self,
+        safe_color: int,
+        safe_colors: tuple[int, ...],
+        cycle_index: int,
+        all_cycled: bool,
+        targets_left: int,
+        difficulty: int,
+        win_holding: bool = False,
+    ) -> None:
         self._safe_color = safe_color
+        self._safe_colors = safe_colors
+        self._cycle_index = cycle_index
+        self._all_cycled = all_cycled
+        self._targets_left = targets_left
+        self._difficulty = difficulty
+        self._win_holding = win_holding
 
     def render_interface(self, frame):
         import numpy as np
@@ -20,8 +46,71 @@ class Rs01UI(RenderableUserDisplay):
         if not isinstance(frame, np.ndarray):
             return frame
         h, w = frame.shape
-        for x in range(w):
-            frame[0, x] = self._safe_color
+        hr = min(Rs01UI.HUD_ROWS, h)
+
+        for y in range(hr):
+            for x in range(w):
+                frame[y, x] = 5
+
+        # Level / difficulty (2×2, top-left)
+        lvl_colors = [9, 10, 11, 12, 14]
+        lc = lvl_colors[(self._difficulty - 1) % len(lvl_colors)]
+        for dy in range(2):
+            for dx in range(2):
+                px, py = 1 + dx, 1 + dy
+                if px < w and py < hr:
+                    frame[py, px] = lc
+
+        # Rule cycle: one segment per safe phase; active gets white cap + full chroma
+        x = 6
+        slot_w = 4
+        gap = 1
+        for i, c in enumerate(self._safe_colors):
+            active = i == self._cycle_index
+            for dx in range(slot_w):
+                px = x + dx
+                if px >= w:
+                    continue
+                if active:
+                    if 0 < hr:
+                        frame[0, px] = 0
+                    body = c
+                    if 1 < hr:
+                        frame[1, px] = body
+                    if 2 < hr:
+                        frame[2, px] = body
+                    if 3 < hr:
+                        frame[3, px] = c
+                else:
+                    dim = 3
+                    if 1 < hr:
+                        frame[1, px] = dim
+                    if 2 < hr:
+                        frame[2, px] = c
+                    if 3 < hr:
+                        frame[3, px] = dim
+            x += slot_w + gap
+            if x >= w - 8:
+                break
+
+        # "Free collect" after full cycle — green cue
+        if self._all_cycled and 0 < hr:
+            frame[0, w - 4] = 14
+            frame[0, w - 3] = 14
+
+        # Targets remaining (yellow ticks, right side row 2)
+        cap = min(14, self._targets_left)
+        for i in range(cap):
+            px = w - 2 - i
+            if px > 0 and 2 < hr:
+                frame[2, px] = 11
+
+        # Win-hold pulse (thin line under HUD)
+        if self._win_holding and 4 < hr:
+            pulse = 14 if (self._difficulty + self._targets_left) % 2 == 0 else 11
+            for px in range(4, min(w - 4, 40)):
+                frame[4, px] = pulse
+
         return frame
 
 
@@ -203,8 +292,11 @@ PADDING_COLOR = 4
 class Rs01(ARCBaseGame):
     """Rule Switcher - Collect colored targets. A signpost shows which color is currently SAFE."""
 
+    WIN_HOLD_FRAMES = 14  # pause before next_level so GIFs show level clear
+
     def __init__(self) -> None:
-        self._ui = Rs01UI(8)
+        self._ui = Rs01UI()
+        self._win_hold = 0
         super().__init__(
             "rs01",
             levels,
@@ -223,7 +315,19 @@ class Rs01(ARCBaseGame):
         self._safe_color = self._safe_colors[0]
         self._all_cycled = False
         self._steps = 0
-        self._ui.update(self._safe_color)
+        self._win_hold = 0
+        self._sync_ui()
+
+    def _sync_ui(self) -> None:
+        self._ui.update(
+            self._safe_color,
+            tuple(self._safe_colors),
+            self._cycle_index,
+            self._all_cycled,
+            len(self._targets),
+            self.current_level.get_data("difficulty"),
+            self._win_hold > 0,
+        )
 
     def _cycle_signpost(self) -> None:
         self._cycle_index = (self._cycle_index + 1) % len(self._safe_colors)
@@ -232,16 +336,24 @@ class Rs01(ARCBaseGame):
             self._all_cycled = True
 
     def step(self) -> None:
+        if self._win_hold > 0:
+            self._win_hold -= 1
+            if self._win_hold == 0:
+                self.next_level()
+            self._sync_ui()
+            self.complete_action()
+            return
+
         dx = 0
         dy = 0
 
-        if self.action.id.value == 1:
+        if self.action.id == GameAction.ACTION1:
             dy = -1
-        elif self.action.id.value == 2:
+        elif self.action.id == GameAction.ACTION2:
             dy = 1
-        elif self.action.id.value == 3:
+        elif self.action.id == GameAction.ACTION3:
             dx = -1
-        elif self.action.id.value == 4:
+        elif self.action.id == GameAction.ACTION4:
             dx = 1
 
         if dx == 0 and dy == 0:
@@ -274,15 +386,17 @@ class Rs01(ARCBaseGame):
                 self._player.set_position(new_x, new_y)
             else:
                 self.lose()
+                self.complete_action()
+                return
         elif not sprite or not sprite.is_collidable:
             self._player.set_position(new_x, new_y)
 
         self._steps += 1
         if self._steps % self._cycle_interval == 0:
             self._cycle_signpost()
-            self._ui.update(self._safe_color)
 
         if len(self._targets) == 0:
-            self.next_level()
+            self._win_hold = Rs01.WIN_HOLD_FRAMES
 
+        self._sync_ui()
         self.complete_action()
