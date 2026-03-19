@@ -24,6 +24,31 @@ _ACTION_MAP: dict[int, GameAction] = {
 }
 
 
+def default_action_help(available_actions: list[int]) -> str:
+    """Human-readable action legend for LLM prompts.
+
+    Per ARC-AGI-3, ACTION1–7 are abstract; 1–4 are often *described* as up/down/left/right
+    in docs but each game defines what they do — see https://docs.arcprize.org/actions
+    """
+    avail = list(available_actions)
+    if avail == [1, 2, 3, 4]:
+        return (
+            "Actions: use IDs 1–4 for this game's ACTION1–ACTION4. "
+            "Their meaning is defined by the game (not necessarily up/down/left/right). "
+            "Reply with a single digit (1-4)."
+        )
+    if avail == [1, 2, 3, 4, 5]:
+        return (
+            "Actions: use IDs 1–5 for this game's ACTION1–ACTION5. "
+            "Semantics are game-specific (see description); 1–4 are not necessarily cardinal moves. "
+            "Reply with a single digit (1-5)."
+        )
+    return (
+        f"Available actions: {avail}. "
+        "Reply with a single digit that is one of these action IDs."
+    )
+
+
 def serialize_frame_to_text(
     frame: list,
     grid_size: int = 8,
@@ -99,6 +124,7 @@ def run_game_with_llm(
     seed: int = 0,
     max_steps: int = 50,
     grid_size: int = 8,
+    action_help: str | None = None,
 ) -> tuple[int, int, Any]:
     """Run an ARC game with an LLM choosing actions each step.
 
@@ -108,13 +134,13 @@ def run_game_with_llm(
         llm: Kaggle benchmark LLM object with .prompt(text) -> str.
         seed: Random seed for environment.
         max_steps: Maximum steps before stopping.
-        grid_size: Grid size for frame serialization.
+        grid_size: Grid size for frame serialization (use max grid for multi-size games).
+        action_help: Optional override for the action line in the prompt; if None, derived
+            from ``available_actions`` via ``default_action_help``.
 
     Returns:
         (levels_completed, steps_used, final_obs).
     """
-    from arc_agi import OperationMode
-
     env = arc.make(game_id, seed=seed, render_mode=None)
     if env is None:
         raise RuntimeError(f"Failed to create environment for {game_id}")
@@ -127,16 +153,7 @@ def run_game_with_llm(
     title = getattr(info, "title", game_id) if info else game_id
     description = getattr(info, "description", "Reach the goal.") if info else "Reach the goal."
 
-    # Action mapping for ez01-style games: 1=up, 2=down, 3=left, 4=right
-    action_help = (
-        "Actions: 1=up, 2=down, 3=left, 4=right. "
-        "Reply with a single digit (1-4) for your next move."
-    )
-    if hasattr(obs, "available_actions") and obs.available_actions:
-        action_help = (
-            f"Available actions: {obs.available_actions}. "
-            "Reply with a single digit for your next move."
-        )
+    action_help_override = action_help
 
     steps_used = 0
     levels_completed = getattr(obs, "levels_completed", 0) or 0
@@ -145,7 +162,7 @@ def run_game_with_llm(
         state_name = getattr(getattr(obs, "state", None), "name", "UNKNOWN")
         if state_name == "WIN":
             break
-        if state_name in ("LOSE", "LOST"):
+        if state_name in ("LOSE", "LOST", "GAME_OVER"):
             break
 
         grid_text = serialize_frame_to_text(
@@ -153,13 +170,18 @@ def run_game_with_llm(
             grid_size=grid_size,
         )
         avail = getattr(obs, "available_actions", [1, 2, 3, 4])
+        ah = (
+            action_help_override
+            if action_help_override is not None
+            else default_action_help(list(avail))
+        )
         prompt = f"""You are playing "{title}": {description}
 
 Current grid (y increases downward, . = empty, numbers = objects):
 {grid_text}
 
 Step {steps_used + 1}/{max_steps}. Levels completed: {levels_completed}
-{action_help}"""
+{ah}"""
 
         response = llm.prompt(prompt)
         action = parse_action_from_response(response, avail)

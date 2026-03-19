@@ -7,7 +7,7 @@ from benchmarks.arc_game_wrapper import run_game_with_llm
 
 
 class MockLLM:
-    """Always returns action 1 (up) - sufficient to beat ez01."""
+    """Always returns action ID 1 (ACTION1). For ez01 this is sufficient to win."""
 
     def prompt(self, text: str) -> str:
         return "1"
