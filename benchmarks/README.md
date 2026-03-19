@@ -21,6 +21,8 @@ MODEL_PROXY_API_KEY=your_token
 LLM_DEFAULT=google/gemini-2.5-flash
 ```
 
+Obtain `MODEL_PROXY_API_KEY` from the [Kaggle Models API onboarding](https://www.kaggle.com/models-api-onboarding-packet).
+
 Then run from the repo root:
 
 ```bash
@@ -33,12 +35,26 @@ To verify the wrapper without the Kaggle proxy (mock LLM, always moves up):
 uv run python -m benchmarks.run_task_test
 ```
 
-### Publishing to Kaggle
+### Publishing to a Kaggle Benchmark (including private)
 
-1. Go to [Kaggle Benchmarks](https://www.kaggle.com/benchmarks) and click **Create benchmark** or **Create task**.
-2. Create a new task notebook at [tasks/new](https://www.kaggle.com/benchmarks/tasks/new).
-3. Copy the task code from `benchmarks/kaggle/arc_ez01_task.py` and the wrapper from `benchmarks/arc_game_wrapper.py` into the notebook (or attach the repo as a dataset).
-4. Ensure `environment_files` (or the required game files) are available in the notebook environment.
+1. **Create a dataset** with the game files:
+   - Go to [Kaggle Datasets](https://www.kaggle.com/datasets) → **New dataset**
+   - Upload a zip of `environment_files/` (or the full repo)
+   - Name it e.g. `arc-interactive` and publish (private or public)
+
+2. **Create the task notebook**:
+   - Go to [Create new task](https://www.kaggle.com/benchmarks/tasks/new)
+   - Click **+ Add data** and attach your dataset (e.g. `poonszesen/arc-interactive`)
+   - Use the template in `benchmarks/kaggle/arc_ez01_kaggle_notebook.py`:
+     - Cell 1: `!pip install -q git+https://github.com/arcprize/arc-agi.git git+https://github.com/arcprize/ARCEngine.git`
+     - Cell 2: Paste the task and wrapper code (update `INPUT_DIR` if your dataset path differs)
+     - Cell 3: `arc_ez01_go_up.run(llm=kbench.llm, seed=0, max_steps=30)`
+   - Run the notebook to generate the task
+
+3. **Add the task to your benchmark**:
+   - Open your benchmark (e.g. [poonszesen/arc-interactive](https://www.kaggle.com/benchmarks/poonszesen/arc-interactive))
+   - Click **Edit** → **Add task** → select your newly created task
+   - Add models to evaluate if needed
 
 See [Kaggle Benchmarks documentation](https://www.kaggle.com/docs/benchmarks) for full details.
 
