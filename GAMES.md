@@ -40,6 +40,7 @@
 | Game | Grid | Levels | Description | Preview | Actions |
 |------|------|--------|-------------|---------|---------|
 | sk01 | 8-16 | 7 | Sokoban. Push blocks onto target pads. Green = placed. Stuck or step limit = lose. | ![sk01](assets/sk01.gif) | • 1-4: Movement |
+| tb01 | 8-16 | 5 | Bridge Builder. Collect wood and drop it in water to build bridges. Cross the river to reach the goal. Tests sub-goal planning and environmental manipulation. | (placeholder) | • 1-4: Movement • 6: Drop wood |
 
 ## Physics / Stacking
 
@@ -71,6 +72,12 @@
 | Game | Grid | Levels | Description | Preview | Actions |
 |------|------|--------|-------------|---------|---------|
 | rs01 | 8-16 | 5 | Rule Switcher. Collect colored targets that match the signpost color at top. Wrong color = lose. After all colors cycle through as safe, collect remaining targets. Tests cognitive flexibility and rule adaptation. | (placeholder) | • 1-4: Movement |
+
+## Dual Control / Parallel Planning
+
+| Game | Grid | Levels | Description | Preview | Actions |
+|------|------|--------|-------------|---------|---------|
+| dc01 | 16-24 | 5 | Dual Control. Control Agent A (blue) with actions 1-4 and Agent B (green) with actions 5-7. Both must reach their goals before step limit. Tests divided attention and parallel planning. | (placeholder) | • 1-4: Agent A movement • 5-7: Agent B movement |
 
 ## Task Switching / Interruption
 

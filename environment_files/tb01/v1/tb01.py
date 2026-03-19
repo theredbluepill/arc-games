@@ -148,10 +148,11 @@ levels = [
     make_tb_level(
         (8, 8),
         (1, 1),
-        (6, 5),
-        [(2, 3), (3, 3), (4, 3)],  # River at row 3, 3 tiles wide
-        [(1, 2), (6, 2), (1, 4), (6, 4)],  # Wood on both banks
-        make_bank_grid(8, 8, exclude_rows=[3]),
+        (7, 4),
+        [(2, 3), (3, 3), (4, 3), (5, 3)],  # River at row 3, 4 tiles wide
+        [(1, 2), (6, 2), (1, 4), (6, 4)],  # 4 wood pieces (different positions)
+        [(0, y) for y in range(8)]
+        + [(x, y) for x in range(1, 8) for y in range(8) if (x < 2 or x > 5) or y != 3],
         1,
         20,
         3,
@@ -159,10 +160,16 @@ levels = [
     make_tb_level(
         (10, 10),
         (1, 2),
-        (8, 7),
-        [(2, 4), (3, 4), (4, 4), (5, 4)],  # River at row 4, 4 tiles wide
-        [(1, 3), (8, 3), (1, 5), (8, 5)],  # Wood on both banks
-        make_bank_grid(10, 10, exclude_rows=[4]),
+        (9, 5),
+        [(2, 4), (3, 4), (4, 4), (5, 4), (6, 4)],  # River at row 4, 5 tiles wide
+        [(1, 3), (7, 3), (1, 5), (7, 5), (4, 3)],
+        [(0, y) for y in range(10)]
+        + [
+            (x, y)
+            for x in range(1, 10)
+            for y in range(10)
+            if (x < 2 or x > 6) or y != 4
+        ],
         2,
         25,
         3,
@@ -170,10 +177,23 @@ levels = [
     make_tb_level(
         (12, 12),
         (1, 2),
-        (10, 8),
-        [(2, 5), (3, 5), (4, 5), (5, 5), (6, 5)],  # River at row 5, 5 tiles wide
-        [(1, 4), (10, 4), (1, 6), (10, 6)],  # Wood on both banks
-        make_bank_grid(12, 12, exclude_rows=[5]),
+        (11, 6),
+        [
+            (2, 5),
+            (3, 5),
+            (4, 5),
+            (5, 5),
+            (6, 5),
+            (7, 5),
+        ],  # River at row 5, 6 tiles wide
+        [(1, 4), (8, 4), (1, 6), (8, 6), (4, 4), (8, 4)],
+        [(0, y) for y in range(12)]
+        + [
+            (x, y)
+            for x in range(1, 12)
+            for y in range(12)
+            if (x < 2 or x > 7) or y != 5
+        ],
         3,
         30,
         3,
@@ -181,10 +201,24 @@ levels = [
     make_tb_level(
         (14, 14),
         (1, 3),
-        (12, 10),
-        [(2, 6), (3, 6), (4, 6), (5, 6), (6, 6)],  # River at row 6, 5 tiles wide
-        [(1, 5), (12, 5), (1, 7), (12, 7)],  # Wood on both banks
-        make_bank_grid(14, 14, exclude_rows=[6]),
+        (13, 8),
+        [
+            (2, 6),
+            (3, 6),
+            (4, 6),
+            (5, 6),
+            (6, 6),
+            (7, 6),
+            (8, 6),
+        ],  # River at row 6, 7 tiles wide
+        [(1, 5), (9, 5), (1, 7), (9, 7), (4, 5), (7, 7), (6, 5)],
+        [(0, y) for y in range(14)]
+        + [
+            (x, y)
+            for x in range(1, 14)
+            for y in range(14)
+            if (x < 2 or x > 8) or y != 6
+        ],
         4,
         40,
         3,
@@ -192,7 +226,7 @@ levels = [
     make_tb_level(
         (16, 16),
         (1, 3),
-        (14, 12),
+        (15, 10),
         [
             (2, 7),
             (3, 7),
@@ -200,9 +234,17 @@ levels = [
             (5, 7),
             (6, 7),
             (7, 7),
-        ],  # River at row 7, 6 tiles wide
-        [(1, 6), (14, 6), (1, 8), (14, 8)],  # Wood on both banks
-        make_bank_grid(16, 16, exclude_rows=[7]),
+            (8, 7),
+            (9, 7),
+        ],  # River at row 7, 8 tiles wide
+        [(1, 6), (10, 6), (1, 8), (10, 8), (4, 6), (7, 8), (6, 6), (9, 8)],
+        [(0, y) for y in range(16)]
+        + [
+            (x, y)
+            for x in range(1, 16)
+            for y in range(16)
+            if (x < 2 or x > 9) or y != 7
+        ],
         5,
         50,
         3,
