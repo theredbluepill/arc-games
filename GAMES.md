@@ -33,9 +33,34 @@
 | Game | Grid | Levels | Description | Preview | Actions |
 |------|------|--------|-------------|---------|---------|
 | pt01 | 16×16 | 5 | Pattern rotation puzzle. Click tiles to rotate them 90° clockwise and match the target pattern. | ![pt01](assets/pt01.gif) | • 6: Click/Rotate |
+| sy01 | 10×10 | 5 | Mirror Maker. Mirror the pattern from the left side onto the right side. Create a perfect reflection! | ![sy01](assets/sy01.gif) | • 1-4: Move cursor • 5: Place block • 6: Remove block |
 
 ## Environmental Manipulation
 
 | Game | Grid | Levels | Description | Preview | Actions |
 |------|------|--------|-------------|---------|---------|
 | sk01 | 8-16 | 7 | Sokoban. Push blocks onto target pads. Green = placed. Stuck or step limit = lose. | ![sk01](assets/sk01.gif) | • 1-4: Movement |
+
+## Physics / Stacking
+
+| Game | Grid | Levels | Description | Preview | Actions |
+|------|------|--------|-------------|---------|---------|
+| gr01 | 10×16 | 5 | Gravity Drop. Stack falling blocks to reach the target height line. Move left/right and drop blocks. | ![gr01](assets/gr01.gif) | • 1-2: Move left/right • 5: Drop block |
+
+## Precision / Topology
+
+| Game | Grid | Levels | Description | Preview | Actions |
+|------|------|--------|-------------|---------|---------|
+| ff01 | 12×12 | 5 | Flood Fill. Click inside the enclosed shape to fill it. Click outside and you lose! | ![ff01](assets/ff01.gif) | • 6: Click |
+
+## Memory / Hidden State
+
+| Game | Grid | Levels | Description | Preview | Actions |
+|------|------|--------|-------------|---------|---------|
+| mm01 | 8×8 | 5 | Memory Match. Flip pairs of hidden tiles to find matching colors. Match all 8 pairs to win. 5 mismatches = lose. | ![mm01](assets/mm01.gif) | • 6: Click tile |
+
+## Sequencing / Ordering
+
+| Game | Grid | Levels | Description | Preview | Actions |
+|------|------|--------|-------------|---------|---------|
+| sq01 | 8×8 | 5 | Sequencing. Click colored blocks in the correct order. Follow the sequence shown at the top! | ![sq01](assets/sq01.gif) | • 6: Click block |
