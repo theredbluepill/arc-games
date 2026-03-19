@@ -27,7 +27,7 @@ sprites = {
         tags=["player"],
     ),
     "target": Sprite(
-        pixels=[[4]],
+        pixels=[[11]],
         name="target",
         visible=True,
         collidable=False,
@@ -78,7 +78,7 @@ levels = [
     ),
 ]
 
-BACKGROUND_COLOR = 0
+BACKGROUND_COLOR = 5
 PADDING_COLOR = 4
 
 
@@ -90,7 +90,7 @@ class Ez03(ARCBaseGame):
         super().__init__(
             "ez03",
             levels,
-            Camera(0, 0, 8, 8, BACKGROUND_COLOR, PADDING_COLOR, [self._ui]),
+            Camera(0, 0, 16, 16, BACKGROUND_COLOR, PADDING_COLOR, [self._ui]),
             False,
             1,
             [1, 2, 3, 4],

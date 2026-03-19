@@ -1,7 +1,7 @@
 # Skill: Create ARC-AGI-3 Game
 
 ## Overview
-This skill guides the creation of ARC-AGI-3 games based on established patterns from `/Users/poonszesen/redpill/environment_files/`.
+This skill guides the creation of ARC-AGI-3 games based on established patterns from `environment_files/`.
 
 ## Game Structure
 
@@ -42,7 +42,7 @@ class GameUI(RenderableUserDisplay):
 
 ### 3. Sprite Definitions
 Define sprites with:
-- `pixels`: 2D array of color values (0-9)
+- `pixels`: 2D array of color indices (0-15)
 - `name`: Unique identifier
 - `visible`: Boolean for rendering
 - `collidable`: Boolean for collision detection
@@ -192,12 +192,38 @@ result = env.step(1)  # Action 1-4 for movement
 
 ## Common Patterns
 
-### Color Mapping
-- 0: Background (black)
-- 1-3: Reserved
-- 4: Yellow (targets)
-- 5: Gray (walls)
-- 6-9: Various entity colors
+## Color Palette
+
+Use indices 0-15 in sprite pixels. The rendering layer converts these to RGB.
+
+```python
+COLOR_MAP = {
+    0: (255, 255, 255),  # White
+    1: (204, 204, 204),  # Off-white
+    2: (153, 153, 153),  # Light Gray
+    3: (102, 102, 102),  # Gray
+    4: (51, 51, 51),     # Dark Gray
+    5: (0, 0, 0),        # Black
+    6: (229, 58, 163),   # Magenta
+    7: (255, 123, 204),  # Light Magenta
+    8: (249, 60, 49),    # Red
+    9: (30, 147, 255),   # Blue
+    10: (136, 216, 241), # Light Blue
+    11: (255, 220, 0),   # Yellow
+    12: (255, 133, 27),  # Orange
+    13: (146, 18, 49),   # Maroon
+    14: (79, 204, 48),   # Green
+    15: (163, 86, 214),  # Purple
+}
+```
+
+**Common colors:**
+- Background: `5` (Black)
+- Walls: `3` (Gray) or `2` (Light Gray)
+- Player: `9` (Blue)
+- Targets/Food: `11` (Yellow)
+- Hazards/Warm zones: `8` (Red)
+- Green items: `14` (Green)
 
 ### Grid Sizes
 - Level 1: 8x8 (easy)
@@ -307,6 +333,7 @@ elif not sprite or not sprite.is_collidable:
 ## Examples
 
 See established games:
-- `redpill/environment_files/vc33/9851e02b/vc33.py`
-- `redpill/environment_files/ls20/cb3b57cc/ls20.py`
-- `redpill/environment_files/ft09/9ab2447a/ft09.py`
+- `environment_files/vc33/9851e02b/vc33.py`
+- `environment_files/ls20/cb3b57cc/ls20.py`
+- `environment_files/ft09/9ab2447a/ft09.py`
+- `environment_files/ez01/v1/ez01.py`

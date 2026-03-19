@@ -27,21 +27,21 @@ sprites = {
         tags=["player"],
     ),
     "target": Sprite(
-        pixels=[[4]],
+        pixels=[[11]],
         name="target",
         visible=True,
         collidable=False,
         tags=["target"],
     ),
     "wall": Sprite(
-        pixels=[[5]],
+        pixels=[[3]],
         name="wall",
         visible=True,
         collidable=True,
         tags=["wall"],
     ),
     "hazard": Sprite(
-        pixels=[[2]],
+        pixels=[[8]],
         name="hazard",
         visible=True,
         collidable=True,
@@ -106,7 +106,7 @@ levels = [
     ),
 ]
 
-BACKGROUND_COLOR = 0
+BACKGROUND_COLOR = 5
 PADDING_COLOR = 4
 
 

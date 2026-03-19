@@ -93,12 +93,14 @@ Then call `self._ui.set_click(grid_x, grid_y)` when ACTION6 is executed.
 
 ## Action Mapping
 
-- **ACTION1**: Up
-- **ACTION2**: Down
-- **ACTION3**: Left
-- **ACTION4**: Right
-- **ACTION5**: Special (game-dependent)
-- **ACTION6**: Click/Interact (game-dependent)
+Actions are **abstract** - each game defines what they mean. The canonical mapping is:
+
+- **ACTION1**: Up-like (semantic "forward" for the game)
+- **ACTION2**: Down-like (semantic "backward" for the game)
+- **ACTION3**: Left-like (semantic "left" for the game)
+- **ACTION4**: Right-like (semantic "right" for the game)
+- **ACTION5**: Special (game-dependent: interact, select, rotate, etc.)
+- **ACTION6**: Click/Coordinate (requires x,y in action.data)
 
 ## Capturing Frames for GIFs
 

@@ -20,7 +20,7 @@ class Ul01UI(RenderableUserDisplay):
         if not isinstance(frame, np.ndarray):
             return frame
         h, w = frame.shape
-        key_color = 6 if self._has_key else 5
+        key_color = 11 if self._has_key else 5
         # Larger 4x4 indicator in bottom-right
         for dy in range(4):
             for dx in range(4):
@@ -37,14 +37,14 @@ sprites = {
         tags=["player"],
     ),
     "key": Sprite(
-        pixels=[[6]],
+        pixels=[[11]],
         name="key",
         visible=True,
         collidable=False,
         tags=["key"],
     ),
     "door": Sprite(
-        pixels=[[5]],
+        pixels=[[3]],
         name="door",
         visible=True,
         collidable=True,
@@ -100,7 +100,7 @@ levels = [
     ),
 ]
 
-BACKGROUND_COLOR = 0
+BACKGROUND_COLOR = 5
 PADDING_COLOR = 4
 
 

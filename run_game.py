@@ -17,6 +17,7 @@ from __future__ import annotations
 import argparse
 import os
 import random
+import re
 import sys
 from dataclasses import dataclass, field
 from pathlib import Path
@@ -60,6 +61,26 @@ def get_operation_mode() -> OperationMode:
     if mode == "offline":
         return OperationMode.OFFLINE
     return OperationMode.NORMAL
+
+
+def _parse_game_id(game_id: str, default_version: str = "v1") -> str:
+    """Parse game ID and append version if not already present.
+
+    Handles two version patterns:
+      - Git hash:  -cb3b57cc  (8 hex chars)
+      - Semantic:  -v1, -v2   (-v followed by digits)
+
+    Args:
+        game_id:    The game ID (may or may not include version).
+        default_version: Version to append if not present.
+
+    Returns:
+        game_id with version appended.
+    """
+    version_pattern = re.compile(r"-[0-9a-f]{8}$|-[vV]\d+$")
+    if version_pattern.search(game_id):
+        return game_id
+    return f"{game_id}-{default_version}"
 
 
 def get_game_id(default: str = "co01") -> str:
@@ -285,8 +306,7 @@ def main():
         parser.print_help()
         sys.exit(1)
 
-    # Build full game ID with version
-    full_game_id = f"{game_id}-{args.version}"
+    full_game_id = _parse_game_id(game_id, args.version)
 
     # Create configuration
     config = GameConfig(

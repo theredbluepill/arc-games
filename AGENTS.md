@@ -310,17 +310,39 @@ elif not sprite or not sprite.is_collidable:
     self._player.set_position(new_x, new_y)
 ```
 
-## Color Palette
+## Terminal Color Palette (from arc-agi rendering.py)
+
+The terminal rendering uses ANSI RGB colors. Use this mapping for sprite colors:
+
 ```python
-COLORS = {
-    "background": 0,    # Black
-    "hazard": 2,       # Red
-    "target": 4,       # Yellow
-    "wall": 5,         # Gray
-    "player": 9,       # Blue
-    "accent": [6, 7, 8]  # Teal, Navy, Maroon
+COLOR_MAP = {
+    0: "#FFFFFFFF",  # White
+    1: "#CCCCCCFF",  # Off-white
+    2: "#999999FF",  # Light Gray
+    3: "#666666FF",  # Gray
+    4: "#333333FF",  # Dark Gray
+    5: "#000000FF",  # Black
+    6: "#E53AA3FF",  # Magenta
+    7: "#FF7BCCFF",  # Light Magenta
+    8: "#F93C31FF",  # Red
+    9: "#1E93FFFF",  # Blue
+    10: "#88D8F1FF", # Light Blue
+    11: "#FFDC00FF", # Yellow
+    12: "#FF851BFF", # Orange
+    13: "#921231FF", # Maroon
+    14: "#4FCC30FF", # Green
+    15: "#A356D6FF", # Purple
 }
 ```
+
+**Key Colors:**
+- Background: **5** (Black)
+- Food: **11** (Yellow)
+- Warm zones: **8** (Red)
+- Player: **9** (Blue)
+- Hazard: **8** (Red)
+- Target: **11** (Yellow)
+- Wall: **3** (Gray)
 
 ## Action Space
 

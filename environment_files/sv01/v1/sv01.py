@@ -35,15 +35,15 @@ class Sv01UI(RenderableUserDisplay):
 
         bar_width = max(0, min(20, self._hunger * 20 // 100))
         for i in range(bar_width):
-            frame[1, 2 + i] = 3
+            frame[1, 2 + i] = 14
 
         bar_width = max(0, min(20, self._warmth * 20 // 100))
         for i in range(bar_width):
-            frame[2, 2 + i] = 6
+            frame[2, 2 + i] = 9
 
         bar_width = max(0, min(20, self._steps_remaining * 20 // 60))
         for i in range(bar_width):
-            frame[3, 2 + i] = 7
+            frame[3, 2 + i] = 3
 
         frame[1, w - 3] = 9
         frame[1, w - 4] = 3 + (self._level - 1)
@@ -61,7 +61,7 @@ sprites = {
         layer=1,
     ),
     "food": Sprite(
-        pixels=[[4]],
+        pixels=[[11]],
         name="food",
         visible=True,
         collidable=False,
@@ -69,7 +69,7 @@ sprites = {
         layer=0,
     ),
     "warm_zone": Sprite(
-        pixels=[[2]],
+        pixels=[[8]],
         name="warm_zone",
         visible=True,
         collidable=False,
@@ -163,20 +163,17 @@ def create_level(level_num: int):
 
 levels = [create_level(i) for i in range(1, 6)]
 
-BACKGROUND_COLOR = 0
-PADDING_COLOR = 0
+BACKGROUND_COLOR = 5
+PADDING_COLOR = 4
 
 
 class Sv01(ARCBaseGame):
     def __init__(self) -> None:
         self._ui = Sv01UI()
-        max_grid = 24
         super().__init__(
             "sv01",
             levels,
-            Camera(
-                0, 0, max_grid, max_grid, BACKGROUND_COLOR, PADDING_COLOR, [self._ui]
-            ),
+            Camera(0, 0, 16, 16, BACKGROUND_COLOR, PADDING_COLOR, [self._ui]),
             False,
             1,
             [1, 2, 3, 4],

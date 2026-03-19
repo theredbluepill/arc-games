@@ -66,9 +66,9 @@ class Wm01UI(RenderableUserDisplay):
                     ]:
                         px, py = cx + ox, cy + oy
                         if 0 <= px < w and 0 <= py < h:
-                            frame[py, px] = 3  # Green
+                            frame[py, px] = 14  # Green
                 # Center dot
-                frame[cy, cx] = 3
+                frame[cy, cx] = 14
             self._click_frames -= 1
         else:
             self._click_pos = None
@@ -76,23 +76,23 @@ class Wm01UI(RenderableUserDisplay):
         # Level indicator - show current level (1-5)
         frame[2, 2] = 9  # Blue = level marker
         # Use 3 cells to show level number
-        level_colors = [9, 6, 3, 4, 7]  # Blue, Cyan, Green, Yellow, Navy
+        level_colors = [9, 10, 14, 11, 15]  # Blue, Light Blue, Green, Yellow, Purple
         frame[2, 3] = level_colors[(self._level - 1) % 5]
 
         # Score - yellow dot, size indicates score
         if self._score > 0:
-            frame[2, w - 3] = 4  # Yellow = score
+            frame[2, w - 3] = 11  # Yellow = score
             if self._score > 3:
-                frame[2, w - 4] = 4
+                frame[2, w - 4] = 11
             if self._score > 6:
-                frame[2, w - 5] = 4
+                frame[2, w - 5] = 11
 
         # Lives - red dots on right side (5 = full)
         for i in range(5):
             if i < self._lives:
-                frame[h - 3, w - 4 - i] = 2  # Red = alive
+                frame[h - 3, w - 4 - i] = 8  # Red = alive
             else:
-                frame[h - 3, w - 4 - i] = 5  # Gray = lost
+                frame[h - 3, w - 4 - i] = 3  # Gray = lost
 
         # Checkpoint progress - show as dots that change color:
         # Each checkpoint needs 3 mole appearances
@@ -100,11 +100,11 @@ class Wm01UI(RenderableUserDisplay):
         if self._checkpoint_total > 0:
             for i in range(3):  # 3 appearances per checkpoint
                 if i < self._checkpoint_score:
-                    frame[h - 3, 2 + i] = 3  # Green = whacked
+                    frame[h - 3, 2 + i] = 14  # Green = whacked
                 elif i < self._mole_appeared % 3 or self._checkpoint_score == 0:
-                    frame[h - 3, 2 + i] = 2  # Red = waiting/missed
+                    frame[h - 3, 2 + i] = 8  # Red = waiting/missed
                 else:
-                    frame[h - 3, 2 + i] = 5  # Gray = not yet
+                    frame[h - 3, 2 + i] = 3  # Gray = not yet
 
         return frame
         h, w = frame.shape
@@ -153,9 +153,9 @@ class Wm01UI(RenderableUserDisplay):
 sprites = {
     "hole": Sprite(
         pixels=[
-            [5, 5, 5],
-            [5, 0, 5],
-            [5, 5, 5],
+            [4, 4, 4],
+            [4, 5, 4],
+            [4, 4, 4],
         ],
         name="hole",
         visible=True,
@@ -164,11 +164,11 @@ sprites = {
     ),
     "mole": Sprite(
         pixels=[
-            [0, 6, 6, 6, 0],
-            [6, 6, 6, 6, 6],
-            [6, 6, 8, 6, 6],
-            [6, 6, 6, 6, 6],
-            [0, 6, 6, 6, 0],
+            [5, 12, 12, 12, 5],
+            [12, 12, 12, 12, 12],
+            [12, 12, 8, 12, 12],
+            [12, 12, 12, 12, 12],
+            [5, 12, 12, 12, 5],
         ],
         name="mole",
         visible=True,
@@ -177,9 +177,9 @@ sprites = {
     ),
     "whacked": Sprite(
         pixels=[
-            [3, 3, 3],
-            [3, 2, 3],
-            [3, 3, 3],
+            [11, 11, 11],
+            [11, 8, 11],
+            [11, 11, 11],
         ],
         name="whacked",
         visible=True,
@@ -225,7 +225,7 @@ def create_level(difficulty: int):
 
 levels = [create_level(i) for i in range(1, 6)]
 
-BACKGROUND_COLOR = 0
+BACKGROUND_COLOR = 5
 PADDING_COLOR = 4
 
 
