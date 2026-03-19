@@ -330,6 +330,21 @@ elif not sprite or not sprite.is_collidable:
     self._player.set_position(new_x, new_y)
 ```
 
+## GIF Demo for GAMES.md
+
+All game GIFs in `assets/` must be **64×64 pixels**:
+
+```python
+from PIL import Image, Image as PILImage
+
+# After capturing frames from the game:
+img = img.resize((64, 64), PILImage.Resampling.NEAREST)
+
+# Save GIF
+frames[0].save("assets/{game_id}.gif", save_all=True, 
+               append_images=frames[1:], duration=150, loop=0)
+```
+
 ## Examples
 
 See established games:
