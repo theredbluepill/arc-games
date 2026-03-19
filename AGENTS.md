@@ -224,7 +224,7 @@ These features are **NOT required** for standard ARC-AGI-3 games:
 ## Directory Structure
 
 ```
-arc-games/
+arc-interactive/
 ├── environment_files/          # All games
 │   ├── {game_id}/
 │   │   └── {version}/

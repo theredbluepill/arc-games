@@ -58,9 +58,22 @@
 | Game | Grid | Levels | Description | Preview | Actions |
 |------|------|--------|-------------|---------|---------|
 | mm01 | 8×8 | 5 | Memory Match. Flip pairs of hidden tiles to find matching colors. Match all 8 pairs to win. 5 mismatches = lose. | ![mm01](assets/mm01.gif) | • 6: Click tile |
+| ms01 | 8-16 | 5 | Blind Sapper. Navigate a hidden minefield using deduction. Safe tiles reveal adjacent mine counts. Step on a mine = lose. Reach the goal to win. Tests working memory and deductive planning. | (placeholder) | • 1-4: Movement |
 
 ## Sequencing / Ordering
 
 | Game | Grid | Levels | Description | Preview | Actions |
 |------|------|--------|-------------|---------|---------|
 | sq01 | 8×8 | 5 | Sequencing. Click colored blocks in the correct order. Follow the sequence shown at the top! | ![sq01](assets/sq01.gif) | • 6: Click block |
+
+## Cognitive Flexibility / Rule Switching
+
+| Game | Grid | Levels | Description | Preview | Actions |
+|------|------|--------|-------------|---------|---------|
+| rs01 | 8-16 | 5 | Rule Switcher. Collect colored targets that match the signpost color at top. Wrong color = lose. After all colors cycle through as safe, collect remaining targets. Tests cognitive flexibility and rule adaptation. | (placeholder) | • 1-4: Movement |
+
+## Task Switching / Interruption
+
+| Game | Grid | Levels | Description | Preview | Actions |
+|------|------|--------|-------------|---------|---------|
+| ts01 | 8-16 | 5 | The Interruption. Collect yellow targets while managing bomb threats. Must defuse bombs before countdown reaches zero. Tests executive function: task switching and prioritization. | (placeholder) | • 1-4: Movement • 5: Defuse bomb |

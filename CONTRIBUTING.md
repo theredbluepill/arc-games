@@ -171,7 +171,7 @@ elif not sprite or not sprite.is_collidable:
 ## Repository Structure
 
 ```
-arc-games/
+arc-interactive/
 ├── environment_files/     # All games
 │   ├── ez01/v1/
 │   ├── tt01/v1/
