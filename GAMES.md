@@ -33,3 +33,9 @@
 | Game | Grid | Levels | Description | Preview | Actions |
 |------|------|--------|-------------|---------|---------|
 | pt01 | 16×16 | 5 | Pattern rotation puzzle. Click tiles to rotate them 90° clockwise and match the target pattern. | ![pt01](assets/pt01.gif) | • 6: Click/Rotate |
+
+## Environmental Manipulation
+
+| Game | Grid | Levels | Description | Preview | Actions |
+|------|------|--------|-------------|---------|---------|
+| sk01 | 8-16 | 7 | Sokoban. Push blocks onto target pads. Green = placed. Stuck or step limit = lose. | ![sk01](assets/sk01.gif) | • 1-4: Movement |
