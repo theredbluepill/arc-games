@@ -5,7 +5,9 @@ notes/
 __pycache__/
 
 .worktrees/
-docs/
+docs/*
+!docs/*.ipynb
+!docs/*.md
 
 # Local kaggle_benchmarks task run exports
 arc_*-run_id_*.run.json
