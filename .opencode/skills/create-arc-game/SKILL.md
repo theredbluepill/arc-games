@@ -3,6 +3,17 @@
 ## Overview
 This skill guides the creation of ARC-AGI-3 games based on established patterns from `environment_files/`.
 
+## Abstract actions (ACTION1–7)
+
+Per the [ARC-AGI-3 Actions](https://docs.arcprize.org/actions) spec, each game **defines** what `ACTION1`–`ACTION7` do: grid movement, rotation, no-op, idle, clicks, etc. The official docs describe `ACTION1`–`ACTION4` as *simple actions that vary by game*; the up/down/left/right wording is for **human keybinding** in the UI, not a requirement that your `step()` implements cardinal movement.
+
+Many games in this repo map `ACTION1`–`ACTION4` to **grid movement**—that is a **convention**, not a platform rule. If your design uses those IDs for something else (e.g. `ACTION1` = rotate clockwise), document it in `GAMES.md` and implement it explicitly in `step()`.
+
+### New stems vs family variants
+
+- Prefer a **new two-letter prefix** (`xx01`) when the verb is genuinely new (e.g. `nw01` arrow tiles, `bd01` no-revisit).
+- Use **`xx02` / `xx03` only** for alternate rules **within** the same family (`pb`, `fs`, `tp`, `ic`, `va` alongside their `xx01`). Cap at **`03`** unless a project plan explicitly adds `04`+ (keeps variants meaningfully distinct).
+
 ## Game Structure
 
 ```
@@ -172,9 +183,11 @@ def step(self) -> None:
 Run with:
 ```python
 import arc_agi
+from arcengine import GameAction
+
 arc = arc_agi.Arcade()
 env = arc.make("mygame-v1", seed=0)
-result = env.step(1)  # Action 1-4 for movement
+result = env.step(GameAction.ACTION1, reasoning={})  # meaning defined by the game; often movement in this repo
 ```
 
 ## Metadata Requirements
@@ -233,19 +246,19 @@ COLOR_MAP = {
 
 ### Action Space
 
-Actions are **abstract** - each game defines what they mean:
+Actions are **abstract** — each game defines what they mean. See [ARC-AGI-3 Actions](https://docs.arcprize.org/actions).
 
 | Action | Description |
 |--------|-------------|
-| `ACTION1` | Abstract action 1 (semantically up) |
-| `ACTION2` | Abstract action 2 (semantically down) |
-| `ACTION3` | Abstract action 3 (semantically left) |
-| `ACTION4` | Abstract action 4 (semantically right) |
-| `ACTION5` | Special action (interact, select, rotate, attach/detach, execute, etc.) |
+| `ACTION1` | Simple game-defined action (often grid movement in this repo; human UI may map to “up”) |
+| `ACTION2` | Simple game-defined action (often grid movement; UI may map to “down”) |
+| `ACTION3` | Simple game-defined action (often grid movement; UI may map to “left”) |
+| `ACTION4` | Simple game-defined action (often grid movement; UI may map to “right”) |
+| `ACTION5` | Special action (interact, select, rotate, attach/detach, execute, idle, etc.) |
 | `ACTION6` | Coordinate-based action (requires x,y) |
 | `ACTION7` | Undo action |
 
-**Example** - if your game is about rotation, ACTION1 could mean "rotate clockwise" instead of "up":
+**Example** — rotation: `ACTION1` means rotate clockwise, not “move up”:
 ```python
 def step(self) -> None:
     if self.action.id.value == 1:
@@ -253,6 +266,7 @@ def step(self) -> None:
         self.complete_action()
         return
     # ... handle other actions
+```
 
 ## What NOT to Do
 

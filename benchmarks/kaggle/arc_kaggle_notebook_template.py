@@ -21,7 +21,7 @@ For multiple tasks, duplicate the notebook or add cells that call each
 
 # --- Cell 1: Install dependencies (run first) ---
 # Kaggle Benchmark bootstrap: see benchmarks/kaggle/notebooks/README.md
-# (arc-agi, arcengine, numpy, hishel>=1.1, openai, google-genai, panel, docker, protobuf, …).
+# Worker deps: see PIP_PKGS_KAGGLE_WORKER in rebuild_kaggle_notebooks.py.
 # !pip install -q arc-agi arcengine
 
 # --- Cell 2: Task and wrapper ---

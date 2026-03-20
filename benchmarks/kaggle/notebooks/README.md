@@ -9,7 +9,7 @@ Source of truth for task code is **`../arc_kaggle_notebook_template.py`** (all f
 | `arc_tt01_collect` | tt01-v1 | 200 |
 | `arc_sv01_survive` | sv01-v1 | 80 |
 
-**Optional:** `python3 benchmarks/kaggle/rebuild_kaggle_notebooks.py` writes `benchmarks/kaggle/notebooks/*.ipynb` (one task per file) from `arc_kaggle_notebook_template.py` plus the bootstrap below.
+**Optional:** `python3 benchmarks/kaggle/rebuild_kaggle_notebooks.py` writes `benchmarks/kaggle/notebooks/*.ipynb` (one task per file) from `arc_kaggle_notebook_template.py` plus the bootstrap. The embedded bootstrap prints **`[arc-benchmark-bootstrap]`** lines (and **3.12** `pip install` runs **without** `-q` so install progress shows in logs).
 
 For **3.11 papermill**, install **`uv`** with a pinned version for reproducibility, e.g. `pip install -q uv==0.10.11` (same pin as `UV_PIP_SPEC` in `rebuild_kaggle_notebooks.py`; bump if PyPI layout changes).
 
@@ -20,9 +20,8 @@ For **3.11 papermill**, install **`uv`** with a pinned version for reproducibili
 You can address that in three ways:
 
 1. **Bootstrap (paste into the notebook around the task script from `arc_kaggle_notebook_template.py`)**  
-   - **If the kernel is 3.12+:** `pip install arc-agi arcengine numpy 'hishel[httpx]>=1.1' openai google-genai panel docker protobuf`, then `exec(TASK_SCRIPT)` in the same process. The worker prepends `/benchmarks/src/kaggle_benchmarks` to `sys.path`; that code needs **hishel ≥1.1** for `hishel.httpx` (PyPI `kaggle-benchmarks` pins `hishel==0.1.5`, which conflicts), **`openai`**, **`google-genai`**, **`panel`**, plus **`docker`** / **`protobuf`** where the injected source imports them. Do **not** `pip install google` — use **`google-genai`** only (`from google import genai` comes from that package).
-   - **If the kernel is 3.11:** `pip install uv`, then  
-     `uv run --python 3.12 --with arc-agi --with arcengine --with numpy --with 'hishel[httpx]>=1.1' --with openai --with google-genai --with panel --with docker --with protobuf python <saved task script>`  
+   - **If the kernel is 3.12+:** install the same set as [`PIP_PKGS_KAGGLE_WORKER` in `rebuild_kaggle_notebooks.py`](../rebuild_kaggle_notebooks.py) (currently: `arc-agi`, `arcengine`, `numpy`, `hishel[httpx]>=1.1`, `openai`, `google-genai`, `panel`, `docker`, `protobuf`, `joblib`, `jupyter-client`, `nest-asyncio`, `playwright`, `ipython`), then `exec(TASK_SCRIPT)`. Do **not** `pip install google` — use **`google-genai`** only. **Playwright** may still need browser binaries (`playwright install`) if something imports Chromium.
+   - **If the kernel is 3.11:** `pip install uv`, then the same packages as repeated `--with ...` before `python <script>` (see generator output / that tuple).  
      so the task runs under **3.12** in a subprocess while papermill keeps using 3.11. **Do not** add `--with kaggle-benchmarks`: it pins `hishel==0.1.5` and breaks `uv` resolution; the worker already provides `kaggle_benchmarks` from `/benchmarks/src`.  
    First run needs **network** so `uv` can fetch Python 3.12 and wheels.
 

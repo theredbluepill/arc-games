@@ -12,6 +12,11 @@ Template body is sliced from ``arc_kaggle_notebook_template.py``. Do **not** ins
 Usage::
 
     python3 benchmarks/kaggle/rebuild_kaggle_notebooks.py
+
+Extra deps mirror PyPI ``kaggle-benchmarks`` where the worker’s injected source imports them.
+Use ``google-genai`` only (not the ``google`` metapackage) for ``from google import genai``.
+
+Playwright may still need ``playwright install`` (browser binaries) if a code path uses it.
 """
 
 from __future__ import annotations
@@ -27,8 +32,28 @@ NOTEBOOK_DIR = ROOT / "notebooks"
 # Pinned for reproducible ``pip install`` on Kaggle papermill (3.11) before ``uv run``.
 UV_PIP_SPEC = "uv==0.10.11"
 
+BOOTSTRAP_TAG = "[arc-benchmark-bootstrap]"
 
-def base_task_script() -> str:
+# Single source of truth for both ``pip`` (3.12+) and ``uv run --with`` (3.11 path).
+PIP_PKGS_KAGGLE_WORKER: tuple[str, ...] = (
+    "arc-agi",
+    "arcengine",
+    "numpy",
+    "hishel[httpx]>=1.1",
+    "openai",
+    "google-genai",
+    "panel",
+    "docker",
+    "protobuf",
+    "joblib",
+    "jupyter-client",
+    "nest-asyncio",
+    "playwright",
+    "ipython",
+)
+
+
+def base_taskscript_body() -> str:
     text = TEMPLATE.read_text(encoding="utf-8")
     start = text.index("import sys\nfrom pathlib import Path")
     end = text.index("# --- Cell 3:")
@@ -95,6 +120,80 @@ NOTEBOOKS: list[dict[str, str]] = [
 ]
 
 
+def _bootstrap_cell_source_lines() -> list[str]:
+    """Lines of Python source for ``_bootstrap()`` embedded in the notebook (no leading cell header)."""
+    tag = BOOTSTRAP_TAG
+    n = len(PIP_PKGS_KAGGLE_WORKER)
+    lines: list[str] = [
+        "def _bootstrap() -> None:",
+        "    def _log(msg: str) -> None:",
+        f'        print("{tag}", msg, flush=True)',
+        "",
+        '    _log("start")',
+        "    code = TASK_SCRIPT",
+        '    work = Path("/kaggle/working")',
+        "    if not work.is_dir():",
+        "        work = Path(tempfile.gettempdir())",
+        '    out = work / "_arc_benchmark_task.py"',
+        '    _log(f"writing task script -> {out} ({len(code)} chars)")',
+        "    out.write_text(code, encoding=\"utf-8\")",
+        "    env = os.environ.copy()",
+        '    _log(f"kernel {sys.version_info.major}.{sys.version_info.minor} exec={sys.executable}")',
+        "",
+        "    if sys.version_info >= (3, 12):",
+        '        _log("pip install worker deps (verbose pip; no -q)")',
+        "        subprocess.check_call(",
+        "            [",
+        "                sys.executable,",
+        '                "-m",',
+        '                "pip",',
+        '                "install",',
+    ]
+    for pkg in PIP_PKGS_KAGGLE_WORKER:
+        lines.append(f'                "{pkg}",')
+    lines.extend(
+        [
+            "            ],",
+            "            env=env,",
+            "        )",
+            '        _log("pip finished; exec TASK_SCRIPT as __main__")',
+            '        exec(compile(code, str(out), "exec"), {"__name__": "__main__"})',
+            '        _log("exec returned")',
+            "        return",
+            "",
+            f'    _log("kernel < 3.12: pip install {UV_PIP_SPEC}")',
+            "    subprocess.check_call(",
+            f'        [sys.executable, "-m", "pip", "install", "-q", "{UV_PIP_SPEC}"],',
+            "        env=env,",
+            "    )",
+            '    _log(f"uv run --python 3.12 with '
+            + str(n)
+            + ' --with pkgs -> {out.name}")',
+            "    subprocess.check_call(",
+            "        [",
+            "            sys.executable,",
+            '            "-m",',
+            '            "uv",',
+            '            "run",',
+            '            "--python",',
+            '            "3.12",',
+        ]
+    )
+    for pkg in PIP_PKGS_KAGGLE_WORKER:
+        lines.extend(['            "--with",', f'            "{pkg}",'])
+    lines.extend(
+        [
+            '            "python",',
+            "            str(out),",
+            "        ],",
+            "        env=env,",
+            "    )",
+            '    _log("uv subprocess exited ok")',
+        ]
+    )
+    return lines
+
+
 def bootstrap_cell_from_task(task_py: str) -> str:
     if "'''" in task_py:
         raise ValueError("task source must not contain ''' — use \"\"\" in docstrings only")
@@ -109,83 +208,10 @@ def bootstrap_cell_from_task(task_py: str) -> str:
         "\n"
         "TASK_SCRIPT = textwrap.dedent(r'''\n"
     )
-    footer = (
-        "''').strip()\n"
-        "\n"
-        "\n"
-        "def _bootstrap() -> None:\n"
-        "    code = TASK_SCRIPT\n"
-        "    work = Path(\"/kaggle/working\")\n"
-        "    if not work.is_dir():\n"
-        "        work = Path(tempfile.gettempdir())\n"
-        "    out = work / \"_arc_benchmark_task.py\"\n"
-        "    out.write_text(code, encoding=\"utf-8\")\n"
-        "    env = os.environ.copy()\n"
-        "\n"
-        "    if sys.version_info >= (3, 12):\n"
-        "        subprocess.check_call(\n"
-        "            [\n"
-        "                sys.executable,\n"
-        "                \"-m\",\n"
-        "                \"pip\",\n"
-        "                \"install\",\n"
-        "                \"-q\",\n"
-        "                \"arc-agi\",\n"
-        "                \"arcengine\",\n"
-        "                \"numpy\",\n"
-        "                \"hishel[httpx]>=1.1\",\n"
-        "                \"openai\",\n"
-        "                \"google-genai\",\n"
-        "                \"panel\",\n"
-        "                \"docker\",\n"
-        "                \"protobuf\",\n"
-        "            ],\n"
-        "            env=env,\n"
-        "        )\n"
-        "        exec(compile(code, str(out), \"exec\"), {\"__name__\": \"__main__\"})\n"
-        "        return\n"
-        "\n"
-        "    subprocess.check_call(\n"
-        f'        [sys.executable, \"-m\", \"pip\", \"install\", \"-q\", \"{UV_PIP_SPEC}\"],\n'
-        "        env=env,\n"
-        "    )\n"
-        "    subprocess.check_call(\n"
-        "        [\n"
-        "            sys.executable,\n"
-        "            \"-m\",\n"
-        "            \"uv\",\n"
-        "            \"run\",\n"
-        "            \"--python\",\n"
-        "            \"3.12\",\n"
-        "            \"--with\",\n"
-        "            \"arc-agi\",\n"
-        "            \"--with\",\n"
-        "            \"arcengine\",\n"
-        "            \"--with\",\n"
-        "            \"numpy\",\n"
-        "            \"--with\",\n"
-        "            \"hishel[httpx]>=1.1\",\n"
-        "            \"--with\",\n"
-        "            \"openai\",\n"
-        "            \"--with\",\n"
-        "            \"google-genai\",\n"
-        "            \"--with\",\n"
-        "            \"panel\",\n"
-        "            \"--with\",\n"
-        "            \"docker\",\n"
-        "            \"--with\",\n"
-        "            \"protobuf\",\n"
-        "            \"python\",\n"
-        "            str(out),\n"
-        "        ],\n"
-        "        env=env,\n"
-        "    )\n"
-        "\n"
-        "\n"
-        "_bootstrap()\n"
-    )
-    task = task_py if task_py.endswith("\n") else task_py + "\n"
-    return header + task + footer
+    mid = "".join(task_py if task_py.endswith("\n") else task_py + "\n")
+    foot_close = "''').strip()\n\n\n"
+    boot_lines = "\n".join(_bootstrap_cell_source_lines()) + "\n\n\n_bootstrap()\n"
+    return header + mid + foot_close + boot_lines
 
 
 def to_ipynb_lines(src: str) -> list[str]:
@@ -224,15 +250,17 @@ def build_notebook(md: str, code: str) -> dict:
 
 
 def main() -> None:
+    print("[rebuild_kaggle_notebooks]", "template:", TEMPLATE, flush=True)
+    print("[rebuild_kaggle_notebooks]", "worker pip/uv packages:", len(PIP_PKGS_KAGGLE_WORKER), flush=True)
     NOTEBOOK_DIR.mkdir(parents=True, exist_ok=True)
-    base = base_task_script()
+    base = base_taskscript_body()
     for spec in NOTEBOOKS:
         task_py = base + CELL3 + spec["run"] + "\n"
         code = bootstrap_cell_from_task(task_py)
         nb = build_notebook(spec["md"], code)
         path = NOTEBOOK_DIR / spec["filename"]
         path.write_text(json.dumps(nb, indent=1) + "\n", encoding="utf-8")
-        print(f"wrote {path}")
+        print("[rebuild_kaggle_notebooks] wrote", path, f"({len(code)} chars code cell)", flush=True)
 
 
 if __name__ == "__main__":

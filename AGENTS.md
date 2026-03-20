@@ -123,7 +123,7 @@ class MyGame(ARCBaseGame):
             Camera(...),
             False,  # debug flag
             1,      # config value
-            [1, 2, 3, 4],  # action space: movement actions
+            [1, 2, 3, 4],  # available_actions: simple actions (ACTION1–4); define semantics in step()
         )
 ```
 
@@ -168,7 +168,7 @@ def step(self) -> None:
         self.complete_action()
         return
     
-    # Process movement
+    # Process movement (example: this template maps ACTION1–4 to grid movement)
     new_x = self._player.x + dx
     new_y = self._player.y + dy
     
@@ -342,15 +342,15 @@ COLOR_MAP = {
 
 ## Action Space
 
-Actions are **abstract** - each game defines what they mean:
+Actions are **abstract** — each game defines what they mean. See [ARC-AGI-3 Actions](https://docs.arcprize.org/actions). Human-facing docs map ACTION1–4 to arrows/WASD for playability; that does **not** require your game to implement cardinal movement.
 
 | Action | Description |
 |--------|-------------|
-| ACTION1 | Abstract action 1 (semantically up) |
-| ACTION2 | Abstract action 2 (semantically down) |
-| ACTION3 | Abstract action 3 (semantically left) |
-| ACTION4 | Abstract action 4 (semantically right) |
-| ACTION5 | Special action (interact, select, rotate, attach/detach, execute) |
+| ACTION1 | Simple game-defined action (often grid movement in this repo; UI may map to “up”) |
+| ACTION2 | Simple game-defined action (often grid movement; UI may map to “down”) |
+| ACTION3 | Simple game-defined action (often grid movement; UI may map to “left”) |
+| ACTION4 | Simple game-defined action (often grid movement; UI may map to “right”) |
+| ACTION5 | Special action (interact, select, rotate, attach/detach, execute, idle) |
 | ACTION6 | Coordinate-based action (requires x,y in `self.action.data`) |
 | ACTION7 | Undo action |
 
@@ -368,6 +368,7 @@ def step(self) -> None:
 
 ## References
 
+- **ARC-AGI-3 Actions**: https://docs.arcprize.org/actions
 - **ARC-AGI-3 Docs**: https://docs.arcprize.org/add_game
 - **Established Games**:
   - `environment_files/vc33/9851e02b/vc33.py`
@@ -508,3 +509,44 @@ def step(self) -> None:
 2. **Coords**: Full **64×64** camera — tile hit-test uses `_offset_*` and `_tile_size`; **ACTION6** `x,y` are **frame pixels**. Centers: `offset + col * tile_size + tile_size // 2` (import `LEVEL_LAYOUTS`, `LEVEL_DIMS`, `_compute_tile_size_and_offsets` from `mm01.py` for GIF scripts).
 3. **Lose state**: `lose()` sets **`GameState.GAME_OVER`** (not a separate `LOSE` enum).
 4. **Preview GIF**: `uv run python scripts/render_mm01_gif.py` — **slow** frame durations; **2–3** deliberate **wrong pairs** (flip-back) across **levels 1–3** via `MISMATCHES_PER_LEVEL`, then scripted clears from `LEVEL_LAYOUTS`; holds after level-ups and at the end.
+
+## Lessons Learned (pb01 / fs01 / tp01 / ic01 / va01 batch)
+
+1. **pb01**: Single **block** + **target** — reuse sk01-style push (next cell block → push if beyond free). **`Pb01UI`** corner tile turns **green** when the crate sits on the goal. **`_sync_ui()`** maps **14/15** when the block enters/leaves the pad; step limit **60 + 15×difficulty**.
+2. **fs01**: **Switches** are **non-collidable**; track **`_activated`** as a **set** of `(x, y)` stepped on. When **`len(_activated) == len(_switch_positions)`**, remove **door** sprites. Win only when **`len(_door)==0`** and player stands on **target**. **`Fs01UI`** shows plate progress in the bottom-left.
+3. **tp01**: **`portal_pairs`** in **`level.get_data()`** builds **`_portal_to_partner`** (bidirectional). After a normal move onto a portal cell, **`set_position`** to the partner; **one teleport per step** (no loop). Magenta portals (**color 7**), yellow goal.
+4. **ic01**: **Slide** in a loop until the **next** cell is out of bounds or **`_blocked`** (wall or hazard). **Targets are walk-through** during the slide; add a **wall** past the goal if you need the player to **stop on** the target cell (e.g. wall at **(1, 0)** under a goal at **(1, 1)** when sliding up).
+5. **va01**: **`_open_cells`** = all grid cells with no **wall** sprite; **`_visited`** starts with the player’s start cell. Win when **`_visited == _open_cells`** (set equality). **`Va01UI`** shows remaining cells in the corner.
+
+## Lessons Learned (pb02–va03 variants + nw01–ex01 stems)
+
+### Variants (`xx02` / `xx03` only — cap at `03` unless a plan extends)
+
+1. **pb02**: Two **block** + **target** pairs — same push rules as **pb01** but search over two crates.
+2. **pb03**: **Decoy** pad (distinct tag/color); **lose** when a crate is **pushed onto** the decoy (check the cell the block enters).
+3. **fs02**: **OR** latches — any one **switch** opens the **door** (not “all plates” like **fs01**).
+4. **fs03**: **Sequence** — order is the **sprite list order** of switches in the level data.
+5. **tp02**: **`directed_pairs`** `[[[x1,y1],[x2,y2]], …]` — warp **from→to** only (no symmetric return).
+6. **tp03**: Remove **both** **`portal`** sprites after one use (`get_sprites_by_tag`, not raw `_sprites`).
+7. **ic02**: **Torus** wrap on slide — bound the slide loop (**grid_w×grid_h**) to avoid infinite loops.
+8. **ic03**: **`slide_cap`** in **`level.data`** — partial slide each ACTION1–4.
+9. **va02**: Coverage set = walkable cells **minus** **`hazard`** tags (cannot “visit” hazard floor).
+10. **va03**: **`visit_order`** list — step waypoints **1…N** in order; if the player **starts** on waypoint **1**, advance **`_next`** immediately.
+
+### New two-letter stems (`xx01`)
+
+1. **nw01**: **`arrows`** `(x,y)→(dx,dy)` — entering an arrow cell **stores** a forced move for the **next** ACTION1–4 only.
+2. **bd01**: **`_visited`** includes the **start** cell; entering a visited cell **`lose()`**.
+3. **gr01**: After a resolved player move, apply **one** gravity step (`gravity` in **`level.data`**).
+4. **dt01**: Cyan **waypoint** must be touched before the yellow **goal** (`_hit_waypoint`).
+5. **wk01**: On leaving a **`weak`** tile, replace it with a **`hole`** (collidable); stepping into a hole **`lose()`**.
+6. **rf01**: For `player.x >= grid_w//2`, negate horizontal **`dx`** (swap left/right semantics).
+7. **mo01**: Track **`_dir`** + **`_streak`** — changing direction before **`_streak >= 2`** **`lose()`**.
+8. **zq01**: In **`on_set_level`**, remove prior **`zq_hazard`** sprites before re-adding (clean resets). Toggle with **`set_visible` / `set_collidable`**.
+9. **hm01**: Win when **`len(_visited) == _need`** where **`_need`** counts all non-wall cells; **revisit** before win **`lose()`**.
+10. **ex01**: **`[1,2,3,4,5]`** — **`ACTION5`** only increments hold when **`_on_exit_pad`**; movement resets **`_hold`**. **`hold_frames`** per level in **`level.data`**.
+
+## Lessons Learned (gp01 / lo01 click-first games)
+
+1. **gp01**: **`[1,2,3,4,6]`** — **`ACTION1–4`** are **no-ops** (pacing only). **`ACTION6`** → `camera.display_to_grid(x,y)`; click feedback in **64×64** frame space via **`_grid_to_frame_pixel`** (same letterbox math as **ff01**). Track painted cells with **`paint`** sprites; **`goal_cells`** in **`level.data`**; win when painted set equals goal; dim **`hint`** sprites mark the target cells.
+2. **lo01**: Same action list; maintain **`_lit`** and toggle **`+` neighbors** (skip **`wall`**); **`_refresh_lit_sprites`** after each click. Author **grid-corner L-triples** so one **`ACTION6`** on the corner clears that triple without turning on a fourth in-bounds cell.

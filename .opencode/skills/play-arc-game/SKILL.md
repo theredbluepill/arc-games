@@ -28,6 +28,8 @@ result = env.step(GameAction.ACTION1, reasoning={'test': 0})
 print(f"State: {result.state}")
 ```
 
+Other examples: `pb02-v1` (two-crate push), `nw01-v1` (arrow-tile forcing), `ex01-v1` (uses **ACTION5** on the exit pad), `gp01-v1` / `lo01-v1` (**ACTION6**-only play; **ACTION1–4** are no-ops).
+
 ## ACTION6: Click/Coordinate Actions
 
 For games using ACTION6 (click), coordinates are in **display space** (0-63), not grid space.
