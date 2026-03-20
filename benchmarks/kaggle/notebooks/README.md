@@ -2,14 +2,18 @@
 
 Source of truth for task code is **`../arc_kaggle_notebook_template.py`** (all four `@kbench.task` definitions in one file). Copy cells into [Create new task](https://www.kaggle.com/benchmarks/tasks/new), then **+ Add data** and attach a dataset with a non-empty **`environment_files/`** tree (same layout as this repo). Kaggle mounts under **`/kaggle/input/datasets/<user>/<dataset-name>/`** — this repo prefers **`/kaggle/input/datasets/poonszesen/arc-interactive`**, then falls back to any mount with `environment_files/`. Skipping **Add data** yields **`Available games: []`** / `Failed to create environment`.
 
-| `@kbench.task` name | Game | `max_steps` in template |
-|---------------------|------|-------------------------|
-| `arc_ez01_go_up` | ez01-v1 | 30 |
-| `arc_sk01_sokoban` | sk01-v1 | 200 |
-| `arc_tt01_collect` | tt01-v1 | 200 |
-| `arc_sv01_survive` | sv01-v1 | 80 |
+| `@kbench.task` name | Game stem | `max_steps` in template |
+|---------------------|-----------|-------------------------|
+| `arc_ez01_go_up` | ez01 | 30 |
+| `arc_sk01_sokoban` | sk01 | 200 |
+| `arc_tt01_collect` | tt01 | 200 |
+| `arc_sv01_survive` | sv01 | 80 |
+
+Task code resolves the full `game_id` from `environment_files/<stem>/…/metadata.json` (see `_full_game_id` in `arc_kaggle_notebook_template.py`).
 
 **Optional:** `python3 benchmarks/kaggle/rebuild_kaggle_notebooks.py` writes `benchmarks/kaggle/notebooks/*.ipynb` (one task per file) from `arc_kaggle_notebook_template.py` plus the bootstrap. The embedded bootstrap prints **`[arc-benchmark-bootstrap]`** lines (and **3.12** `pip install` runs **without** `-q` so install progress shows in logs).
+
+**All games:** `uv run python benchmarks/kaggle/export_kaggle_notebooks_all_stems.py` writes `benchmarks/kaggle/notebooks/all/arc-interactive-<stem>.ipynb` for every registry-style stem (skips `vc33`, `ls20`, `ft09` by default). Each notebook resolves `game_id` from the dataset at runtime via `_full_game_id`. Override probing with `notebook_export_overrides.json` (`stems.<stem>.max_steps` / `grid_size`).
 
 For **3.11 papermill**, install **`uv`** with a pinned version for reproducibility, e.g. `pip install -q uv==0.10.11` (same pin as `UV_PIP_SPEC` in `rebuild_kaggle_notebooks.py`; bump if PyPI layout changes).
 

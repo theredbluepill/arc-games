@@ -20,13 +20,13 @@ Agent responsible for designing and implementing ARC-AGI-3 games.
 **Output**: Working game in `environment_files/`
 
 **Steps**:
-1. Create directory: `environment_files/{game_id}/{version}/`
-2. Implement `{game_id}.py` with:
+1. Create directory: `environment_files/{stem}/{version}/` (two-letter stem + digits, e.g. `ez01`; version folder is usually `v1` on first landing, then often an 8-char git prefix after CI — see `CONTRIBUTING.md`)
+2. Implement `{stem}.py` with:
    - Sprite definitions
    - Static levels (no PCG)
    - Game class extending `ARCBaseGame`
    - Win/lose conditions
-3. Test with: `arc.make("{game_id}-{version}", seed=0)`
+3. Test with: `arc.make` using the full `game_id` from that folder’s `metadata.json`, or locally `uv run python run_game.py --game {stem} --version auto`
 
 ### 3. Documentation Phase
 **Input**: Completed game
@@ -222,10 +222,11 @@ sprite.collides_with(other_sprite)
 ```
 arc-interactive/
 ├── environment_files/          # All games
-│   ├── {game_id}/
-│   │   └── {version}/
-│   │       ├── {game_id}.py
-│   │       └── metadata.json
+│   ├── {stem}/                 # e.g. ez01 (table column in GAMES.md)
+│   │   └── {version}/          # e.g. 8-char SHA or v1 before CI bump
+│   │       ├── {stem}.py
+│   │       └── metadata.json   # game_id must equal "{stem}-{version}"
+├── scripts/env_resolve.py      # full_game_id_for_stem / load_stem_game_py
 ├── GAMES.md                    # Game registry table
 └── AGENTS.md                   # This file
 ```
@@ -305,6 +306,19 @@ elif not sprite or not sprite.is_collidable:
     # Move to empty space or non-collidable area
     self._player.set_position(new_x, new_y)
 ```
+
+### 8. Step-budget helpers (`_burn`, `_burn_step`) and `lose()`
+**Cause**: Returning from `step()` when `_burn()` is true after `lose()` without calling `complete_action()`.
+**Solution**: Always finish the action:
+```python
+if self._burn():
+    self.complete_action()
+    return
+```
+
+### 9. Shadowing `ARCBaseGame._state`
+**Cause**: `ARCBaseGame` reserves `self._state` for `GameState`; assigning a dict (e.g. grid paint map) breaks the engine (`perform_action` / GIF capture).
+**Solution**: Use another name (`_paint`, `_grid_cells`, etc.) for per-game dictionaries.
 
 ## Terminal Color Palette (from arc-agi rendering.py)
 
@@ -415,7 +429,7 @@ def step(self) -> None:
 - **Islands**: 3x3 maroon squares
 - **Goal island**: 3x3 green square
 - **Water**: cyan/light-blue background (not sprites)
-- **Reefs / caps**: gray **rock** cells (no walk / no bridge); **max_bridges** and **step_limit** optional per level (generous on v1)
+- **Reefs / caps**: gray **rock** cells (no walk / no bridge); **max_bridges** and **step_limit** optional per level (generous defaults on first shipped tb01 tuning)
 - **Bridges**: 1x1 orange overlay on water only; **ACTION6** → `display_to_grid`; toggle
 - **Actions**: 1-4 movement, 6=toggle bridge on water
 - **Lives**: 3 per level
@@ -568,6 +582,12 @@ def step(self) -> None:
 
 1. **tt02**: When normalizing patrol waypoints from **`level.data`**, use **`[(int(p[0]), int(p[1])) for p in loop]`** — not **`tuple(int(...), int(...))`** (the built-in **`tuple()`** constructor accepts only one iterable argument).
 2. **hd01**: **`ACTION5`** charges immunity only on **`station`** cells but must still run the same per-step heat tick and immune decay as movement actions (do not early-return before **`_steps` / `_heat_row`** update).
+
+## Lessons Learned (plan-35 batch: bi01–ox01)
+
+1. **Sprite collision flag**: use **`sprite.is_collidable`**, not `sprite.collidable` (AttributeError in `arcengine`).
+2. **Local-only registry rows**: `run_game.py` defaults to **online** metadata fetch; use **`ARC_OPERATION_MODE=offline`** (or `OperationMode.OFFLINE`) so new stems load from disk before they exist on the API.
+3. **Orthogonal solvability spot-check**: `scripts/verify_batch35_solvability.py` BFS‑checks a few level‑0 mazes; snake / prime / swap puzzles need rule‑aware review.
 
 ## Lessons Learned (ACTION6 remediation + 30-game batch)
 

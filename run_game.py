@@ -6,10 +6,15 @@ CLI tool for running and testing ARC-AGI-3 games.
 Based on patterns from redpill/launch.py and redpill/remote_attempt.py
 
 Usage:
-    uv run python run_game.py --game co01 --version v1
-    uv run python run_game.py --game co01 --version v1 --mode auto --steps 50
-    ARC_GAME_ID=co01-v1 uv run python run_game.py
+    uv run python run_game.py --game co01 --version auto
+    uv run python run_game.py --game co01 --mode auto --steps 50
+    uv run python run_game.py --game ls20 --mode auto --render-mode human
+    uv run python run_game.py --game sk01 --mode human
+    uv run python run_game.py --game sk01 --mode human-toolkit
+    ARC_GAME_ID=co01-<ver> uv run python run_game.py
     ARC_OPERATION_MODE=offline uv run python run_game.py
+
+Online scoring: this script does not pass scorecard_id to arc.make; see README (Online scorecard).
 """
 
 from __future__ import annotations
@@ -23,6 +28,17 @@ from dataclasses import dataclass
 from pathlib import Path
 from typing import Any
 
+_ROOT = Path(__file__).resolve().parent
+_SCRIPTS = _ROOT / "scripts"
+if str(_SCRIPTS) not in sys.path:
+    sys.path.insert(0, str(_SCRIPTS))
+from env_resolve import full_game_id_for_stem  # noqa: E402
+
+try:
+    from dotenv import load_dotenv
+except ImportError:
+    load_dotenv = None  # type: ignore[misc, assignment]
+
 try:
     from arc_agi import Arcade, OperationMode
     from arcengine import GameAction
@@ -32,16 +48,23 @@ except ImportError as e:
     sys.exit(1)
 
 
+def _load_dotenv() -> None:
+    """Load repo-root ``.env`` so ``ARC_API_KEY`` / ``ARC_OPERATION_MODE`` work with ``uv run``."""
+    if load_dotenv is not None:
+        load_dotenv(_ROOT / ".env")
+
+
 @dataclass
 class GameConfig:
     """Configuration for running a game."""
 
-    game_id: str = "co01-v1"
-    version: str = "v1"
+    game_id: str = "co01"
+    version: str = "auto"
     seed: int = 0
     steps: int = 100
-    mode: str = "terminal"  # "terminal" or "auto"
-    render_terminal: bool = True
+    mode: str = "terminal"  # terminal, auto, human (interactive), human-toolkit (official render)
+    #: Passed to ``arc.make(..., render_mode=...)`` — see toolkit render-games docs.
+    render_mode: str | None = None
     operation_mode: OperationMode = OperationMode.NORMAL
 
 
@@ -63,24 +86,15 @@ def get_operation_mode() -> OperationMode:
     return OperationMode.NORMAL
 
 
-def _parse_game_id(game_id: str, default_version: str = "v1") -> str:
-    """Parse game ID and append version if not already present.
-
-    Handles two version patterns:
-      - Git hash:  -cb3b57cc  (8 hex chars)
-      - Semantic:  -v1, -v2   (-v followed by digits)
-
-    Args:
-        game_id:    The game ID (may or may not include version).
-        default_version: Version to append if not present.
-
-    Returns:
-        game_id with version appended.
-    """
+def resolve_full_game_id(raw_id: str, version_arg: str) -> str:
+    """Return full ``arc.make`` id: either ``raw_id`` if it already has a version suffix, else stem + resolved package."""
     version_pattern = re.compile(r"-[0-9a-f]{8}$|-[vV]\d+$")
-    if version_pattern.search(game_id):
-        return game_id
-    return f"{game_id}-{default_version}"
+    if version_pattern.search(raw_id):
+        return raw_id
+    stem = raw_id
+    if version_arg == "auto":
+        return full_game_id_for_stem(stem)
+    return full_game_id_for_stem(stem, version_arg)
 
 
 def get_game_id(default: str = "co01") -> str:
@@ -92,43 +106,90 @@ def get_game_id(default: str = "co01") -> str:
     return default
 
 
-def list_available_games():
-    """List all available games in environment_files directory."""
-    env_dir = Path(__file__).parent / "environment_files"
-
-    if not env_dir.exists():
-        print("Error: environment_files directory not found")
-        return
-
-    print("\nAvailable Games:")
+def _list_available_games_disk_scan(env_dir: Path) -> None:
+    """Fallback: walk ``environment_files`` and read ``metadata.json`` titles."""
+    print("\nAvailable Games (disk scan):")
     print("-" * 50)
 
-    games_found = []
+    games_found: list[str] = []
     for game_dir in sorted(env_dir.iterdir()):
-        if game_dir.is_dir():
-            game_id = game_dir.name
-            for version_dir in sorted(game_dir.iterdir()):
-                if version_dir.is_dir():
-                    metadata_file = version_dir / "metadata.json"
-                    title = game_id
-                    if metadata_file.exists():
-                        try:
-                            import json
+        if not game_dir.is_dir():
+            continue
+        game_id = game_dir.name
+        for version_dir in sorted(game_dir.iterdir()):
+            if not version_dir.is_dir():
+                continue
+            metadata_file = version_dir / "metadata.json"
+            title = game_id
+            if metadata_file.exists():
+                try:
+                    import json
 
-                            with open(metadata_file) as f:
-                                metadata = json.load(f)
-                            title = metadata.get("title", game_id)
-                        except Exception:
-                            pass
-                    print(f"  {game_id}-{version_dir.name}: {title}")
-                    games_found.append(f"{game_id}-{version_dir.name}")
+                    with open(metadata_file) as f:
+                        metadata = json.load(f)
+                    title = metadata.get("title", game_id)
+                except Exception:
+                    pass
+            print(f"  {game_id}-{version_dir.name}: {title}")
+            games_found.append(f"{game_id}-{version_dir.name}")
 
     print("-" * 50)
     print(f"\nTotal: {len(games_found)} game(s)")
     print("\nTo run a game:")
     print("  uv run python run_game.py --game <game_id> --version <version>")
     print("\nOr use environment variable:")
-    print("  ARC_GAME_ID=co01-v1 uv run python run_game.py")
+    print("  ARC_GAME_ID=co01-<ver> uv run python run_game.py")
+
+
+def list_available_games() -> None:
+    """List games under ``environment_files`` using the toolkit when possible.
+
+    Prefer :meth:`Arcade.get_environments` (see
+    https://docs.arcprize.org/toolkit/list-games); fall back to a directory walk
+    if the API is missing or fails.
+    """
+    env_dir = _ROOT / "environment_files"
+
+    if not env_dir.is_dir():
+        print("Error: environment_files directory not found")
+        return
+
+    games = None
+    err: BaseException | None = None
+    try:
+        arc = Arcade(
+            environments_dir=str(env_dir),
+            operation_mode=get_operation_mode(),
+        )
+        getter = getattr(arc, "get_environments", None)
+        if callable(getter):
+            games = getter()
+    except BaseException as e:
+        err = e
+
+    if games:
+        print("\nAvailable Games (Arcade.get_environments):")
+        print("  https://docs.arcprize.org/toolkit/list-games")
+        print("-" * 50)
+        infos = sorted(games, key=lambda g: g.game_id)
+        for info in infos:
+            print(f"  {info.game_id}: {info.title}")
+        print("-" * 50)
+        print(f"\nTotal: {len(infos)} game(s)")
+        print("\nTo run a game:")
+        print("  uv run python run_game.py --game <stem> --version auto")
+        print("\nOr full id / env:")
+        print("  ARC_GAME_ID=<game_id-from-above> uv run python run_game.py")
+        return
+
+    if err is not None:
+        print(f"get_environments() unavailable ({err!r}); using disk scan.\n")
+    elif games is not None:
+        print("get_environments() returned empty; using disk scan.\n")
+    else:
+        print("get_environments() not found on Arcade; using disk scan.\n")
+
+    _list_available_games_disk_scan(env_dir)
 
 
 def run_game(config: GameConfig) -> GameResult:
@@ -140,6 +201,11 @@ def run_game(config: GameConfig) -> GameResult:
 
     print(f"\nStarting {config.game_id} (seed={config.seed})")
     print(f"Operation mode: {operation_mode.name}")
+    rm = config.render_mode
+    print(
+        f"Toolkit render_mode: {rm!r} "
+        f"(https://docs.arcprize.org/toolkit/render-games)"
+    )
     print("=" * 50)
 
     arc = Arcade(
@@ -150,7 +216,7 @@ def run_game(config: GameConfig) -> GameResult:
     environment = arc.make(
         config.game_id,
         seed=config.seed,
-        render_mode="terminal" if config.render_terminal else None,
+        render_mode=config.render_mode,
     )
 
     if environment is None:
@@ -160,9 +226,26 @@ def run_game(config: GameConfig) -> GameResult:
     final_state = None
 
     try:
-        if config.mode == "terminal":
-            # Interactive mode
-            print("Controls: 1-4=Movement (scrambled!), 5-6=Special, q=Quit")
+        if config.mode == "human":
+            from human_play_matplotlib import run_interactive_matplotlib
+
+            print(
+                "Matplotlib window: WASD/Arrows = ACTION1–4, Space/F = ACTION5, "
+                "click = ACTION6 (0–63), Ctrl/Cmd+Z = undo, R = reset, Q = quit"
+            )
+            print("See https://docs.arcprize.org/actions")
+            print("-" * 50)
+            step_count = run_interactive_matplotlib(environment)
+            final_state = environment.observation_space
+
+        elif config.mode == "terminal":
+            # Interactive mode (optionally with arc.make(render_mode="human") — see human-toolkit)
+            print("Controls: 1-4=Movement, 5-6=Special, q=Quit")
+            if config.render_mode == "human":
+                print(
+                    "Toolkit render_mode=human: a matplotlib window will play each step’s "
+                    "frames, then close (https://docs.arcprize.org/toolkit/render-games)."
+                )
             print("-" * 50)
 
             while True:
@@ -250,19 +333,37 @@ def setup_argparser():
         formatter_class=argparse.RawDescriptionHelpFormatter,
         epilog="""
 Examples:
-  uv run python run_game.py --game co01 --version v1
-  uv run python run_game.py --game co01 --version v1 --mode auto --steps 50
+  uv run python run_game.py --game co01 --version auto
+  uv run python run_game.py --game co01 --mode auto --steps 50
+  uv run python run_game.py --game ls20 --mode auto --render-mode human
+  uv run python run_game.py --game sk01 --mode human
+  uv run python run_game.py --game sk01 --mode human-toolkit
   uv run python run_game.py --list
-  
+
+Render modes (https://docs.arcprize.org/toolkit/render-games):
+  default, none, terminal, terminal-fast, human
+
 Environment Variables:
-  ARC_GAME_ID=co01-v1        # Specify game ID
-  ARC_OPERATION_MODE=offline # Set operation mode (online/offline/normal)
+  ARC_GAME_ID=co01-<ver>     # Full game id from metadata
+  ARC_OPERATION_MODE=offline # online / offline / normal
+  ARC_API_KEY=...            # Required when OPERATION_MODE=online (see .env.example)
+
+Optional:
+  Repo-root .env is loaded at startup when python-dotenv is installed (bundled with arc-agi).
+
+Note:
+  No create_scorecard / scorecard_id / close_scorecard — use Arcade in a script or the quickstarter
+  for custom scorecards; toolkit: Create / Get / Close scorecard docs on docs.arcprize.org.
         """,
     )
 
     parser.add_argument("--game", "-g", type=str, help="Game ID (e.g., co01)")
     parser.add_argument(
-        "--version", "-v", type=str, default="v1", help="Game version (default: v1)"
+        "--version",
+        "-v",
+        type=str,
+        default="auto",
+        help="Version dir when --game is stem-only, or 'auto' for sole dir (default: auto)",
     )
     parser.add_argument(
         "--seed", "-s", type=int, default=0, help="Random seed (default: 0)"
@@ -271,9 +372,22 @@ Environment Variables:
         "--mode",
         "-m",
         type=str,
-        choices=["terminal", "auto"],
+        choices=["terminal", "auto", "human", "human-toolkit"],
         default="auto",
-        help="Mode: terminal (interactive) or auto (random actions, default)",
+        help=(
+            "Play: terminal (typed 1–6), human (repo interactive WASD/click), "
+            "human-toolkit (typed 1–6 + official render_mode=human), or auto (random)"
+        ),
+    )
+    parser.add_argument(
+        "--render-mode",
+        type=str,
+        choices=["default", "none", "terminal", "terminal-fast", "human"],
+        default="default",
+        help=(
+            "arc.make(render_mode=...): default=infer from --mode (terminal play uses "
+            "terminal; else none). Matches toolkit: terminal, terminal-fast, human, none."
+        ),
     )
     parser.add_argument(
         "--steps",
@@ -283,7 +397,10 @@ Environment Variables:
         help="Steps for auto mode (default: 100)",
     )
     parser.add_argument(
-        "--list", "-l", action="store_true", help="List all available games"
+        "--list",
+        "-l",
+        action="store_true",
+        help="List games (Arcade.get_environments; see docs.arcprize.org/toolkit/list-games)",
     )
 
     return parser
@@ -291,6 +408,7 @@ Environment Variables:
 
 def main():
     """Main entry point."""
+    _load_dotenv()
     parser = setup_argparser()
     args = parser.parse_args()
 
@@ -306,7 +424,23 @@ def main():
         parser.print_help()
         sys.exit(1)
 
-    full_game_id = _parse_game_id(game_id, args.version)
+    full_game_id = resolve_full_game_id(game_id, args.version)
+
+    # Resolve arc.make(render_mode=...) and which play loop runs.
+    play_mode = args.mode
+    if args.mode == "human":
+        # Repo interactive window only; skip toolkit human to avoid double matplotlib.
+        make_render_mode: str | None = None
+    elif args.mode == "human-toolkit":
+        # Official toolkit matplotlib playback after each step; same loop as terminal.
+        make_render_mode = "human"
+        play_mode = "terminal"
+    elif args.render_mode == "default":
+        make_render_mode = "terminal" if args.mode == "terminal" else None
+    elif args.render_mode == "none":
+        make_render_mode = None
+    else:
+        make_render_mode = args.render_mode
 
     # Create configuration
     config = GameConfig(
@@ -314,8 +448,8 @@ def main():
         version=args.version,
         seed=args.seed,
         steps=args.steps,
-        mode=args.mode,
-        render_terminal=True,
+        mode=play_mode,
+        render_mode=make_render_mode,
         operation_mode=get_operation_mode(),
     )
 

@@ -6,7 +6,7 @@ on:
     branches: [main]
     paths:
       - "GAMES.md"
-      - "update_readme_stats.py"
+      - "devtools/scripts/update_readme_stats.py"
       - ".github/workflows/readme-stats.yml"
   workflow_dispatch:
 
@@ -16,6 +16,7 @@ concurrency:
 
 permissions:
   contents: write
+  pull-requests: write
 
 jobs:
   refresh-readme:
@@ -24,16 +25,17 @@ jobs:
       - uses: actions/checkout@v4
 
       - name: Regenerate README stats
-        run: python3 update_readme_stats.py
+        run: python3 devtools/scripts/update_readme_stats.py
 
-      - name: Commit and push if changed
-        run: |
-          git config user.name "github-actions[bot]"
-          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          if git diff --quiet README.md; then
-            echo "README.md already up to date."
-          else
-            git add README.md
-            git commit -m "chore: refresh README game stats [skip ci]"
-            git push
-          fi
+      # main is protected (PR-only). Open/update a bot branch PR instead of pushing to main.
+      - name: Create Pull Request
+        uses: peter-evans/create-pull-request@v7
+        with:
+          commit-message: "chore: refresh README game stats [skip ci]"
+          branch: bot/readme-stats
+          title: "chore: refresh README game stats"
+          body: |
+            Automated README refresh from `devtools/scripts/update_readme_stats.py` (e.g. game count).
+
+            **Merge this PR** to update `main` — direct pushes are blocked by repository rules.
+          delete-branch: false

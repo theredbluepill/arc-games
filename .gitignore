@@ -3,8 +3,6 @@ notes/
 .env
 .DS_Store
 __pycache__/
-scripts/
-
 .worktrees/
 docs/
 
@@ -12,5 +10,9 @@ docs/
 arc_*-run_id_*.run.json
 arc_*.task.json
 
+# kaggle benchmarks zip files
 benchmarks.zip
 environment_files.zip
+
+# benchmarks/kaggle/export_kaggle_notebooks_all_stems.py (one notebook per stem)
+benchmarks/kaggle/notebooks/all/*.ipynb
