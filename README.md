@@ -1,4 +1,4 @@
-# ARC-Interactive (Community)
+# ARC-Interactive
 
 A collection of games for the ARC-AGI-3 benchmark.
 
