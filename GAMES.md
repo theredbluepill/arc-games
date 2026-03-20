@@ -1,5 +1,7 @@
 # Games
 
+Human-edited registry for this repo. To **enumerate installable packages** from `environment_files/` (full `game_id` + title), run `uv run python run_game.py --list` — it uses [`Arcade.get_environments()`](https://docs.arcprize.org/toolkit/list-games) when the toolkit supports it. In code: `Arcade(environments_dir="environment_files", operation_mode=OperationMode.OFFLINE).get_environments()`.
+
 | Game | Category | Grid | Levels | Description | Preview | Actions |
 |------|----------|------|--------|-------------|---------|---------|
 | ez01 | Tutorial / Movement Basics | 8×8 | 5 | Go UP to reach the target. | ![ez01](assets/ez01.gif) | • 1-4: Movement |

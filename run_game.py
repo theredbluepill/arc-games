@@ -93,36 +93,32 @@ def get_game_id(default: str = "co01") -> str:
     return default
 
 
-def list_available_games():
-    """List all available games in environment_files directory."""
-    env_dir = Path(__file__).parent / "environment_files"
-
-    if not env_dir.exists():
-        print("Error: environment_files directory not found")
-        return
-
-    print("\nAvailable Games:")
+def _list_available_games_disk_scan(env_dir: Path) -> None:
+    """Fallback: walk ``environment_files`` and read ``metadata.json`` titles."""
+    print("\nAvailable Games (disk scan):")
     print("-" * 50)
 
-    games_found = []
+    games_found: list[str] = []
     for game_dir in sorted(env_dir.iterdir()):
-        if game_dir.is_dir():
-            game_id = game_dir.name
-            for version_dir in sorted(game_dir.iterdir()):
-                if version_dir.is_dir():
-                    metadata_file = version_dir / "metadata.json"
-                    title = game_id
-                    if metadata_file.exists():
-                        try:
-                            import json
+        if not game_dir.is_dir():
+            continue
+        game_id = game_dir.name
+        for version_dir in sorted(game_dir.iterdir()):
+            if not version_dir.is_dir():
+                continue
+            metadata_file = version_dir / "metadata.json"
+            title = game_id
+            if metadata_file.exists():
+                try:
+                    import json
 
-                            with open(metadata_file) as f:
-                                metadata = json.load(f)
-                            title = metadata.get("title", game_id)
-                        except Exception:
-                            pass
-                    print(f"  {game_id}-{version_dir.name}: {title}")
-                    games_found.append(f"{game_id}-{version_dir.name}")
+                    with open(metadata_file) as f:
+                        metadata = json.load(f)
+                    title = metadata.get("title", game_id)
+                except Exception:
+                    pass
+            print(f"  {game_id}-{version_dir.name}: {title}")
+            games_found.append(f"{game_id}-{version_dir.name}")
 
     print("-" * 50)
     print(f"\nTotal: {len(games_found)} game(s)")
@@ -130,6 +126,57 @@ def list_available_games():
     print("  uv run python run_game.py --game <game_id> --version <version>")
     print("\nOr use environment variable:")
     print("  ARC_GAME_ID=co01-<ver> uv run python run_game.py")
+
+
+def list_available_games() -> None:
+    """List games under ``environment_files`` using the toolkit when possible.
+
+    Prefer :meth:`Arcade.get_environments` (see
+    https://docs.arcprize.org/toolkit/list-games); fall back to a directory walk
+    if the API is missing or fails.
+    """
+    env_dir = _ROOT / "environment_files"
+
+    if not env_dir.is_dir():
+        print("Error: environment_files directory not found")
+        return
+
+    games = None
+    err: BaseException | None = None
+    try:
+        arc = Arcade(
+            environments_dir=str(env_dir),
+            operation_mode=get_operation_mode(),
+        )
+        getter = getattr(arc, "get_environments", None)
+        if callable(getter):
+            games = getter()
+    except BaseException as e:
+        err = e
+
+    if games:
+        print("\nAvailable Games (Arcade.get_environments):")
+        print("  https://docs.arcprize.org/toolkit/list-games")
+        print("-" * 50)
+        infos = sorted(games, key=lambda g: g.game_id)
+        for info in infos:
+            print(f"  {info.game_id}: {info.title}")
+        print("-" * 50)
+        print(f"\nTotal: {len(infos)} game(s)")
+        print("\nTo run a game:")
+        print("  uv run python run_game.py --game <stem> --version auto")
+        print("\nOr full id / env:")
+        print("  ARC_GAME_ID=<game_id-from-above> uv run python run_game.py")
+        return
+
+    if err is not None:
+        print(f"get_environments() unavailable ({err!r}); using disk scan.\n")
+    elif games is not None:
+        print("get_environments() returned empty; using disk scan.\n")
+    else:
+        print("get_environments() not found on Arcade; using disk scan.\n")
+
+    _list_available_games_disk_scan(env_dir)
 
 
 def run_game(config: GameConfig) -> GameResult:
@@ -329,7 +376,10 @@ Environment Variables:
         help="Steps for auto mode (default: 100)",
     )
     parser.add_argument(
-        "--list", "-l", action="store_true", help="List all available games"
+        "--list",
+        "-l",
+        action="store_true",
+        help="List games (Arcade.get_environments; see docs.arcprize.org/toolkit/list-games)",
     )
 
     return parser
