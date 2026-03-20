@@ -42,16 +42,22 @@ def count_games_registry_rows() -> int:
 
 
 def typing_svg_banner_url(registry: int, packages: int) -> str:
-    """Animated typing banner (SVG as image; loops on GitHub README via img tag)."""
+    """Animated typing banner (SVG as image; loops on GitHub README via img tag).
+
+    readme-typing-svg only loads Google Fonts; **VT323** is the closest built-in
+    match to a chunky PC/BigBlue-style terminal. (BigBlue Terminal itself is not
+    on Google Fonts.)
+    """
     lines = f"{registry} games in GAMES.md;{packages} runnable packages"
     params = {
         "lines": lines,
-        "font": "Fira Code",
+        "font": "VT323",
+        "size": "28",
         "pause": "900",
         "duration": "2600",
         "color": "58A6FF",
         "center": "true",
-        "width": "520",
+        "width": "560",
         "repeat": "true",
     }
     return f"https://readme-typing-svg.demolab.com/?{urlencode(params)}"
