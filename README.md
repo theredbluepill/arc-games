@@ -1,13 +1,12 @@
-# ARC-AGI-3 Games
+# ARC-Interactive (Community)
 
 A collection of games for the ARC-AGI-3 benchmark.
 
-<!-- Auto-updated on push to `main` when `GAMES.md` or `environment_files/` change (see `.github/workflows/readme-stats.yml`). -->
+<!-- Auto-updated on push to `main` when `GAMES.md` changes (see `.github/workflows/readme-stats.yml`). -->
 <!-- readme-stats:begin -->
 
-<!-- Typing animation: readme-typing-svg.demolab.com (external); multiline stack (no wipe). -->
 <p align="center">
-  <img src="https://readme-typing-svg.demolab.com/?lines=44+games+in+GAMES.md%3B47+runnable+packages+in+environment_files%2F%3BCounts+differ+%E2%80%94+sync+GAMES.md+with+disk&font=VT323&size=28&pause=700&duration=2200&color=58A6FF&center=true&vCenter=true&width=600&height=127&multiline=true&repeat=true" alt="44 games in GAMES.md; 47 runnable packages in environment_files/; registry and disk counts differ" />
+  <strong>44</strong> games in Game Registry
 </p>
 
 <!-- readme-stats:end -->

@@ -1,4 +1,4 @@
-# Refreshes the <!-- readme-stats:begin/end --> block in README.md (game counts).
+# Refreshes the <!-- readme-stats:begin/end --> block in README.md (registry game count).
 name: README statistics
 
 on:
@@ -6,7 +6,6 @@ on:
     branches: [main]
     paths:
       - "GAMES.md"
-      - "environment_files/**"
       - "update_readme_stats.py"
       - ".github/workflows/readme-stats.yml"
   workflow_dispatch:
