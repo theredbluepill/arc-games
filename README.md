@@ -58,9 +58,15 @@ Play by hand (matplotlib window):
 uv run python run_game.py --game sk01 --version auto --mode human
 ```
 
-## Kaggle Benchmarks
+## Benchmarks
 
-From the repo root, generate task notebooks (then attach a dataset with **`environment_files/`** and publish tasks on Kaggle as in [`benchmarks/README.md`](benchmarks/README.md)):
+### Official ARC-AGI-3 (ARC Prize)
+
+The primary benchmark and leaderboard for interactive reasoning is **[ARC-AGI-3](https://arcprize.org/arc-agi/3/)** from [ARC Prize](https://arcprize.org): 1,000+ levels across 150+ environments, scored partly on **action efficiency** (how many steps to the goal vs. humans). This repo ships **public environment** games compatible with that ecosystem; see the site for competition rules, toolkit, and human baselines.
+
+### Kaggle
+
+Community or parallel evaluation can use Kaggle-style task notebooks derived from this tree. From the repo root, generate notebooks (then attach a dataset with **`environment_files/`** and publish tasks on Kaggle as in [`benchmarks/README.md`](benchmarks/README.md)):
 
 ```bash
 # Four canonical tasks → benchmarks/kaggle/notebooks/*.ipynb
