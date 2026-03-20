@@ -2,6 +2,16 @@
 
 A collection of games for the ARC-AGI-3 benchmark.
 
+<p align="center">
+  <strong>mm01</strong> · <strong>sk01</strong> · <strong>tb01</strong><br/>
+  <sub>Memory Match · Sokoban · Bridge Builder</sub><br/><br/>
+  <img src="assets/mm01.gif" alt="mm01 Memory Match" width="168" />
+  &nbsp;
+  <img src="assets/sk01.gif" alt="sk01 Sokoban" width="168" />
+  &nbsp;
+  <img src="assets/tb01.gif" alt="tb01 Bridge Builder" width="168" />
+</p>
+
 <!-- Auto-updated on push to `main` when `GAMES.md` changes (see `.github/workflows/readme-stats.yml`). -->
 <!-- readme-stats:begin -->
 
