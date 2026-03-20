@@ -8,11 +8,15 @@ from arcengine import (
 
 
 class Tp01UI(RenderableUserDisplay):
-    def __init__(self, level_index: int) -> None:
-        self._level_index = level_index
+    """Bidirectional pairs: magenta badge + pair-count ticks + ↔ hint (white flanking)."""
 
-    def update(self, level_index: int) -> None:
-        self._level_index = level_index
+    def __init__(self, difficulty: int, n_pairs: int) -> None:
+        self._difficulty = difficulty
+        self._n_pairs = n_pairs
+
+    def update(self, difficulty: int, n_pairs: int) -> None:
+        self._difficulty = difficulty
+        self._n_pairs = n_pairs
 
     def render_interface(self, frame):
         import numpy as np
@@ -20,9 +24,20 @@ class Tp01UI(RenderableUserDisplay):
         if not isinstance(frame, np.ndarray):
             return frame
         h, w = frame.shape
+        # 2×2 magenta = both link ends stay active (contrast tp03 burn)
         for dy in range(2):
             for dx in range(2):
                 frame[h - 3 + dy, w - 4 + dx] = 7
+        # ↔ : white caps flanking the block
+        frame[h - 3, w - 5] = 1
+        frame[h - 3, w - 2] = 1
+        # Pair count (magenta ticks)
+        for i in range(min(6, max(0, self._n_pairs))):
+            frame[h - 1, 1 + i] = 7
+        # Difficulty accent (level hue)
+        palette = [10, 11, 12, 14, 15]
+        d = max(0, min(len(palette) - 1, self._difficulty - 1))
+        frame[h - 2, 1] = palette[d]
         return frame
 
 
@@ -66,72 +81,70 @@ def lvl(sprites_list, grid_size, difficulty, portal_pairs):
     )
 
 
+# Each level has a **full** wall barrier so the yellow goal is unreachable without
+# stepping through a magenta portal pair (bidirectional warp).
 levels = [
     lvl(
         [
             sprites["player"].clone().set_position(0, 3),
             sprites["portal"].clone().set_position(2, 3),
-            sprites["portal"].clone().set_position(6, 3),
-            sprites["target"].clone().set_position(7, 3),
-        ],
+            sprites["portal"].clone().set_position(5, 3),
+            sprites["target"].clone().set_position(6, 3),
+        ]
+        + [sprites["wall"].clone().set_position(4, y) for y in range(8)],
         (8, 8),
         1,
-        [[(2, 3), (6, 3)]],
+        [[(2, 3), (5, 3)]],
     ),
     lvl(
         [
             sprites["player"].clone().set_position(1, 1),
-            sprites["portal"].clone().set_position(1, 5),
-            sprites["portal"].clone().set_position(5, 5),
-            sprites["target"].clone().set_position(6, 1),
+            sprites["portal"].clone().set_position(2, 2),
+            sprites["portal"].clone().set_position(4, 2),
+            sprites["target"].clone().set_position(6, 6),
         ]
-        + [sprites["wall"].clone().set_position(3, y) for y in range(6)],
+        + [sprites["wall"].clone().set_position(3, y) for y in range(8)],
         (8, 8),
         2,
-        [[(1, 5), (5, 5)]],
+        [[(2, 2), (4, 2)]],
     ),
     lvl(
         [
-            sprites["player"].clone().set_position(0, 0),
-            sprites["portal"].clone().set_position(2, 0),
-            sprites["portal"].clone().set_position(6, 4),
-            sprites["portal"].clone().set_position(2, 6),
-            sprites["portal"].clone().set_position(6, 6),
-            sprites["target"].clone().set_position(7, 7),
+            sprites["player"].clone().set_position(1, 3),
+            sprites["portal"].clone().set_position(2, 1),
+            sprites["portal"].clone().set_position(5, 5),
+            sprites["portal"].clone().set_position(2, 5),
+            sprites["portal"].clone().set_position(5, 1),
+            sprites["target"].clone().set_position(6, 4),
         ]
-        + [sprites["wall"].clone().set_position(4, y) for y in range(8) if y != 3],
+        + [sprites["wall"].clone().set_position(4, y) for y in range(8)],
         (8, 8),
         3,
-        [[(2, 0), (6, 4)], [(2, 6), (6, 6)]],
+        [[(2, 1), (5, 5)], [(2, 5), (5, 1)]],
     ),
     lvl(
         [
-            sprites["player"].clone().set_position(0, 4),
+            sprites["player"].clone().set_position(1, 4),
             sprites["portal"].clone().set_position(2, 4),
             sprites["portal"].clone().set_position(8, 4),
-            sprites["target"].clone().set_position(9, 0),
+            sprites["target"].clone().set_position(9, 2),
         ]
-        + [sprites["wall"].clone().set_position(5, y) for y in range(8) if y != 4],
+        + [sprites["wall"].clone().set_position(5, y) for y in range(8)],
         (10, 8),
         4,
         [[(2, 4), (8, 4)]],
     ),
     lvl(
         [
-            sprites["player"].clone().set_position(1, 1),
-            sprites["portal"].clone().set_position(3, 1),
-            sprites["portal"].clone().set_position(5, 5),
-            sprites["portal"].clone().set_position(1, 5),
-            sprites["portal"].clone().set_position(5, 1),
-            sprites["target"].clone().set_position(6, 6),
+            sprites["player"].clone().set_position(1, 2),
+            sprites["portal"].clone().set_position(2, 3),
+            sprites["portal"].clone().set_position(2, 5),
+            sprites["target"].clone().set_position(7, 6),
         ]
-        + [
-            sprites["wall"].clone().set_position(x, y)
-            for x, y in [(2, 2), (4, 2), (2, 4), (4, 4)]
-        ],
+        + [sprites["wall"].clone().set_position(x, 4) for x in range(8)],
         (8, 8),
         5,
-        [[(3, 1), (5, 5)], [(1, 5), (5, 1)]],
+        [[(2, 3), (2, 5)]],
     ),
 ]
 
@@ -140,10 +153,10 @@ PADDING_COLOR = 4
 
 
 class Tp01(ARCBaseGame):
-    """Step on magenta portals to warp to their paired tile; reach the yellow goal."""
+    """Symmetric portal pairs: either tile warps to its partner (same rule both ways)."""
 
     def __init__(self) -> None:
-        self._ui = Tp01UI(0)
+        self._ui = Tp01UI(0, 0)
         super().__init__(
             "tp01",
             levels,
@@ -162,7 +175,7 @@ class Tp01(ARCBaseGame):
             ta, tb = tuple(a), tuple(b)
             self._portal_to_partner[ta] = tb
             self._portal_to_partner[tb] = ta
-        self._ui.update(level.get_data("difficulty") or 0)
+        self._ui.update(level.get_data("difficulty") or 0, len(pairs))
 
     def step(self) -> None:
         dx = 0

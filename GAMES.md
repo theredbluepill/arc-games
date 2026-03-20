@@ -23,15 +23,15 @@ Human-edited registry for this repo. To **enumerate installable packages** from 
 | rs01 | Cognitive Flexibility / Rule Switching | 8-16 | 5 | Rule Switcher. Collect colored targets that match the signpost color at top. Wrong color = lose. After all colors cycle through as safe, collect remaining targets. Tests cognitive flexibility and rule adaptation. | ![rs01](assets/rs01.gif) | • 1-4: Movement |
 | pb01 | Environmental Manipulation | 8-10 | 5 | One-box push. Single crate and one goal per level; push the block onto the yellow pad. Step limit exceeded = lose. | ![pb01](assets/pb01.gif) | • 1-4: Movement |
 | fs01 | Puzzle Mechanics | 8-10 | 5 | Floor switches. Step on every yellow pressure plate (any order) to open the gray door, then reach the green goal. | ![fs01](assets/fs01.gif) | • 1-4: Movement |
-| tp01 | Puzzle Mechanics | 8-10 | 5 | Teleporters. Paired magenta portals warp you to each other; reach the yellow goal. | ![tp01](assets/tp01.gif) | • 1-4: Movement |
-| ic01 | Puzzle Mechanics | 8-10 | 5 | Ice slide. Each move slides in a straight line until a wall or red hazard stops you; reach the yellow goal. | ![ic01](assets/ic01.gif) | • 1-4: Movement |
+| tp01 | Puzzle Mechanics | 8-10 | 5 | **Symmetric** teleporters: either end of a pair warps to the other (HUD: ↔ + pair ticks). Reach the yellow goal. | ![tp01](assets/tp01.gif) | • 1-4: Movement |
+| ic01 | Puzzle Mechanics | 8-10 | 5 | **Ice slide:** one movement action = **slide in a straight line** until the next cell would be **OOB**, a **wall**, or a **red hazard** (you **stop before** entering those). **Yellow goal does not block** a slide—you can land on it mid-slide; a **wall past the goal** forces a stop on the goal tile. Corner HUD: **light blue** = ice, **yellow** = standing on goal. | ![ic01](assets/ic01.gif) | • 1-4: Movement |
 | va01 | Coverage / Path | 4-8 | 5 | Visit all. Walk on every walkable floor cell at least once to clear the level. | ![va01](assets/va01.gif) | • 1-4: Movement |
 | pb02 | Environmental Manipulation | 8-10 | 5 | Two crates, two yellow goals; push both blocks onto pads (sk01-style). | ![pb02](assets/pb02.gif) | • 1-4: Movement |
 | pb03 | Environmental Manipulation | 8-10 | 5 | Decoy orange pad — pushing a crate onto it loses; real goals stay yellow. | ![pb03](assets/pb03.gif) | • 1-4: Movement |
-| fs02 | Puzzle Mechanics | 8-10 | 5 | Floor switches **OR**: stepping on **any** plate opens the door (not all plates). | ![fs02](assets/fs02.gif) | • 1-4: Movement |
-| fs03 | Puzzle Mechanics | 8-10 | 5 | Floor switches **sequence**: plates must be stepped in **level sprite order**. | ![fs03](assets/fs03.gif) | • 1-4: Movement |
-| tp02 | Puzzle Mechanics | 8-10 | 5 | **Directed** warps only (`directed_pairs` in level data); no reverse hop from destination. | ![tp02](assets/tp02.gif) | • 1-4: Movement |
-| tp03 | Puzzle Mechanics | 8-10 | 5 | **Single-use** portals — both tiles removed after one warp. | ![tp03](assets/tp03.gif) | • 1-4: Movement |
+| fs02 | Puzzle Mechanics | 8-10 | 5 | Floor switches **OR**: **orange** plates — stepping on **any one** opens the door (redundant branches, not a count). | ![fs02](assets/fs02.gif) | • 1-4: Movement |
+| fs03 | Puzzle Mechanics | 8-10 | 5 | Floor switches **k-of-n**: step on **k** distinct **yellow** plates (**any order**); **k** = `required_plates` in level data (corner HUD shows **k** ticks). Extras optional. | ![fs03](assets/fs03.gif) | • 1-4: Movement |
+| tp02 | Puzzle Mechanics | 8-10 | 5 | **One-way** teleporters (`directed_pairs`): only the source tile warps; orange HUD arrows mark sources + exit direction. | ![tp02](assets/tp02.gif) | • 1-4: Movement |
+| tp03 | Puzzle Mechanics | 8-10 | 5 | **Single-use** links: each pair vanishes after one warp (HUD: remaining pair ticks + burn flash on landing). | ![tp03](assets/tp03.gif) | • 1-4: Movement |
 | ic02 | Puzzle Mechanics | 8-10 | 5 | **Torus** ice slide: wraps at grid edges until a wall/hazard stops you. | ![ic02](assets/ic02.gif) | • 1-4: Movement |
 | ic03 | Puzzle Mechanics | 8-10 | 5 | **Capped** slide: each move travels at most `slide_cap` cells (`level.data`). | ![ic03](assets/ic03.gif) | • 1-4: Movement |
 | va02 | Coverage / Path | 4-8 | 5 | Visit every **non-hazard** floor cell; red hazard cells never need coverage. | ![va02](assets/va02.gif) | • 1-4: Movement |

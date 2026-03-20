@@ -8,13 +8,70 @@ from arcengine import (
 
 
 class Tp03UI(RenderableUserDisplay):
-    def __init__(self, _: int) -> None:
-        pass
+    """Single-use pairs: yellow pair-budget ticks + white burn flash on warp exit."""
 
-    def update(self, _: int) -> None:
-        pass
+    CAMERA_W = 16
+    CAMERA_H = 16
+
+    def __init__(self) -> None:
+        self._pairs_left = 0
+        self._difficulty = 1
+        self._burn_gx = -1
+        self._burn_gy = -1
+        self._burn_frames = 0
+
+    def update(self, pairs_left: int, difficulty: int) -> None:
+        self._pairs_left = max(0, pairs_left)
+        self._difficulty = difficulty
+
+    def start_burn(self, gx: int, gy: int) -> None:
+        self._burn_gx = gx
+        self._burn_gy = gy
+        self._burn_frames = 6
+
+    @classmethod
+    def _grid_to_frame_pixel(cls, gx: int, gy: int) -> tuple[int, int]:
+        cw, ch = cls.CAMERA_W, cls.CAMERA_H
+        scale = min(64 // cw, 64 // ch)
+        x_pad = (64 - cw * scale) // 2
+        y_pad = (64 - ch * scale) // 2
+        return gx * scale + scale // 2 + x_pad, gy * scale + scale // 2 + y_pad
+
+    @staticmethod
+    def _plot(frame, h: int, w: int, px: int, py: int, c: int) -> None:
+        if 0 <= px < w and 0 <= py < h:
+            frame[py, px] = c
 
     def render_interface(self, frame):
+        import numpy as np
+
+        if not isinstance(frame, np.ndarray):
+            return frame
+        h, w = frame.shape
+        # “Consumable” cue: dim cross-out vs tp01’s solid 2×2 badge
+        for dy in range(2):
+            for dx in range(2):
+                frame[h - 3 + dy, w - 4 + dx] = 3
+        frame[h - 3, w - 3] = 11
+
+        pal = [10, 11, 12, 14, 15]
+        di = max(0, min(len(pal) - 1, self._difficulty - 1))
+        self._plot(frame, h, w, w - 2, h - 3, pal[di])
+
+        for i in range(min(8, self._pairs_left)):
+            self._plot(frame, h, w, 2 + i, h - 1, 11)
+
+        if self._burn_frames > 0 and self._burn_gx >= 0:
+            cx, cy = self._grid_to_frame_pixel(self._burn_gx, self._burn_gy)
+            c = 1 if self._burn_frames > 3 else 11
+            for dy in range(-2, 3):
+                for dx in range(-2, 3):
+                    if max(abs(dx), abs(dy)) in (1, 2):
+                        self._plot(frame, h, w, cx + dx, cy + dy, c)
+            self._burn_frames -= 1
+        else:
+            self._burn_frames = 0
+
         return frame
 
 
@@ -124,10 +181,10 @@ PADDING_COLOR = 4
 
 
 class Tp03(ARCBaseGame):
-    """Bidirectional portals like tp01, but each pair works only once; portals are removed after use."""
+    """Symmetric pairs like tp01, but each link **burns out**: both cells clear after one warp."""
 
     def __init__(self) -> None:
-        self._ui = Tp03UI(0)
+        self._ui = Tp03UI()
         super().__init__(
             "tp03",
             levels,
@@ -146,6 +203,11 @@ class Tp03(ARCBaseGame):
             ta, tb = tuple(a), tuple(b)
             self._portal_to_partner[ta] = tb
             self._portal_to_partner[tb] = ta
+        self._sync_ui()
+
+    def _sync_ui(self) -> None:
+        left = len(self._portal_to_partner) // 2
+        self._ui.update(left, self.current_level.get_data("difficulty") or 1)
 
     def _purge_pair(self, src: tuple[int, int], dest: tuple[int, int]) -> None:
         for sp in list(self.current_level.get_sprites_by_tag("portal")):
@@ -191,6 +253,8 @@ class Tp03(ARCBaseGame):
             dest = self._portal_to_partner[pos]
             self._purge_pair(pos, dest)
             self._player.set_position(dest[0], dest[1])
+            self._ui.start_burn(dest[0], dest[1])
+            self._sync_ui()
 
         for t in self._targets:
             if self._player.x == t.x and self._player.y == t.y:

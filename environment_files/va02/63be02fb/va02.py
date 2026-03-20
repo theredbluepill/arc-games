@@ -94,7 +94,8 @@ levels = [
     ),
     mk(
         [
-            sprites["player"].clone().set_position(0, 0),
+            sprites["player"].clone().set_position(3, 3),
+            sprites["hazard"].clone().set_position(0, 0),
             sprites["hazard"].clone().set_position(1, 0),
             sprites["hazard"].clone().set_position(0, 1),
         ],

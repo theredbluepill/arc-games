@@ -1,7 +1,7 @@
 {
   "game_id": "fs02-63be02fb",
   "title": "Floor Switches OR",
-  "description": "Any one pressure plate opens the door; then reach the green goal.",
+  "description": "Orange pressure plates: stepping on any one opens the door (redundant branches); then reach the green goal.",
   "default_fps": 20,
   "baseline_actions": [
     15

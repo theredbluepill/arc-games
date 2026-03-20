@@ -8,11 +8,16 @@ from arcengine import (
 
 
 class Fs02UI(RenderableUserDisplay):
-    def __init__(self, door_open: bool) -> None:
-        self._door_open = door_open
+    """One HUD slot per plate (cap 4): orange while closed, green when any plate opened the door."""
 
-    def update(self, door_open: bool) -> None:
+    def __init__(self, door_open: bool, n_plates: int) -> None:
         self._door_open = door_open
+        self._n = min(max(n_plates, 1), 4)
+
+    def update(self, door_open: bool, n_plates: int | None = None) -> None:
+        self._door_open = door_open
+        if n_plates is not None:
+            self._n = min(max(n_plates, 1), 4)
 
     def render_interface(self, frame):
         import numpy as np
@@ -20,10 +25,11 @@ class Fs02UI(RenderableUserDisplay):
         if not isinstance(frame, np.ndarray):
             return frame
         h, w = frame.shape
-        color = 14 if self._door_open else 11
-        for dy in range(4):
-            for dx in range(4):
-                frame[h - 4 + dy, w - 4 + dx] = color
+        color = 14 if self._door_open else 12
+        for i in range(self._n):
+            for dy in range(2):
+                for dx in range(2):
+                    frame[h - 4 + dy, w - 8 + i * 2 + dx] = color
         return frame
 
 
@@ -36,7 +42,7 @@ sprites = {
         tags=["player"],
     ),
     "switch": Sprite(
-        pixels=[[11]],
+        pixels=[[12]],
         name="switch",
         visible=True,
         collidable=False,
@@ -74,13 +80,15 @@ def mk(sl, grid_size, difficulty):
     )
 
 
+# OR rule + orange plates: several redundant branches; stepping on **any one** opens the door.
 levels = [
     mk(
         [
             sprites["player"].clone().set_position(0, 3),
-            sprites["switch"].clone().set_position(2, 3),
-            sprites["switch"].clone().set_position(6, 3),
-            sprites["door"].clone().set_position(4, 3),
+            sprites["switch"].clone().set_position(2, 1),
+            sprites["switch"].clone().set_position(2, 5),
+            sprites["switch"].clone().set_position(1, 3),
+            sprites["door"].clone().set_position(5, 3),
             sprites["target"].clone().set_position(7, 3),
         ],
         (8, 8),
@@ -88,49 +96,71 @@ levels = [
     ),
     mk(
         [
-            sprites["player"].clone().set_position(1, 1),
-            sprites["switch"].clone().set_position(1, 5),
-            sprites["switch"].clone().set_position(5, 1),
-            sprites["door"].clone().set_position(3, 3),
-            sprites["target"].clone().set_position(6, 6),
+            sprites["player"].clone().set_position(1, 4),
+            sprites["switch"].clone().set_position(1, 1),
+            sprites["switch"].clone().set_position(6, 1),
+            sprites["switch"].clone().set_position(6, 6),
+            sprites["door"].clone().set_position(4, 4),
+            sprites["target"].clone().set_position(4, 7),
         ]
-        + [sprites["wall"].clone().set_position(x, 2) for x in range(8) if x != 3],
+        + [
+            sprites["wall"].clone().set_position(x, 3)
+            for x in range(8)
+            if x not in (1, 4, 6)
+        ],
         (8, 8),
         2,
     ),
     mk(
         [
             sprites["player"].clone().set_position(0, 0),
-            sprites["switch"].clone().set_position(2, 0),
-            sprites["switch"].clone().set_position(0, 2),
-            sprites["door"].clone().set_position(4, 1),
-            sprites["target"].clone().set_position(7, 1),
+            sprites["switch"].clone().set_position(3, 0),
+            sprites["switch"].clone().set_position(0, 4),
+            sprites["switch"].clone().set_position(3, 4),
+            sprites["door"].clone().set_position(6, 2),
+            sprites["target"].clone().set_position(9, 2),
         ]
-        + [sprites["wall"].clone().set_position(3, y) for y in range(8) if y != 1],
-        (8, 8),
+        + [sprites["wall"].clone().set_position(5, y) for y in range(5) if y != 2],
+        (10, 5),
         3,
     ),
     mk(
         [
-            sprites["player"].clone().set_position(1, 4),
-            sprites["switch"].clone().set_position(2, 2),
-            sprites["switch"].clone().set_position(2, 6),
-            sprites["door"].clone().set_position(5, 4),
-            sprites["target"].clone().set_position(8, 4),
+            sprites["player"].clone().set_position(1, 3),
+            sprites["switch"].clone().set_position(4, 1),
+            sprites["switch"].clone().set_position(7, 3),
+            sprites["switch"].clone().set_position(4, 5),
+            sprites["door"].clone().set_position(4, 3),
+            sprites["target"].clone().set_position(4, 7),
         ]
-        + [sprites["wall"].clone().set_position(4, y) for y in range(8) if y != 4],
-        (10, 8),
+        + [
+            sprites["wall"].clone().set_position(x, 2)
+            for x in range(9)
+            if x not in (1, 4, 7)
+        ]
+        + [
+            sprites["wall"].clone().set_position(x, 4)
+            for x in range(9)
+            if x not in (1, 4, 7)
+        ],
+        (9, 8),
         4,
     ),
     mk(
         [
             sprites["player"].clone().set_position(0, 7),
-            sprites["switch"].clone().set_position(1, 1),
-            sprites["switch"].clone().set_position(6, 1),
+            sprites["switch"].clone().set_position(2, 2),
+            sprites["switch"].clone().set_position(5, 2),
+            sprites["switch"].clone().set_position(2, 5),
+            sprites["switch"].clone().set_position(5, 5),
             sprites["door"].clone().set_position(3, 4),
             sprites["target"].clone().set_position(7, 4),
         ]
-        + [sprites["wall"].clone().set_position(x, 4) for x in range(8) if x not in (3, 4)],
+        + [
+            sprites["wall"].clone().set_position(x, 4)
+            for x in range(8)
+            if x not in (3, 4, 7)
+        ],
         (8, 8),
         5,
     ),
@@ -141,10 +171,10 @@ PADDING_COLOR = 4
 
 
 class Fs02(ARCBaseGame):
-    """OR: stepping on any one pressure plate opens the door; then reach the goal."""
+    """OR: **any one** orange pressure plate opens the door; redundant plates, not a count puzzle."""
 
     def __init__(self) -> None:
-        self._ui = Fs02UI(False)
+        self._ui = Fs02UI(False, 1)
         super().__init__(
             "fs02",
             levels,
@@ -160,13 +190,14 @@ class Fs02(ARCBaseGame):
         self._switch_positions = frozenset((s.x, s.y) for s in self._switches)
         self._door = self.current_level.get_sprites_by_tag("door")
         self._targets = self.current_level.get_sprites_by_tag("target")
+        self._ui.update(False, len(self._switches))
 
     def _open_door(self) -> None:
         if self._door:
             for d in list(self._door):
                 self.current_level.remove_sprite(d)
             self._door = []
-        self._ui.update(True)
+        self._ui.update(True, len(self._switches))
 
     def step(self) -> None:
         dx = 0

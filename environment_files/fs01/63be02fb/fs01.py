@@ -100,7 +100,11 @@ levels = [
             sprites["door"].clone().set_position(3, 3),
             sprites["target"].clone().set_position(6, 6),
         ]
-        + [sprites["wall"].clone().set_position(x, 2) for x in range(8) if x != 3],
+        + [
+            sprites["wall"].clone().set_position(x, 2)
+            for x in range(8)
+            if x not in (1, 3)
+        ],
         (8, 8),
         2,
     ),
@@ -139,7 +143,11 @@ levels = [
             sprites["door"].clone().set_position(3, 4),
             sprites["target"].clone().set_position(7, 4),
         ]
-        + [sprites["wall"].clone().set_position(x, 4) for x in range(8) if x != 3 and x != 4],
+        + [
+            sprites["wall"].clone().set_position(x, 4)
+            for x in range(8)
+            if x not in (3, 4, 7)
+        ],
         (8, 8),
         5,
     ),
@@ -219,7 +227,12 @@ class Fs01(ARCBaseGame):
 
         pos = (self._player.x, self._player.y)
         if pos in self._switch_positions:
-            self._activated.add(pos)
+            if pos not in self._activated:
+                self._activated.add(pos)
+                for sw in self._switches:
+                    if sw.x == pos[0] and sw.y == pos[1]:
+                        sw.color_remap(11, 10)
+                        break
             self._open_door_if_ready()
 
         for t in self._targets:
