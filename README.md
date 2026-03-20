@@ -1,6 +1,6 @@
 # ARC-Interactive
 
-A collection of games for the ARC-AGI-3 benchmark.
+A collection of community games for the ARC-AGI-3 benchmark.
 
 <table align="center">
   <tr>
@@ -42,6 +42,10 @@ A collection of games for the ARC-AGI-3 benchmark.
 > — François Chollet, *[On the Measure of Intelligence](https://arxiv.org/abs/1911.01547)* (2019)
 
 These games are designed to be easy for humans to solve, but very hard for modern AI systems—including frontier large language models. Together they stress reasoning, planning, and interactive control rather than memorized puzzle templates.
+
+## Why use ARC-Interactive?
+
+Low-key reasons—it may or may not fit your workflow: you can create games quickly with the patterns in [`AGENTS.md`](AGENTS.md) and the create-game skill (static levels are enough); games land in a community pool through normal repo contributions, so you can fork and share layouts; many stems live in one tree, so the catalog grows with `main` and is handy for probing mechanics; locally, `run_game.py --mode human` (matplotlib) gives a human-friendly play loop before you automate; and Arcade plus `environment_files/` matches ARC-AGI / ARCEngine expectations.
 
 ## Quickstart
 
