@@ -1,5 +1,9 @@
 """
-Kaggle notebook template for ARC benchmark tasks (ez01, sk01, tt01, sv01).
+Kaggle notebook template for ARC benchmark tasks (ez01, sk01, tt01, sv01, …).
+
+Shared runtime code lives between ``# <<<KAGGLE_TASK_SHARED_BEGIN>>>`` and
+``# <<<KAGGLE_TASK_SHARED_END>>>``; ``export_kaggle_notebooks_all_stems.py`` slices
+that block once per stem under ``environment_files/``.
 
 Copy cells from this file into a new task notebook at:
 https://www.kaggle.com/benchmarks/tasks/new
@@ -7,7 +11,9 @@ https://www.kaggle.com/benchmarks/tasks/new
 Paste the **bootstrap** from ``notebooks/README.md`` (``pip`` / ``uv run`` for
 Python 3.11 papermill) above or below this task code in the Kaggle notebook.
 Optionally run ``python3 benchmarks/kaggle/rebuild_kaggle_notebooks.py`` to emit
-``notebooks/*.ipynb`` (markdown + embedded task + bootstrap).
+``notebooks/*.ipynb`` (markdown + embedded task + bootstrap), or
+``uv run python benchmarks/kaggle/export_kaggle_notebooks_all_stems.py`` for
+``notebooks/all/arc-interactive-<stem>.ipynb``.
 
 Prerequisites:
   1. Add a dataset that includes the full ``environment_files/`` tree (or at least
@@ -25,6 +31,7 @@ For multiple tasks, duplicate the notebook or add cells that call each
 # !pip install -q arc-agi arcengine
 
 # --- Cell 2: Task and wrapper ---
+# <<<KAGGLE_TASK_SHARED_BEGIN>>>  (used by rebuild_kaggle_notebooks.py / export_kaggle_notebooks_all_stems.py)
 import sys
 from pathlib import Path
 
@@ -204,6 +211,8 @@ def run_game_with_llm(arc, game_id, llm, seed=0, max_steps=50, grid_size=8, acti
             break
         levels_completed = getattr(obs, "levels_completed", levels_completed) or levels_completed
     return levels_completed, steps_used, obs
+
+# <<<KAGGLE_TASK_SHARED_END>>>
 
 
 @kbench.task(name="arc_ez01_go_up")

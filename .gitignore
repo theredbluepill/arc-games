@@ -13,3 +13,6 @@ arc_*.task.json
 
 benchmarks.zip
 environment_files.zip
+
+# benchmarks/kaggle/export_kaggle_notebooks_all_stems.py (one notebook per stem)
+benchmarks/kaggle/notebooks/all/*.ipynb
