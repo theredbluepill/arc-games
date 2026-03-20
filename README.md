@@ -52,9 +52,16 @@ uv run python run_game.py --game ez01 --version auto
 
 Use any stem / version folder shown by `uv run python run_game.py --list`, or pass `--version auto` so the sole package under that stem is used.
 
-### Online scorecard and scoring
+### Public leaderboard (online)
 
-`run_game.py` does not pass **`scorecard_id`** to **`arc.make`** or call **`create_scorecard`** / **`close_scorecard`** (see [Create](https://docs.arcprize.org/toolkit/create-scorecard), [Get](https://docs.arcprize.org/toolkit/get-scorecard), [Close](https://docs.arcprize.org/toolkit/close-scorecard)). For that flow, set **`ARC_API_KEY`** ([`.env.example`](.env.example)); the CLI loads repo-root **`.env`** on startup (via `python-dotenv` from `arc-agi`). Example: quickstarter §**5b** (`ls20`).
+The interactive preview and leaderboard live at **[ARC-AGI-3 Preview](https://three.arcprize.org)**. Only **online** games are ratable there; local/offline play does not feed that path. If you want the toolkit to use the online service, copy [`.env.example`](.env.example) to **`.env`** and set **`ARC_API_KEY`** and **`ARC_OPERATION_MODE=online`**. `run_game.py` loads repo-root **`.env`** on startup (via `python-dotenv` from `arc-agi`).
+
+```bash
+# .env — replace angle-bracket placeholders; see .env.example for more options
+ARC_API_KEY=<your-arc-api-key>
+ARC_OPERATION_MODE=online
+# ARC_GAME_ID=<full-game-id>   # optional, e.g. ls20
+```
 
 ### Play by hand (matplotlib window)
 
