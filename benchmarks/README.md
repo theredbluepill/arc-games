@@ -52,9 +52,11 @@ uv run python -m benchmarks.kaggle.run_task_kbench_mock
 
 ### Publishing to Kaggle Benchmarks
 
-1. **Dataset** – Zip and upload **`environment_files/`** (full tree is simplest so every `*-v1` game resolves).
-2. **Task notebook** – [Create new task](https://www.kaggle.com/benchmarks/tasks/new), attach the dataset, paste from `benchmarks/kaggle/arc_ez01_kaggle_notebook.py` (install `arc-agi` + `ARCEngine` in the first cell). Create **one notebook per task** or duplicate the run cell and change which `*.run(...)` you call.
+1. **Dataset** – Zip and upload **`environment_files/`** (full tree is simplest so every `*-v1` game resolves). On Kaggle it appears under e.g. **`/kaggle/input/datasets/poonszesen/arc-interactive/`**; notebooks resolve that path automatically.
+2. **Task notebook** – [Create new task](https://www.kaggle.com/benchmarks/tasks/new), attach the dataset, then paste cells from `benchmarks/kaggle/arc_kaggle_notebook_template.py` (one `@kbench.task` per published task), or run `python3 benchmarks/kaggle/rebuild_kaggle_notebooks.py` to generate `benchmarks/kaggle/notebooks/*.ipynb`. See `benchmarks/kaggle/notebooks/README.md` for **3.11 vs 3.12** / bootstrap deps.
 3. **Benchmark** – Add each published task to your benchmark; see [Kaggle Benchmarks docs](https://www.kaggle.com/docs/benchmarks).
+
+**Geo / model API:** If a run fails with **`User location not supported for this model/API`** after games load, the issue is the **hosted LLM** (provider region rules), not your notebook or dataset. Try another benchmark model or contact Kaggle; see `benchmarks/kaggle/notebooks/README.md`.
 
 ## Adding more games
 

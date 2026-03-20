@@ -1,0 +1,68 @@
+# Kaggle Benchmark task notebooks
+
+Source of truth for task code is **`../arc_kaggle_notebook_template.py`** (all four `@kbench.task` definitions in one file). Copy cells into [Create new task](https://www.kaggle.com/benchmarks/tasks/new), then **+ Add data** and attach a dataset with a non-empty **`environment_files/`** tree (same layout as this repo). Kaggle mounts under **`/kaggle/input/datasets/<user>/<dataset-name>/`** — this repo prefers **`/kaggle/input/datasets/poonszesen/arc-interactive`**, then falls back to any mount with `environment_files/`. Skipping **Add data** yields **`Available games: []`** / `Failed to create environment`.
+
+| `@kbench.task` name | Game | `max_steps` in template |
+|---------------------|------|-------------------------|
+| `arc_ez01_go_up` | ez01-v1 | 30 |
+| `arc_sk01_sokoban` | sk01-v1 | 200 |
+| `arc_tt01_collect` | tt01-v1 | 200 |
+| `arc_sv01_survive` | sv01-v1 | 80 |
+
+**Optional:** `python3 benchmarks/kaggle/rebuild_kaggle_notebooks.py` writes `benchmarks/kaggle/notebooks/*.ipynb` (one task per file) from `arc_kaggle_notebook_template.py` plus the bootstrap below.
+
+For **3.11 papermill**, install **`uv`** with a pinned version for reproducibility, e.g. `pip install -q uv==0.10.11` (same pin as `UV_PIP_SPEC` in `rebuild_kaggle_notebooks.py`; bump if PyPI layout changes).
+
+## Overcoming the Python 3.11 vs 3.12 issue on Kaggle
+
+[`arc-agi` on PyPI](https://pypi.org/project/arc-agi/) is built for **Python ≥ 3.12**. Interactive Kaggle notebooks often let you pick **3.12** in **Settings → Environment**. **Kaggle Benchmark** execution sometimes runs **papermill** on **3.11**, so `import arc_agi` in the notebook kernel fails even after `pip install`.
+
+You can address that in three ways:
+
+1. **Bootstrap (paste into the notebook around the task script from `arc_kaggle_notebook_template.py`)**  
+   - **If the kernel is 3.12+:** `pip install arc-agi arcengine numpy 'hishel[httpx]>=1.1' openai google-genai panel docker protobuf`, then `exec(TASK_SCRIPT)` in the same process. The worker prepends `/benchmarks/src/kaggle_benchmarks` to `sys.path`; that code needs **hishel ≥1.1** for `hishel.httpx` (PyPI `kaggle-benchmarks` pins `hishel==0.1.5`, which conflicts), **`openai`**, **`google-genai`**, **`panel`**, plus **`docker`** / **`protobuf`** where the injected source imports them. Do **not** `pip install google` — use **`google-genai`** only (`from google import genai` comes from that package).
+   - **If the kernel is 3.11:** `pip install uv`, then  
+     `uv run --python 3.12 --with arc-agi --with arcengine --with numpy --with 'hishel[httpx]>=1.1' --with openai --with google-genai --with panel --with docker --with protobuf python <saved task script>`  
+     so the task runs under **3.12** in a subprocess while papermill keeps using 3.11. **Do not** add `--with kaggle-benchmarks`: it pins `hishel==0.1.5` and breaks `uv` resolution; the worker already provides `kaggle_benchmarks` from `/benchmarks/src`.  
+   First run needs **network** so `uv` can fetch Python 3.12 and wheels.
+
+2. **Ask Kaggle for a 3.12 benchmark runner**  
+   If your org can request platform changes, upgrading the benchmark worker to 3.12 removes the need for `uv` in the notebook.
+
+3. **Develop on a 3.12 notebook, publish the same `.ipynb`**  
+   You can still author on **3.12**; the same file handles **3.11** papermill via the `uv` path.
+
+## Choosing a model (`kbench.llms`)
+
+The template’s last line calls **`kbench.llm`** (platform default for that run). In a benchmark notebook you can list what your session actually supports:
+
+```python
+import kaggle_benchmarks as kbench
+list(kbench.llms.keys())
+```
+
+That returns provider ids such as `google/gemini-2.5-flash`, `anthropic/claude-sonnet-4-5@20250929`, `deepseek-ai/deepseek-v3.2`, etc. (the list changes as Kaggle updates offerings).
+
+To **force** a specific handle for an interactive run, pass it into `.run` instead of `kbench.llm`:
+
+```python
+arc_ez01_go_up.run(llm=kbench.llms["google/gemini-2.5-flash"], seed=0, max_steps=30)
+```
+
+Use any key that appears in `list(kbench.llms.keys())`. Edit the **`*.run(llm=...)`** line in `arc_kaggle_notebook_template.py`.
+
+**Note:** Official **benchmark leaderboard** runs may still bind models the UI selects; explicit `kbench.llms[...]` lets you pick which **logical model** to call from the notebook.
+
+**If you still see `PermissionDeniedError: User location not supported` after switching to e.g. `google/gemini-2.5-flash`:** the `kaggle_benchmarks` client often talks to Kaggle’s **Model Proxy** using an **OpenAI-compatible HTTP stack** (you will still see `openai.*` in the traceback). The block is usually on **that proxy / region**, not on “wrong Gemini vs OpenAI id”. Trying other keys from `list(kbench.llms.keys())` is still worth one attempt (different providers may differ), but if **every** model fails the same way, only **Kaggle** (supported regions, account eligibility, or support) can resolve it—not a change in ARC notebook code.
+
+## Model API / “User location not supported”
+
+If the log shows **`openai.PermissionDeniedError: User location not supported for this model/API`** (or similar) when `kbench.llm` calls the hosted model, your ARC task and **dataset path are fine** (e.g. you already see *Successfully loaded game class Ez01…*).
+
+That error comes from the **benchmark’s model endpoint** (provider geo / eligibility), not from `environment_files`. Mitigations:
+
+- Use **`kbench.llms["google/gemini-2.5-flash"]`** (or another non–blocked provider from `list(kbench.llms.keys())`) in `.run(...)` while testing in the notebook.
+- In the **Benchmark / task** UI, pick a **different model** for leaderboard runs ([Kaggle Benchmarks docs](https://www.kaggle.com/docs/benchmarks), competition rules).
+- **Kaggle support** / forums if nothing in `kbench.llms` works from your region.
+
+Local smoke tests without any Model Proxy calls: `uv run python -m benchmarks.kaggle.run_task_kbench_mock`.

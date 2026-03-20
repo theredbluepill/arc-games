@@ -1,33 +1,87 @@
 """
 Kaggle notebook template for ARC benchmark tasks (ez01, sk01, tt01, sv01).
 
-Paste into a new Kaggle task notebook at: https://www.kaggle.com/benchmarks/tasks/new
+Copy cells from this file into a new task notebook at:
+https://www.kaggle.com/benchmarks/tasks/new
+
+Paste the **bootstrap** from ``notebooks/README.md`` (``pip`` / ``uv run`` for
+Python 3.11 papermill) above or below this task code in the Kaggle notebook.
+Optionally run ``python3 benchmarks/kaggle/rebuild_kaggle_notebooks.py`` to emit
+``notebooks/*.ipynb`` (markdown + embedded task + bootstrap).
 
 Prerequisites:
   1. Add a dataset that includes the full ``environment_files/`` tree (or at least
      the game folders you reference: ez01, sk01, tt01, sv01 under ``*/v1/``).
-  2. Publish the dataset, then attach it via "+ Add data".
+  2. Publish the dataset, then attach it via "+ Add data". It mounts as
+     ``/kaggle/input/datasets/<user>/<dataset>/`` (e.g. ``…/poonszesen/arc-interactive``).
 
 For multiple tasks, duplicate the notebook or add cells that call each
 ``@kbench.task`` (see ``benchmarks/kaggle/arc_tasks.py`` in the repo).
 """
 
 # --- Cell 1: Install dependencies (run first) ---
-# !pip install -q git+https://github.com/arcprize/arc-agi.git git+https://github.com/arcprize/ARCEngine.git
+# Kaggle Benchmark bootstrap: see benchmarks/kaggle/notebooks/README.md
+# (arc-agi, arcengine, numpy, hishel>=1.1, openai, google-genai, panel, docker, protobuf, …).
+# !pip install -q arc-agi arcengine
 
 # --- Cell 2: Task and wrapper ---
 import sys
 from pathlib import Path
 
-# Add dataset path (adjust if your dataset name differs)
-INPUT_DIR = Path("/kaggle/input/arc-interactive")
-if not INPUT_DIR.exists():
-    # Fallback: try common dataset mount paths
-    for p in ["/kaggle/input/arc-interactive-games", "/kaggle/input/arc-interactive"]:
-        if Path(p).exists():
-            INPUT_DIR = Path(p)
-            break
+
+def _resolve_kaggle_dataset_root() -> Path:
+    """Find a mounted Kaggle input dir that contains ``environment_files/``.
+
+    Tries this repo’s published dataset first, then other common layouts.
+    """
+    kaggle_in = Path("/kaggle/input")
+    preferred = (
+        Path("/kaggle/input/datasets/poonszesen/arc-interactive"),
+        Path("/kaggle/input/arc-interactive"),
+        Path("/kaggle/input/arc-interactive-games"),
+    )
+    for root in preferred:
+        ef = root / "environment_files"
+        if ef.is_dir() and any(ef.iterdir()):
+            return root
+    datasets_root = Path("/kaggle/input/datasets")
+    if datasets_root.is_dir():
+        for user_dir in sorted(datasets_root.iterdir()):
+            if not user_dir.is_dir():
+                continue
+            for child in sorted(user_dir.iterdir()):
+                if not child.is_dir():
+                    continue
+                ef = child / "environment_files"
+                if ef.is_dir() and any(ef.iterdir()):
+                    return child
+    if kaggle_in.is_dir():
+        for child in sorted(kaggle_in.iterdir()):
+            if not child.is_dir() or child.name == "datasets":
+                continue
+            ef = child / "environment_files"
+            if ef.is_dir() and any(ef.iterdir()):
+                return child
+    for root in preferred:
+        if root.is_dir():
+            return root
+    return preferred[0]
+
+
+INPUT_DIR = _resolve_kaggle_dataset_root()
 ENVIRONMENTS_DIR = str(INPUT_DIR / "environment_files")
+_ef = Path(ENVIRONMENTS_DIR)
+if not _ef.is_dir():
+    names = [p.name for p in kaggle_in.iterdir()] if (kaggle_in := Path("/kaggle/input")).is_dir() else []
+    raise RuntimeError(
+        f"environment_files missing at {ENVIRONMENTS_DIR}. "
+        "On the task notebook use **+ Add data** and attach a dataset whose root contains "
+        "an **environment_files/** tree (zip your repo’s environment_files or full repo). "
+        f"/kaggle/input: {names!r}"
+    )
+if not any(_ef.iterdir()):
+    raise RuntimeError(f"environment_files is empty at {_ef}. Re-upload the dataset with game folders (e.g. ez01/v1/).")
+
 sys.path.insert(0, str(INPUT_DIR))
 
 import kaggle_benchmarks as kbench

@@ -11,3 +11,6 @@ docs/
 # Local kaggle_benchmarks task run exports
 arc_*-run_id_*.run.json
 arc_*.task.json
+
+benchmarks.zip
+environment_files.zip
