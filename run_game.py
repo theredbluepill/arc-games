@@ -13,6 +13,8 @@ Usage:
     uv run python run_game.py --game sk01 --mode human-toolkit
     ARC_GAME_ID=co01-<ver> uv run python run_game.py
     ARC_OPERATION_MODE=offline uv run python run_game.py
+
+Online scoring: this script does not pass scorecard_id to arc.make; see README (Online scorecard).
 """
 
 from __future__ import annotations
@@ -33,12 +35,23 @@ if str(_SCRIPTS) not in sys.path:
 from env_resolve import full_game_id_for_stem  # noqa: E402
 
 try:
+    from dotenv import load_dotenv
+except ImportError:
+    load_dotenv = None  # type: ignore[misc, assignment]
+
+try:
     from arc_agi import Arcade, OperationMode
     from arcengine import GameAction
 except ImportError as e:
     print(f"Error: Required packages not found: {e}")
     print("Please ensure arc-agi and arcengine are installed.")
     sys.exit(1)
+
+
+def _load_dotenv() -> None:
+    """Load repo-root ``.env`` so ``ARC_API_KEY`` / ``ARC_OPERATION_MODE`` work with ``uv run``."""
+    if load_dotenv is not None:
+        load_dotenv(_ROOT / ".env")
 
 
 @dataclass
@@ -332,7 +345,15 @@ Render modes (https://docs.arcprize.org/toolkit/render-games):
 
 Environment Variables:
   ARC_GAME_ID=co01-<ver>     # Full game id from metadata
-  ARC_OPERATION_MODE=offline # Set operation mode (online/offline/normal)
+  ARC_OPERATION_MODE=offline # online / offline / normal
+  ARC_API_KEY=...            # Required when OPERATION_MODE=online (see .env.example)
+
+Optional:
+  Repo-root .env is loaded at startup when python-dotenv is installed (bundled with arc-agi).
+
+Note:
+  No create_scorecard / scorecard_id / close_scorecard — use Arcade in a script or the quickstarter
+  for custom scorecards; toolkit: Create / Get / Close scorecard docs on docs.arcprize.org.
         """,
     )
 
@@ -387,6 +408,7 @@ Environment Variables:
 
 def main():
     """Main entry point."""
+    _load_dotenv()
     parser = setup_argparser()
     args = parser.parse_args()
 

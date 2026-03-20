@@ -1,0 +1,19 @@
+{
+  "game_id": "rk01-63be02fb",
+  "title": "Rook Courier",
+  "description": "10×10 grid. ACTION1–4 slide orthogonally (up/down/left/right) until blocked by a wall.",
+  "default_fps": 20,
+  "baseline_actions": [1, 2, 3, 4],
+  "tags": ["static", "movement", "10-grid", "chess"],
+  "local_dir": "environment_files/rk01/63be02fb",
+  "date_created": "2026-03-20",
+  "training_metadata": {
+    "pcg_type": [],
+    "grid_range": [10],
+    "action_space": 4,
+    "physics_rules": ["rook-slide"],
+    "reward_structure": "checkpoint-on-level-pass",
+    "episode_count": 1000000
+  },
+  "date_downloaded": "2026-03-20T12:00:00+00:00"
+}

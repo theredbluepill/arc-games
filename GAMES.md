@@ -138,5 +138,40 @@ Human-edited registry for this repo. To **enumerate installable packages** from 
 | ck03 | Graph / Logic | 24×24 | 5 | **Checkpoint wire** (ck02 variant): cyan checkpoint must lie on successful test path. | ![ck03](assets/ck03.gif) | • 1-4: No-op • 5: Test • 6: Toggle |
 | ph03 | Field / Math | 24×24 | 5 | **XOR neighbor step** (ph02 variant): **ACTION5** XORs cell with orth neighbors mod N. | ![ph03](assets/ph03.gif) | • 1-4: No-op • 5: Step • 6: Inc |
 | bn03 | Exploration | 64×64 | 5 | **Shrinking beacon** (bn02 variant): each **ACTION5** beacon reduces max light radius by 1. | ![bn03](assets/bn03.gif) | • 1-4: Move • 5: Beacon • 6: Flag |
+| bi01 | Movement / Chess | 10×10 | 5 | **Bishop courier**: ACTION1–4 slide diagonally (NW/NE/SW/SE) until a wall blocks. | ![bi01](assets/bi01.gif) | • 1-4: Diagonal slide |
+| rk01 | Movement / Chess | 10×10 | 5 | **Rook courier**: ACTION1–4 slide orthogonally until a wall blocks. | ![rk01](assets/rk01.gif) | • 1-4: Rook slide |
+| sn01 | Collection / Classic | 12×12 | 5 | **Snake collect**: eat all yellow food; grow; walls and self-collision lose. | ![sn01](assets/sn01.gif) | • 1-4: Move |
+| tr01 | Hazard / Path | 10×10 | 5 | **Toxic floor**: cells expire `ttl` world steps after first visit; standing on expired tile loses. | ![tr01](assets/tr01.gif) | • 1-4: Move |
+| vp01 | Hazard / Path | 10×10 | 5 | **Void path**: each cell allows only one visit; second visit loses. | ![vp01](assets/vp01.gif) | • 1-4: Move |
+| bt01 | Resource / Movement | 10×10 | 5 | **Battery steps**: charge drops each move; cyan pads refill; 0 charge loses. | ![bt01](assets/bt01.gif) | • 1-4: Move |
+| dg01 | Environmental | 10×10 | 5 | **Dig mud**: ACTION5 removes one orth-adjacent mud tile (per-level budget). | ![dg01](assets/dg01.gif) | • 1-4: Move • 5: Dig |
+| mb01 | Environmental | 10×10 | 5 | **Magnet crates**: after each move, metal crates slide one cell toward you when free. | ![mb01](assets/mb01.gif) | • 1-4: Move |
+| op01 | Environmental | 8-10 | 5 | **One-push crate**: each crate may be pushed at most once; second push loses. | ![op01](assets/op01.gif) | • 1-4: Move |
+| kb01 | Puzzle / Key | 10×10 | 5 | **Key leash**: yellow key must stay within Manhattan **R** of the player or lose. | ![kb01](assets/kb01.gif) | • 1-4: Move |
+| eb01 | Movement / Field | 10×10 | 5 | **Escalator row**: on the marked row, after each move you auto-slide east while free. | ![eb01](assets/eb01.gif) | • 1-4: Move |
+| fg01 | Memory / Exploration | 10×10 | 5 | **Fog of war**: Chebyshev radius **r** hides distant sprites (logic unchanged). | ![fg01](assets/fg01.gif) | • 1-4: Move |
+| jw01 | Pattern | 10×10 | 5 | **Jigsaw swap**: ACTION6 on magenta trigger swaps two authored rectangles; push boxes to the goal. | ![jw01](assets/jw01.gif) | • 1-4: Move • 6: Click trigger |
+| pd01 | Graph / Plumbing | 10×10 | 5 | **Pipe drop**: ACTION6 cycles empty → H → V pipe; connect cyan source to yellow sink. | ![pd01](assets/pd01.gif) | • 1-4: No-op • 6: Cycle pipe |
+| rh01 | Survival / Hazard | 10×10 | 5 | **Rotating hazard row**: lethal band advances one row every **N** moves. | ![rh01](assets/rh01.gif) | • 1-4: Move |
+| av01 | Simulation | 10×10 | 5 | **Avalanche**: rocks fall after each move; crushed loses. | ![av01](assets/av01.gif) | • 1-4: Move |
+| pw01 | Puzzle / Logic | 10×10 | 5 | **Dual plate crates**: both yellow plates must hold a crate; then reach the goal. | ![pw01](assets/pw01.gif) | • 1-4: Move |
+| es01 | Escort | 10×10 | 5 | **Escort**: NPC moves toward you each turn; both reach colored goals; collision loses. | ![es01](assets/es01.gif) | • 1-4: Move |
+| wg01 | Movement / Chaos | 10×10 | 5 | **Wind gust**: every **K** steps you are pushed one cell east when free. | ![wg01](assets/wg01.gif) | • 1-4: Move |
+| hs01 | Stealth / Chase | 10×10 | 5 | **Heatseeker**: hunter steps toward you every two player moves; reach goal safely. | ![hs01](assets/hs01.gif) | • 1-4: Move |
+| tm01 | Survival / Resource | 10×10 | 5 | **Twin meters**: oxygen + heat decay; pads refill; survive **T** steps. | ![tm01](assets/tm01.gif) | • 1-4: Move |
+| cy01 | Movement / Field | 10×10 | 5 | **Cyclic conveyor**: on conveyor row, after each step slide west while free. | ![cy01](assets/cy01.gif) | • 1-4: Move |
+| in01 | Path / Hazard | 10×10 | 5 | **Ink trail**: leaving a cell drops blocking ink. | ![in01](assets/in01.gif) | • 1-4: Move |
+| rc01 | Puzzle / Teleport | 10×10 | 5 | **Recall once**: ACTION5 teleports back to start (one use per level). | ![rc01](assets/rc01.gif) | • 1-4: Move • 5: Recall |
+| bl01 | Puzzle / Phase | 10×10 | 5 | **Phase wall**: ACTION5 arms the next move to pass through one wall cell. | ![bl01](assets/bl01.gif) | • 1-4: Move • 5: Arm phase |
+| sw01 | Manipulation | 10×10 | 5 | **Swap partner**: ACTION5 swaps with orth-adjacent magenta partner. | ![sw01](assets/sw01.gif) | • 1-4: Move • 5: Swap |
+| tw01 | Ordering | 10×10 | 5 | **Two-touch**: visit orange waypoint before green goal counts. | ![tw01](assets/tw01.gif) | • 1-4: Move |
+| pm01 | Movement / Meta | 10×10 | 5 | **Prime steps**: cardinal moves only apply on prime step indices; composites no-op. | ![pm01](assets/pm01.gif) | • 1-4: Move |
+| hz01 | Hazard / Growth | 10×10 | 5 | **Hazard growth**: red hazards spread orthogonally every **M** steps. | ![hz01](assets/hz01.gif) | • 1-4: Move |
+| cq01 | Territory / Coverage | 10×10 | 5 | **Ring tour**: visit every orange ring marker, then the goal. | ![cq01](assets/cq01.gif) | • 1-4: Move |
+| lf01 | Timing | 10×10 | 5 | **Laser fence row**: fixed row lethal on alternating periods of **P** steps. | ![lf01](assets/lf01.gif) | • 1-4: Move |
+| sb01 | Simulation | 10×10 | 5 | **Sand fall**: sand piles fall like rocks; crushed loses. | ![sb01](assets/sb01.gif) | • 1-4: Move |
+| wp01 | Logistics | 10×10 | 5 | **Weight plate**: orth-adjacent weight (you=1, crate=2) must reach **W** to unlock goal tile. | ![wp01](assets/wp01.gif) | • 1-4: Move |
+| dv01 | Puzzle / Timeline | 10×10 | 5 | **Divergent walls**: ACTION5 toggles timeline; only active timeline’s walls collide. | ![dv01](assets/dv01.gif) | • 1-4: Move • 5: Toggle |
+| ox01 | Field / XOR | 10×10 | 5 | **XOR hazards**: red vs magenta hazard layers alternate collidable each step. | ![ox01](assets/ox01.gif) | • 1-4: Move |
 
 Implementation for each row lives under `environment_files/<Game>/<version>/` (one package dir per stem; `run_game.py --game <Game> --version auto` picks it). Registry column **Game** is the stem, not the full `game_id` in `metadata.json`.

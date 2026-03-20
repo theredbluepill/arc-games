@@ -1,0 +1,19 @@
+{
+  "game_id": "vp01-63be02fb",
+  "title": "Void Path",
+  "description": "10×10 grid. Each cell allows only one visit; stepping on an already-used cell loses.",
+  "default_fps": 20,
+  "baseline_actions": [1, 2, 3, 4],
+  "tags": ["static", "movement", "10-grid", "coverage"],
+  "local_dir": "environment_files/vp01/63be02fb",
+  "date_created": "2026-03-20",
+  "training_metadata": {
+    "pcg_type": [],
+    "grid_range": [10],
+    "action_space": 4,
+    "physics_rules": ["single-visit"],
+    "reward_structure": "checkpoint-on-level-pass",
+    "episode_count": 1000000
+  },
+  "date_downloaded": "2026-03-20T12:00:00+00:00"
+}

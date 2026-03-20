@@ -1,0 +1,19 @@
+{
+  "game_id": "es01-63be02fb",
+  "title": "Escort",
+  "description": "10×10 grid. NPC moves one greedy step toward you each turn; reach your green goal while the NPC reaches the cyan goal; collision loses.",
+  "default_fps": 20,
+  "baseline_actions": [1, 2, 3, 4],
+  "tags": ["static", "movement", "multi-agent"],
+  "local_dir": "environment_files/es01/63be02fb",
+  "date_created": "2026-03-20",
+  "training_metadata": {
+    "pcg_type": [],
+    "grid_range": [10],
+    "action_space": 4,
+    "physics_rules": ["escort-npc"],
+    "reward_structure": "checkpoint-on-level-pass",
+    "episode_count": 1000000
+  },
+  "date_downloaded": "2026-03-20T12:00:00+00:00"
+}

@@ -1,0 +1,19 @@
+{
+  "game_id": "jw01-63be02fb",
+  "title": "Jigsaw Swap",
+  "description": "10×10 grid. ACTION6 on magenta trigger swaps two authored rectangles; push boxes (15) to reach the goal.",
+  "default_fps": 20,
+  "baseline_actions": [1, 2, 3, 4, 6],
+  "tags": ["static", "click", "10-grid", "swap"],
+  "local_dir": "environment_files/jw01/63be02fb",
+  "date_created": "2026-03-20",
+  "training_metadata": {
+    "pcg_type": [],
+    "grid_range": [10],
+    "action_space": 6,
+    "physics_rules": ["rect-swap"],
+    "reward_structure": "checkpoint-on-level-pass",
+    "episode_count": 1000000
+  },
+  "date_downloaded": "2026-03-20T12:00:00+00:00"
+}

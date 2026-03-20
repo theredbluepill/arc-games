@@ -1,0 +1,19 @@
+{
+  "game_id": "cy01-63be02fb",
+  "title": "Cyclic Conveyor",
+  "description": "10×10 grid. On the conveyor row (level data), after each step you slide west while the next cell is free.",
+  "default_fps": 20,
+  "baseline_actions": [1, 2, 3, 4],
+  "tags": ["static", "movement", "conveyor"],
+  "local_dir": "environment_files/cy01/63be02fb",
+  "date_created": "2026-03-20",
+  "training_metadata": {
+    "pcg_type": [],
+    "grid_range": [10],
+    "action_space": 4,
+    "physics_rules": ["west-conveyor-row"],
+    "reward_structure": "checkpoint-on-level-pass",
+    "episode_count": 1000000
+  },
+  "date_downloaded": "2026-03-20T12:00:00+00:00"
+}

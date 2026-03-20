@@ -1,0 +1,19 @@
+{
+  "game_id": "in01-63be02fb",
+  "title": "Ink Trail",
+  "description": "10×10 grid. Each move leaves collidable ink on the cell you left; ink cannot be entered.",
+  "default_fps": 20,
+  "baseline_actions": [1, 2, 3, 4],
+  "tags": ["static", "movement", "trail"],
+  "local_dir": "environment_files/in01/63be02fb",
+  "date_created": "2026-03-20",
+  "training_metadata": {
+    "pcg_type": [],
+    "grid_range": [10],
+    "action_space": 4,
+    "physics_rules": ["ink-trail"],
+    "reward_structure": "checkpoint-on-level-pass",
+    "episode_count": 1000000
+  },
+  "date_downloaded": "2026-03-20T12:00:00+00:00"
+}
