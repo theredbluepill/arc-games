@@ -1,0 +1,36 @@
+# Preview GIFs linked from GAMES.md must exist under assets/.
+name: Games preview assets
+
+on:
+  pull_request:
+    paths:
+      - "GAMES.md"
+      - "assets/**"
+      - "scripts/gif_inventory.py"
+      - "scripts/check_games_assets.py"
+      - ".github/workflows/pr-games-assets.yml"
+  push:
+    branches: [main]
+    paths:
+      - "GAMES.md"
+      - "assets/**"
+      - "scripts/gif_inventory.py"
+      - "scripts/check_games_assets.py"
+      - ".github/workflows/pr-games-assets.yml"
+  workflow_dispatch:
+
+concurrency:
+  group: games-assets-${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Verify preview GIF files
+        run: python3 scripts/check_games_assets.py
