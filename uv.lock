@@ -75,6 +75,7 @@ dependencies = [
     { name = "arc-agi" },
     { name = "arcengine" },
     { name = "kaggle-benchmarks" },
+    { name = "matplotlib" },
     { name = "numpy" },
 ]
 
@@ -88,6 +89,7 @@ requires-dist = [
     { name = "arc-agi", git = "https://github.com/arcprize/arc-agi.git" },
     { name = "arcengine", git = "https://github.com/arcprize/ARCEngine.git" },
     { name = "kaggle-benchmarks", specifier = ">=0.2.0" },
+    { name = "matplotlib", specifier = ">=3.8" },
     { name = "numpy", specifier = ">=2.4.3" },
 ]
 
