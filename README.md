@@ -24,9 +24,9 @@ A collection of games for the ARC-AGI-3 benchmark.
 <!-- readme-stats:begin -->
 
 <p align="center">
-  <a href="GAMES.md"><img src="https://img.shields.io/badge/44-games-58A6FF?style=for-the-badge" alt="44 games in registry" /></a>
+  <a href="GAMES.md"><img src="https://img.shields.io/badge/44-INTERACTIVE_GAME-58A6FF?style=for-the-badge" alt="44 interactive games in registry" /></a>
   &nbsp;
-  <a href="CONTRIBUTING.md#creating-a-new-game"><img src="https://img.shields.io/badge/Contributing-Add%20a%20game-238636?style=for-the-badge" alt="Contributing: add a game" /></a>
+  <a href="CONTRIBUTING.md#creating-a-new-game"><img src="https://img.shields.io/badge/Contributing-Add_an_interactive_game-238636?style=for-the-badge" alt="Contributing: add an interactive game" /></a>
 </p>
 
 <!-- readme-stats:end -->

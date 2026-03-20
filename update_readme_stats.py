@@ -41,19 +41,19 @@ def count_games_registry_rows() -> int:
 
 def build_block(registry: int) -> str:
     games_badge = (
-        f"https://img.shields.io/badge/{registry}-games-58A6FF?style=for-the-badge"
+        f"https://img.shields.io/badge/{registry}-INTERACTIVE_GAME-58A6FF?style=for-the-badge"
     )
     contribute_badge = (
-        "https://img.shields.io/badge/Contributing-Add%20a%20game-238636?style=for-the-badge"
+        "https://img.shields.io/badge/Contributing-Add_an_interactive_game-238636?style=for-the-badge"
     )
     return "\n".join(
         [
             BEGIN,
             "",
             '<p align="center">',
-            f'  <a href="GAMES.md"><img src="{games_badge}" alt="{registry} games in registry" /></a>',
+            f'  <a href="GAMES.md"><img src="{games_badge}" alt="{registry} interactive games in registry" /></a>',
             "  &nbsp;",
-            f'  <a href="CONTRIBUTING.md#creating-a-new-game"><img src="{contribute_badge}" alt="Contributing: add a game" /></a>',
+            f'  <a href="CONTRIBUTING.md#creating-a-new-game"><img src="{contribute_badge}" alt="Contributing: add an interactive game" /></a>',
             "</p>",
             "",
             END,
