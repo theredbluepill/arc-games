@@ -1,0 +1,65 @@
+# When a PR changes files under environment_files/<stem>/<ver>/, rename that
+# package directory to environment_files/<stem>/<short_sha>/ (8 hex chars of the
+# PR head commit), like environment_files/ls20/cb3b57cc. Updates metadata.json.
+#
+# Does not run on fork PRs (cannot push). Skips vc33, ls20, ft09 (see script).
+# Skips if the latest commit message contains [env-version-bump] (avoid loops).
+name: Bump environment package versions
+
+on:
+  pull_request:
+    types: [opened, synchronize, reopened]
+    paths:
+      - "environment_files/**"
+      - "devtools/bump_env_versions.py"
+      - ".github/workflows/bump-env-versions.yml"
+
+concurrency:
+  group: bump-env-${{ github.workflow }}-${{ github.event.pull_request.number }}
+  cancel-in-progress: true
+
+permissions:
+  contents: write
+
+jobs:
+  bump:
+    if: github.event.pull_request.head.repo.full_name == github.repository
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.head_ref }}
+          fetch-depth: 0
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Fetch PR base commit (for merge-base diff)
+        run: git fetch --no-tags origin ${{ github.event.pull_request.base.sha }}
+
+      - name: Skip if last commit is automated version bump
+        id: skip
+        run: |
+          if git log -1 --pretty=%B | grep -qF '[env-version-bump]'; then
+            echo "skip=true" >> "$GITHUB_OUTPUT"
+            echo "Skipping: tip commit is an env-version bump"
+          fi
+
+      - name: Rename changed packages to PR head short SHA
+        if: steps.skip.outputs.skip != 'true'
+        env:
+          BASE_SHA: ${{ github.event.pull_request.base.sha }}
+          HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+        run: python3 devtools/bump_env_versions.py --base "$BASE_SHA" --head "$HEAD_SHA"
+
+      - name: Commit and push
+        if: steps.skip.outputs.skip != 'true'
+        run: |
+          set -euo pipefail
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add environment_files
+          if git diff --staged --quiet; then
+            echo "No renames needed."
+            exit 0
+          fi
+          git commit -m "chore(env): bump changed package dirs to commit short SHA [env-version-bump]"
+          git push origin "HEAD:${{ github.event.pull_request.head.ref }}"

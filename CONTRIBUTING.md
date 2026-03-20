@@ -210,6 +210,8 @@ Use the repo’s [issue templates](.github/ISSUE_TEMPLATE/) (bug report, game id
 
 Pull requests that change files under `environment_files/` are **smoke-tested in CI** (`devtools/smoke_games.py` via [`.github/workflows/pr-game-smoke.yml`](.github/workflows/pr-game-smoke.yml)): each affected game is loaded and stepped with random ACTION1–5. That catches load/`step()` crashes and missing `GAMES.md` rows; it does not replace manual or agent review for design and solvability.
 
+**Package version folders (commit short SHA, same idea as `ls20/cb3b57cc`)** — [`.github/workflows/bump-env-versions.yml`](.github/workflows/bump-env-versions.yml) runs on same-repo PRs that touch `environment_files/**`. It renames any changed `environment_files/<stem>/<old>/` tree to `environment_files/<stem>/<8-hex-of-PR-head>/`, rewrites that folder’s `metadata.json` (`game_id`, `local_dir`, `date_downloaded`), and removes `<old>`. Stems `vc33`, `ls20`, and `ft09` are skipped (see [`devtools/bump_env_versions.py`](devtools/bump_env_versions.py)). Fork PRs are skipped (no push permission). The repo needs **Settings → Actions → General → Workflow permissions → Read and write** so the workflow can push the bump commit. Commits containing `[env-version-bump]` are not processed again (avoids loops). You can still start from `v1` locally; the first push that changes the game will retag the folder.
+
 Optional local checks (not in CI by default):
 
 - **Full-table smoke with ACTION6** — [`devtools/smoke_registry_games.py`](devtools/smoke_registry_games.py): e.g. `uv run python devtools/smoke_registry_games.py --from pb01 --through bn03 --steps 80`
