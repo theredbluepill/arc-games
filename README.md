@@ -56,7 +56,7 @@ Use any stem / version folder shown by `uv run python run_game.py --list`, or pa
 
 `run_game.py` does not pass **`scorecard_id`** to **`arc.make`** or call **`create_scorecard`** / **`close_scorecard`** (see [Create](https://docs.arcprize.org/toolkit/create-scorecard), [Get](https://docs.arcprize.org/toolkit/get-scorecard), [Close](https://docs.arcprize.org/toolkit/close-scorecard)). For that flow, set **`ARC_API_KEY`** ([`.env.example`](.env.example)); the CLI loads repo-root **`.env`** on startup (via `python-dotenv` from `arc-agi`). Example: quickstarter §**5b** (`ls20`).
 
-Play by hand (matplotlib window):
+### Play by hand (matplotlib window)
 
 ```bash
 uv run python run_game.py --game sk01 --version auto --mode human
