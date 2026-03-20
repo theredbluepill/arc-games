@@ -550,3 +550,21 @@ def step(self) -> None:
 
 1. **gp01**: **`[1,2,3,4,6]`** — **`ACTION1–4`** are **no-ops** (pacing only). **`ACTION6`** → `camera.display_to_grid(x,y)`; click feedback in **64×64** frame space via **`_grid_to_frame_pixel`** (same letterbox math as **ff01**). Track painted cells with **`paint`** sprites; **`goal_cells`** in **`level.data`**; win when painted set equals goal; dim **`hint`** sprites mark the target cells.
 2. **lo01**: Same action list; maintain **`_lit`** and toggle **`+` neighbors** (skip **`wall`**); **`_refresh_lit_sprites`** after each click. Author **grid-corner L-triples** so one **`ACTION6`** on the corner clears that triple without turning on a fourth in-bounds cell.
+
+## Lessons Learned (lw01–bn01 large-grid / mixed-action batch)
+
+1. **lw01**: Store path endpoints in **`level.data["pairs"]`**; keep per-color trails and enforce **no shared cells** across colors; **ACTION6** requires **Manhattan distance 1** from the active path tip.
+2. **rp01**: Pulse **BFS** only through **`relay`** tiles from **orthogonal neighbors of `source`**; lamps count lit when **Chebyshev-adjacent** to a **visited relay** (not on the relay cell itself).
+3. **ml01**: Laser **raycast** with slash vs backslash mirrors via **`(-dy,-dx)`** vs **`(dy,dx)`**; **ACTION5** = fire only; **ACTION6** places/cycles mirrors on **player-adjacent** cells.
+4. **sf01**: **64×64** camera; **3×3 stencil** clamped to grid; win when **`goal <= painted`** (subset); refresh **`paint`** sprites each stamp.
+5. **ll01**: **Conway** on full grid; evaluate **`_alive()`** into a **snapshot** before mutating sprites; **lose** on generation **`== need`** if pattern mismatch, or **`>` need**.
+6. **wl01**: Tag player-placed tiles **`mywall`** separately from static **`wall`**; **goal** is **non-collidable** — win by **position match** after movement.
+7. **dd01**: **`ACTION6` ping** should use the same **`_grid_to_frame_pixel`** letterbox math as **gp01**; tick **`_ping_frames`** once per **`step()`** (avoid mutating HUD state inside **`render_interface`**).
+8. **ck01**: **Wire connectivity** = BFS from **`in_port`** into **orth-adjacent `wire`** cells until **`out_port`** is reached.
+9. **ph01**: Keep numeric phases in **`self._g`**; **`phase_cell`** sprites for display — **skip `mark`** cells so targets stay visible; blur uses **orthogonal** neighbors only.
+10. **bn01**: **`hidden`** targets in **`level.data`**; **`ghost`** sprites only when **`(x,y) ∈ revealed`** (union of beacon disks); **wrong `ACTION6` flag** → **`lose()`** immediately.
+
+## Lessons Learned (gp02–hd01 twenty-game batch)
+
+1. **tt02**: When normalizing patrol waypoints from **`level.data`**, use **`[(int(p[0]), int(p[1])) for p in loop]`** — not **`tuple(int(...), int(...))`** (the built-in **`tuple()`** constructor accepts only one iterable argument).
+2. **hd01**: **`ACTION5`** charges immunity only on **`station`** cells but must still run the same per-step heat tick and immune decay as movement actions (do not early-return before **`_steps` / `_heat_row`** update).
