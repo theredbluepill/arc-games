@@ -1,0 +1,19 @@
+{
+  "game_id": "rv01-v1",
+  "title": "Rotating Sparks",
+  "description": "Collect yellow targets while red sparks drift together in a wind direction that cycles north→east→south→west after every step.",
+  "default_fps": 20,
+  "baseline_actions": [15],
+  "tags": ["static", "timing", "hazard"],
+  "local_dir": "environment_files/rv01/v1",
+  "date_created": "2026-03-20",
+  "training_metadata": {
+    "pcg_type": [],
+    "grid_range": [8, 16],
+    "action_space": 4,
+    "physics_rules": ["movement", "vector_field"],
+    "reward_structure": "checkpoint-on-level-pass",
+    "episode_count": 1000000
+  },
+  "date_downloaded": "2026-03-20T12:00:00+00:00"
+}

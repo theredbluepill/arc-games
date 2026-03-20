@@ -1,0 +1,30 @@
+{
+  "game_id": "ec01-v1",
+  "title": "Mirror Echo",
+  "description": "A mirror ghost moves with reflected horizontal delta; if the ghost hits a wall your move is blocked.",
+  "default_fps": 20,
+  "baseline_actions": [
+    15
+  ],
+  "tags": [
+    "static",
+    "planning"
+  ],
+  "local_dir": "environment_files/ec01/v1",
+  "date_created": "2026-03-20",
+  "training_metadata": {
+    "pcg_type": [],
+    "grid_range": [
+      12,
+      12
+    ],
+    "action_space": 4,
+    "physics_rules": [
+      "static",
+      "planning"
+    ],
+    "reward_structure": "checkpoint-on-level-pass",
+    "episode_count": 1000000
+  },
+  "date_downloaded": "2026-03-20T12:00:00+00:00"
+}

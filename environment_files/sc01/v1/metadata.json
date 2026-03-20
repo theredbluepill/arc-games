@@ -1,0 +1,30 @@
+{
+  "game_id": "sc01-v1",
+  "title": "Scent Stealth",
+  "description": "Guards face east; high scent on a tile while in their cone line-of-sight loses. Scent decays when you leave a trail.",
+  "default_fps": 20,
+  "baseline_actions": [
+    15
+  ],
+  "tags": [
+    "static",
+    "stealth"
+  ],
+  "local_dir": "environment_files/sc01/v1",
+  "date_created": "2026-03-20",
+  "training_metadata": {
+    "pcg_type": [],
+    "grid_range": [
+      14,
+      14
+    ],
+    "action_space": 6,
+    "physics_rules": [
+      "static",
+      "stealth"
+    ],
+    "reward_structure": "checkpoint-on-level-pass",
+    "episode_count": 1000000
+  },
+  "date_downloaded": "2026-03-20T12:00:00+00:00"
+}

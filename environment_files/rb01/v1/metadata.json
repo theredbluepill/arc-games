@@ -1,0 +1,30 @@
+{
+  "game_id": "rb01-v1",
+  "title": "Rhythm Gate",
+  "description": "Movement only applies on beat (every B world steps); other actions are no-ops.",
+  "default_fps": 20,
+  "baseline_actions": [
+    15
+  ],
+  "tags": [
+    "static",
+    "timing"
+  ],
+  "local_dir": "environment_files/rb01/v1",
+  "date_created": "2026-03-20",
+  "training_metadata": {
+    "pcg_type": [],
+    "grid_range": [
+      11,
+      11
+    ],
+    "action_space": 4,
+    "physics_rules": [
+      "static",
+      "timing"
+    ],
+    "reward_structure": "checkpoint-on-level-pass",
+    "episode_count": 1000000
+  },
+  "date_downloaded": "2026-03-20T12:00:00+00:00"
+}

@@ -1,0 +1,30 @@
+{
+  "game_id": "pj01-v1",
+  "title": "Bolt Bounce",
+  "description": "A red bolt moves east each step; ACTION6 toggles a mirror on an empty cell (/ vs \\); guide the bolt into the yellow sink without hitting you.",
+  "default_fps": 20,
+  "baseline_actions": [
+    15
+  ],
+  "tags": [
+    "static",
+    "timing"
+  ],
+  "local_dir": "environment_files/pj01/v1",
+  "date_created": "2026-03-20",
+  "training_metadata": {
+    "pcg_type": [],
+    "grid_range": [
+      14,
+      14
+    ],
+    "action_space": 6,
+    "physics_rules": [
+      "static",
+      "timing"
+    ],
+    "reward_structure": "checkpoint-on-level-pass",
+    "episode_count": 1000000
+  },
+  "date_downloaded": "2026-03-20T12:00:00+00:00"
+}

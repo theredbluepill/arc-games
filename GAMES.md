@@ -173,5 +173,35 @@ Human-edited registry for this repo. To **enumerate installable packages** from 
 | wp01 | Logistics | 10×10 | 5 | **Weight plate**: orth-adjacent weight (you=1, crate=2) must reach **W** to unlock goal tile. | ![wp01](assets/wp01.gif) | • 1-4: Move |
 | dv01 | Puzzle / Timeline | 10×10 | 5 | **Divergent walls**: ACTION5 toggles timeline; only active timeline’s walls collide. | ![dv01](assets/dv01.gif) | • 1-4: Move • 5: Toggle |
 | ox01 | Field / XOR | 10×10 | 5 | **XOR hazards**: red vs magenta hazard layers alternate collidable each step. | ![ox01](assets/ox01.gif) | • 1-4: Move |
+| sl01 | Permutation / Puzzle | 3×3 | 5 | **Slide puzzle**: swap the hole with adjacent tiles until the board matches the goal; step limit. |  | • 1-4: Swap with up/down/left/right neighbor |
+| ci01 | Environmental Manipulation | 8–12 | 5 | **Crate ice**: player moves normally; pushed crates slide until wall, crate, or mud. |  | • 1-4: Move |
+| rv01 | Collection / Hazard | 8–16 | 5 | **Rotating sparks**: collect targets while red hazards step together in a wind direction that cycles N→E→S→W. |  | • 1-4: Move |
+| pk01 | Topology / Packing | 8–12 | 5 | **Polyomino pack**: ACTION5 toggles domino vs straight-tromino mode; ACTION6 clicks place pieces on marked cells. |  | • 5: Mode • 6: Click |
+| kv01 | Circuit / Logic | 8×8 | 5 | **Voltage ladder**: cycle three series resistors (1/2/4 Ω); ACTION5 checks probe voltages vs targets. |  | • 1-3: Cycle R • 5: Check |
+| wr01 | Spatial / Rotation | 12×12 | 5 | **World rotation**: entire level rotates 90° CW every N steps; ACTION5 braces to skip the next rotation (budget). |  | • 1-4: Move • 5: Brace |
+| dp01 | Puzzle / Planes | 10×14 | 5 | **Dual plane**: ACTION5 toggles A/B; `plane_a` / `plane_b` walls only collide on their plane. |  | • 1-4: Move • 5: Toggle plane |
+| df01 | Field / Simulation | 16×16 | 5 | **Heat diffusion**: hot/cold sources; temperature diffuses each step; goal needs band hit; ACTION6 vents 3×3. |  | • 1-4: Move • 6: Vent |
+| rn01 | Environmental / Graph | 12×12 | 5 | **Rope anchors**: ACTION6 two orth-adjacent anchors over water places a walkable rope on the middle cell. |  | • 1-4: Move • 6: Click anchors |
+| sc01 | Stealth / Trail | 14×14 | 5 | **Scent + cone**: guard sees eastward; high scent under LOS loses; ACTION5 masks scent briefly. |  | • 1-4: Move • 5: Mask |
+| au01 | Resource / Path | 10×10 | 5 | **Bonus steps**: tight move budget; cyan bonus pads add steps when entered. |  | • 1-4: Move |
+| cf01 | Hazard / Time | 10×10 | 5 | **Fallow**: re-entering a cell before F world steps pass loses. |  | • 1-4: Move |
+| ep01 | Path / Budget | 12×12 | 5 | **Pain budget**: entering a cell costs its visit count; exceed the global budget to lose. |  | • 1-4: Move |
+| tf01 | Timing / Traffic | 14×14 | 5 | **Crossing light**: orange crossing tiles may be entered only on green phase (4-step cycle). |  | • 1-4: Move |
+| ec01 | Coordination / Mirror | 12×12 | 5 | **Echo ghost**: a mirror copy moves with reflected horizontal delta; wall collision for the echo blocks the whole move. |  | • 1-4: Move |
+| tk01 | Manipulation | 10×10 | 5 | **Telekinetic tug**: ACTION5 pulls the nearest crate one greedy Manhattan hop toward you; else push sokoban-style. |  | • 1-4: Move • 5: Tug |
+| hn01 | Logic / Classic | 10×12 | 5 | **Tower of Hanoi**: ACTION1–3 pick peg; ACTION5 pick/drop top disk; stack all on the right peg. |  | • 1-3: Peg • 5: Pick/drop |
+| fb01 | Hazard / Push | 12×12 | 5 | **Fuse bombs**: push bombs with countdown; blast removes adjacent weak walls and loses if you are adjacent. |  | • 1-4: Move |
+| lp01 | Ordering / Lexical | 9×11 | 5 | **Letter path**: visit letter pads in the authored word order; wrong letter loses. |  | • 1-4: Move |
+| rb01 | Timing / Rhythm | 11×11 | 5 | **Rhythm gate**: movement only applies every B world steps (beat). |  | • 1-4: Move |
+| at01 | Simulation / Steering | 16×16 | 5 | **Ant trail**: ACTION5 drops pheromone; ant follows strongest adjacent scent toward the exit hole. |  | • 1-4: Move • 5: Scent |
+| wb01 | Dynamic / Walls | 16×16 | 5 | **Wall belt**: marked wall segments on a row shift east each step (wrap); crushed if a wall lands on you. |  | • 1-4: Move |
+| lk01 | Logic / Lock | 10×10 | 5 | **Lock tumblers**: while the door exists ACTION1–3 cycle digits; when matched the door vanishes; then 1-4 move to goal. |  | • 1-4: Tumble / move |
+| dn01 | Topology / Torus | 16×16 | 5 | **Donut wind**: torus wrap east increments winding; need winding ≥ 2 on the goal to clear. |  | • 1-4: Move |
+| qt01 | Logic / Split | 10×10 | 5 | **Quantum split**: magenta splitter duplicates offset; cyan observer collapses; both ghosts cannot hit walls. |  | • 1-4: Move |
+| vt01 | Logic / Weights | 12×12 | 5 | **Vote plates**: sum of crate weights **on** the plate mod M opens the door; reach the goal. |  | • 1-4: Move |
+| fc01 | Coordination / Chain | 14×10 | 5 | **Follow chain**: three tails copy prior segment positions; you and tails must reach the exit neighborhood together. |  | • 1-4: Move |
+| pj01 | Timing / Deflect | 14×14 | 5 | **Bolt bounce**: bolt steps each frame; ACTION6 toggles / vs \\ mirrors; sink the bolt without getting hit. |  | • 1-4: Move • 6: Mirror |
+| gc01 | Growth / Routing | 14×14 | 5 | **Coral creep**: coral spreads to empty neighbors every M steps (blocking, non-lethal); reach the goal. |  | • 1-4: Move |
+| sr01 | Logic / Algebra | 12×12 | 5 | **Aura XOR**: RGB zones toggle aura bits; wash clears; door opens when aura matches the target triple. |  | • 1-4: Move |
 
 Implementation for each row lives under `environment_files/<Game>/<version>/` (one package dir per stem; `run_game.py --game <Game> --version auto` picks it). Registry column **Game** is the stem, not the full `game_id` in `metadata.json`.

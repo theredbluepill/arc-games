@@ -1,0 +1,19 @@
+{
+  "game_id": "df01-v1",
+  "title": "Heat Field",
+  "description": "Temperature diffuses each step from hot/cold tiles; stand on the goal when local temp is in range; ACTION6 vents a 3×3.",
+  "default_fps": 20,
+  "baseline_actions": [15],
+  "tags": ["static", "simulation"],
+  "local_dir": "environment_files/df01/v1",
+  "date_created": "2026-03-20",
+  "training_metadata": {
+    "pcg_type": [],
+    "grid_range": [16, 16],
+    "action_space": 5,
+    "physics_rules": ["diffusion"],
+    "reward_structure": "checkpoint-on-level-pass",
+    "episode_count": 1000000
+  },
+  "date_downloaded": "2026-03-20T12:00:00+00:00"
+}
