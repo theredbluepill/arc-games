@@ -1,0 +1,19 @@
+{
+  "game_id": "eb01-63be02fb",
+  "title": "Escalator Row",
+  "description": "10×10 grid. On the escalator row (level data), after each move you auto-slide east while the next cell is free.",
+  "default_fps": 20,
+  "baseline_actions": [1, 2, 3, 4],
+  "tags": ["static", "movement", "10-grid", "conveyor"],
+  "local_dir": "environment_files/eb01/63be02fb",
+  "date_created": "2026-03-20",
+  "training_metadata": {
+    "pcg_type": [],
+    "grid_range": [10],
+    "action_space": 4,
+    "physics_rules": ["escalator-row"],
+    "reward_structure": "checkpoint-on-level-pass",
+    "episode_count": 1000000
+  },
+  "date_downloaded": "2026-03-20T12:00:00+00:00"
+}

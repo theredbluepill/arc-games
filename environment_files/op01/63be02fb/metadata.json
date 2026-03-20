@@ -1,0 +1,19 @@
+{
+  "game_id": "op01-63be02fb",
+  "title": "One-Push Crate",
+  "description": "Sokoban-style push, but each crate may only be pushed once per level; second push loses.",
+  "default_fps": 20,
+  "baseline_actions": [1, 2, 3, 4],
+  "tags": ["static", "movement", "sokoban"],
+  "local_dir": "environment_files/op01/63be02fb",
+  "date_created": "2026-03-20",
+  "training_metadata": {
+    "pcg_type": [],
+    "grid_range": [8, 10],
+    "action_space": 4,
+    "physics_rules": ["single-push"],
+    "reward_structure": "checkpoint-on-level-pass",
+    "episode_count": 1000000
+  },
+  "date_downloaded": "2026-03-20T12:00:00+00:00"
+}

@@ -583,6 +583,12 @@ def step(self) -> None:
 1. **tt02**: When normalizing patrol waypoints from **`level.data`**, use **`[(int(p[0]), int(p[1])) for p in loop]`** — not **`tuple(int(...), int(...))`** (the built-in **`tuple()`** constructor accepts only one iterable argument).
 2. **hd01**: **`ACTION5`** charges immunity only on **`station`** cells but must still run the same per-step heat tick and immune decay as movement actions (do not early-return before **`_steps` / `_heat_row`** update).
 
+## Lessons Learned (plan-35 batch: bi01–ox01)
+
+1. **Sprite collision flag**: use **`sprite.is_collidable`**, not `sprite.collidable` (AttributeError in `arcengine`).
+2. **Local-only registry rows**: `run_game.py` defaults to **online** metadata fetch; use **`ARC_OPERATION_MODE=offline`** (or `OperationMode.OFFLINE`) so new stems load from disk before they exist on the API.
+3. **Orthogonal solvability spot-check**: `scripts/verify_batch35_solvability.py` BFS‑checks a few level‑0 mazes; snake / prime / swap puzzles need rule‑aware review.
+
 ## Lessons Learned (ACTION6 remediation + 30-game batch)
 
 1. **Non-click ACTION6**: **`dl01`** queue clear → **`ACTION5`**; **`sf01`** stencil paint → **`ACTION5`**; **`sg01`** timing commit → **`ACTION5`**; **`dd01`** pad ping → **`ACTION5`** only.

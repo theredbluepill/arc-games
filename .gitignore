@@ -3,7 +3,6 @@ notes/
 .env
 .DS_Store
 __pycache__/
-
 .worktrees/
 docs/
 
@@ -11,6 +10,7 @@ docs/
 arc_*-run_id_*.run.json
 arc_*.task.json
 
+# kaggle benchmarks zip files
 benchmarks.zip
 environment_files.zip
 

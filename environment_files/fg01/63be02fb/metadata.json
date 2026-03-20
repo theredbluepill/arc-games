@@ -1,0 +1,19 @@
+{
+  "game_id": "fg01-63be02fb",
+  "title": "Fog of War",
+  "description": "10×10 grid. Chebyshev fog radius r hides distant sprites; logic unchanged.",
+  "default_fps": 20,
+  "baseline_actions": [1, 2, 3, 4],
+  "tags": ["static", "movement", "10-grid", "fog"],
+  "local_dir": "environment_files/fg01/63be02fb",
+  "date_created": "2026-03-20",
+  "training_metadata": {
+    "pcg_type": [],
+    "grid_range": [10],
+    "action_space": 4,
+    "physics_rules": ["fog"],
+    "reward_structure": "checkpoint-on-level-pass",
+    "episode_count": 1000000
+  },
+  "date_downloaded": "2026-03-20T12:00:00+00:00"
+}

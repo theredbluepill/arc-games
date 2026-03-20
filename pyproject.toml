@@ -7,6 +7,7 @@ requires-python = ">=3.12"
 dependencies = [
     "arc-agi",
     "arcengine",
+    "matplotlib>=3.8",
     "numpy>=2.4.3",
     "kaggle-benchmarks>=0.2.0",
 ]
