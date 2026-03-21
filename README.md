@@ -45,7 +45,7 @@ These games are designed to be easy for humans to solve, but very hard for moder
 
 ## Why use ARC-Interactive?
 
-You can create games quickly with the patterns in [`AGENTS.md`](AGENTS.md) and the create-game skill (static levels are enough); games land in a community pool through normal repo contributions, so you can fork and share layouts; many stems live in one tree, so the catalog grows with `main` and is handy for probing mechanics; locally, `run_game.py --mode human` (matplotlib) gives a human-friendly play loop before you automate; and Arcade plus `environment_files/` matches ARC-AGI / ARCEngine expectations.
+You can create games quickly with the patterns in [`AGENTS.md`](AGENTS.md) and the create-game skill (static levels are enough); games land in a community pool through normal repo contributions, so you can fork and share layouts; many stems live in one tree, so the catalog grows with `main` and is handy for probing mechanics; locally, `run_game.py --mode human` opens a **pygame** window (persistent grid + mouse clicks for ACTION6) before you automate; and Arcade plus `environment_files/` matches ARC-AGI / ARCEngine expectations.
 
 ## Quickstart
 
@@ -55,30 +55,59 @@ Requires [Python 3.12+](https://www.python.org/) and [uv](https://github.com/ast
 uv sync
 ```
 
-Then run a game (example: tutorial **ez01**):
+Run a game (tutorial **ez01**). **`--game` last** makes swapping stems a one-line edit. Local play uses **local environments** (`environment_files/`) by default; add optional **`--offline`** if you want to **force** that (same as omitting **`--online`** / **`--competition`**).
 
 ```bash
-uv run python run_game.py --game ez01 --version auto
+uv run python run_game.py \
+  --version auto \
+  --game ez01
 ```
 
-Use any stem / version folder shown by `uv run python run_game.py --list`, or pass `--version auto` so the sole package under that stem is used.
-
-### Play by hand (matplotlib window)
+**Local environments, explicit `--offline`** (same tutorial **ez01**):
 
 ```bash
-uv run python run_game.py --game sk01 --version auto --mode human
+uv run python run_game.py \
+  --offline \
+  --version auto \
+  --game ez01
 ```
 
-### ARC Leaderboard
+Discover stems: `uv run python run_game.py --list` (add **`--offline`** there too if you want a listing pinned to **local environments**). **`--version auto`** picks the sole package under that stem.
 
-**[three.arcprize.org](https://three.arcprize.org/)** is where you’ll find the **ARC Leaderboard**, play online games, and **get your `ARC_API_KEY`** (use the site’s sign-in / API setup). Only **online** runs are ratable on that leaderboard; local/offline play does not count. To use the online service from this repo, copy [`.env.example`](.env.example) to **`.env`** and set **`ARC_API_KEY`** and **`ARC_OPERATION_MODE=online`**. `run_game.py` loads repo-root **`.env`** on startup (via `python-dotenv` from `arc-agi`).
+### Play by hand (pygame)
 
 ```bash
-# .env — replace angle-bracket placeholders; see .env.example for more options
-ARC_API_KEY=<your-arc-api-key>
-ARC_OPERATION_MODE=online
-# ARC_GAME_ID=<full-game-id>   # optional, e.g. ls20
+uv run python run_game.py \
+  --offline \
+  --version auto \
+  --mode human \
+  --game ez01
 ```
+
+### API / leaderboard / competition
+
+**[three.arcprize.org](https://three.arcprize.org/)** — leaderboard, online play, and **`ARC_API_KEY`**. Only **online** runs count there; play against **local environments** does not.
+
+1. Copy [`.env.example`](.env.example) → **`.env`** and set **`ARC_API_KEY`** (nothing else required in the template).
+2. For API play, pass **`--online`** (registry) or **`--competition`** ([competition rules](https://docs.arcprize.org/toolkit/competition_mode), Kaggle-style) — pick one; they are mutually exclusive. Omit both to use **local environments** (same as Quickstart). More flags: **`uv run python run_game.py --help`**.
+
+**Online** (registry):
+
+```bash
+uv run python run_game.py --online \
+  --version auto \
+  --game ls20
+```
+
+**Competition** toolkit mode:
+
+```bash
+uv run python run_game.py --competition \
+  --version auto \
+  --game ls20
+```
+
+`run_game.py` never passes **`scorecard_id`** into **`arc.make`** and does not call **`create_scorecard`**, **`get_scorecard`**, or **`close_scorecard`**. In **online** mode the toolkit may still attach play to its **default** scorecard ([Local vs Online](https://docs.arcprize.org/local-vs-online), [Get Scorecard](https://docs.arcprize.org/toolkit/get-scorecard)). For **custom** scorecards or create → close workflows: [Create Scorecard](https://docs.arcprize.org/toolkit/create-scorecard), [Close Scorecard](https://docs.arcprize.org/toolkit/close-scorecard).
 
 ### Create a game with AI Agent
 

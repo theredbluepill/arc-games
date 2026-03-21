@@ -8,13 +8,18 @@ Based on patterns from redpill/launch.py and redpill/remote_attempt.py
 Usage:
     uv run python run_game.py --game co01 --version auto
     uv run python run_game.py --game co01 --mode auto --steps 50
-    uv run python run_game.py --game ls20 --mode auto --render-mode human
+    uv run python run_game.py --game ls20 --mode human
     uv run python run_game.py --game sk01 --mode human
     uv run python run_game.py --game sk01 --mode human-toolkit
-    ARC_GAME_ID=co01-<ver> uv run python run_game.py
-    ARC_OPERATION_MODE=offline uv run python run_game.py
+    uv run python run_game.py   # local environments, default stem co01; add --online for API + default stem ls20
 
-Online scoring: this script does not pass scorecard_id to arc.make; see README (Online scorecard).
+Game selection: use ``--game`` (recommended). ``ARC_GAME_ID`` is never required if you pass
+``--game``. Env ``ARC_GAME_ID`` only applies when ``--game`` is omitted (overrides the mode default).
+
+CLI: ``--online`` / ``--offline`` / ``--competition`` select operation mode; optional env
+``ARC_OPERATION_MODE`` / ``OPERATION_MODE`` when none of those flags are passed. See ``--help``.
+
+Online scoring: this script does not pass scorecard_id to arc.make; see README (Online scorecard / competition).
 """
 
 from __future__ import annotations
@@ -49,23 +54,29 @@ except ImportError as e:
 
 
 def _load_dotenv() -> None:
-    """Load repo-root ``.env`` so ``ARC_API_KEY`` / ``ARC_OPERATION_MODE`` work with ``uv run``."""
+    """Load repo-root ``.env`` (e.g. ``ARC_API_KEY`` for ``--online`` / ``--competition``)."""
     if load_dotenv is not None:
         load_dotenv(_ROOT / ".env")
+
+
+# Default stems when ``--game`` is omitted (``ARC_GAME_ID`` still overrides). Online uses a
+# registry-friendly stem; offline keeps a small tutorial default.
+DEFAULT_GAME_STEM_OFFLINE = "co01"
+DEFAULT_GAME_STEM_ONLINE = "ls20"
 
 
 @dataclass
 class GameConfig:
     """Configuration for running a game."""
 
-    game_id: str = "co01"
+    game_id: str = DEFAULT_GAME_STEM_OFFLINE
     version: str = "auto"
     seed: int = 0
     steps: int = 100
-    mode: str = "terminal"  # terminal, auto, human (interactive), human-toolkit (official render)
-    #: Passed to ``arc.make(..., render_mode=...)`` — see toolkit render-games docs.
+    mode: str = "terminal"  # terminal, auto, human / human-toolkit (pygame GUI)
+    #: Passed to ``arc.make(..., render_mode=...)`` — terminal / none / terminal-fast (not GUI).
     render_mode: str | None = None
-    operation_mode: OperationMode = OperationMode.NORMAL
+    operation_mode: OperationMode = OperationMode.OFFLINE
 
 
 @dataclass
@@ -76,14 +87,38 @@ class GameResult:
     final_state: Any | None = None
 
 
-def get_operation_mode() -> OperationMode:
-    """Get operation mode from environment variable."""
-    mode = os.getenv("ARC_OPERATION_MODE", "normal").lower()
+def get_operation_mode_from_env() -> OperationMode:
+    """``Arcade`` mode from ``ARC_OPERATION_MODE`` / ``OPERATION_MODE`` (legacy / scripts)."""
+    raw = os.getenv("ARC_OPERATION_MODE") or os.getenv("OPERATION_MODE")
+    if raw is None or not raw.strip():
+        return OperationMode.OFFLINE
+    mode = raw.strip().lower()
     if mode == "online":
         return OperationMode.ONLINE
     if mode == "offline":
         return OperationMode.OFFLINE
+    if mode == "competition":
+        return OperationMode.COMPETITION
+    if mode == "normal":
+        return OperationMode.NORMAL
     return OperationMode.NORMAL
+
+
+def resolve_operation_mode(args: argparse.Namespace) -> OperationMode:
+    """CLI flags win over env. Default when neither flag nor env: offline."""
+    if getattr(args, "competition", False):
+        return OperationMode.COMPETITION
+    if getattr(args, "online", False):
+        return OperationMode.ONLINE
+    if getattr(args, "offline", False):
+        return OperationMode.OFFLINE
+    return get_operation_mode_from_env()
+
+
+def get_default_game_stem(operation_mode: OperationMode) -> str:
+    if operation_mode == OperationMode.ONLINE:
+        return DEFAULT_GAME_STEM_ONLINE
+    return DEFAULT_GAME_STEM_OFFLINE
 
 
 def resolve_full_game_id(raw_id: str, version_arg: str) -> str:
@@ -97,18 +132,18 @@ def resolve_full_game_id(raw_id: str, version_arg: str) -> str:
     return full_game_id_for_stem(stem, version_arg)
 
 
-def get_game_id(default: str = "co01") -> str:
-    """Get game ID from environment variable or use default."""
+def get_game_id(operation_mode: OperationMode) -> str:
+    """Stem or full id when ``--game`` is omitted: optional ``ARC_GAME_ID``, else mode-based default."""
     env_game_id = os.getenv("ARC_GAME_ID", "").strip()
     if env_game_id:
         print(f"Using game from ARC_GAME_ID: {env_game_id}")
         return env_game_id
-    return default
+    return get_default_game_stem(operation_mode)
 
 
-def _list_available_games_disk_scan(env_dir: Path) -> None:
+def _list_available_games_env_walk(env_dir: Path) -> None:
     """Fallback: walk ``environment_files`` and read ``metadata.json`` titles."""
-    print("\nAvailable Games (disk scan):")
+    print("\nAvailable Games (local environments scan):")
     print("-" * 50)
 
     games_found: list[str] = []
@@ -137,11 +172,11 @@ def _list_available_games_disk_scan(env_dir: Path) -> None:
     print(f"\nTotal: {len(games_found)} game(s)")
     print("\nTo run a game:")
     print("  uv run python run_game.py --game <game_id> --version <version>")
-    print("\nOr use environment variable:")
+    print("\nOptional override:")
     print("  ARC_GAME_ID=co01-<ver> uv run python run_game.py")
 
 
-def list_available_games() -> None:
+def list_available_games(operation_mode: OperationMode) -> None:
     """List games under ``environment_files`` using the toolkit when possible.
 
     Prefer :meth:`Arcade.get_environments` (see
@@ -159,7 +194,7 @@ def list_available_games() -> None:
     try:
         arc = Arcade(
             environments_dir=str(env_dir),
-            operation_mode=get_operation_mode(),
+            operation_mode=operation_mode,
         )
         getter = getattr(arc, "get_environments", None)
         if callable(getter):
@@ -183,13 +218,13 @@ def list_available_games() -> None:
         return
 
     if err is not None:
-        print(f"get_environments() unavailable ({err!r}); using disk scan.\n")
+        print(f"get_environments() unavailable ({err!r}); using local environments scan.\n")
     elif games is not None:
-        print("get_environments() returned empty; using disk scan.\n")
+        print("get_environments() returned empty; using local environments scan.\n")
     else:
-        print("get_environments() not found on Arcade; using disk scan.\n")
+        print("get_environments() not found on Arcade; using local environments scan.\n")
 
-    _list_available_games_disk_scan(env_dir)
+    _list_available_games_env_walk(env_dir)
 
 
 def run_game(config: GameConfig) -> GameResult:
@@ -213,11 +248,14 @@ def run_game(config: GameConfig) -> GameResult:
         operation_mode=operation_mode,
     )
 
-    environment = arc.make(
-        config.game_id,
-        seed=config.seed,
-        render_mode=config.render_mode,
-    )
+    make_kw: dict[str, Any] = {
+        "seed": config.seed,
+        "render_mode": config.render_mode,
+    }
+    if config.mode in ("human", "human-toolkit"):
+        make_kw["include_frame_data"] = True
+
+    environment = arc.make(config.game_id, **make_kw)
 
     if environment is None:
         raise RuntimeError(f"Failed to create environment for game {config.game_id}")
@@ -226,31 +264,25 @@ def run_game(config: GameConfig) -> GameResult:
     final_state = None
 
     try:
-        if config.mode == "human":
-            from human_play_matplotlib import run_interactive_matplotlib
+        if config.mode in ("human", "human-toolkit"):
+            from human_play_pygame import run_interactive_pygame
 
             print(
-                "Matplotlib window: WASD/Arrows = ACTION1–4, Space/F = ACTION5, "
-                "click = ACTION6 (0–63), Ctrl/Cmd+Z = undo, R = reset, Q = quit"
+                "Pygame window: WASD/Arrows = ACTION1–4, Space/F/5 = ACTION5, "
+                "click = ACTION6 (0–63), U or Ctrl/Cmd+Z = ACTION7, R = reset, Q = quit"
             )
             print("See https://docs.arcprize.org/actions")
             print("-" * 50)
-            step_count = run_interactive_matplotlib(environment)
+            step_count = run_interactive_pygame(environment)
             final_state = environment.observation_space
 
         elif config.mode == "terminal":
-            # Interactive mode (optionally with arc.make(render_mode="human") — see human-toolkit)
-            print("Controls: 1-4=Movement, 5-6=Special, q=Quit")
-            if config.render_mode == "human":
-                print(
-                    "Toolkit render_mode=human: a matplotlib window will play each step’s "
-                    "frames, then close (https://docs.arcprize.org/toolkit/render-games)."
-                )
+            print("Controls: 1-4=Movement, 5-6=Special, 7=Undo (if game supports), q=Quit")
             print("-" * 50)
 
             while True:
                 try:
-                    cmd = input("\nAction [1-6/q]: ").strip().lower()
+                    cmd = input("\nAction [1-7/q]: ").strip().lower()
 
                     if cmd == "q":
                         print("\nGame exited by user")
@@ -263,6 +295,7 @@ def run_game(config: GameConfig) -> GameResult:
                         "4": GameAction.ACTION4,
                         "5": GameAction.ACTION5,
                         "6": GameAction.ACTION6,
+                        "7": GameAction.ACTION7,
                     }
 
                     if cmd in action_map:
@@ -278,7 +311,7 @@ def run_game(config: GameConfig) -> GameResult:
                         final_state = result
                         print(f"Step {step_count}: Action={action.name}")
                     else:
-                        print("Invalid action. Use 1-6 or q")
+                        print("Invalid action. Use 1-7 or q")
 
                 except KeyboardInterrupt:
                     print("\n\nGame interrupted")
@@ -335,21 +368,32 @@ def setup_argparser():
 Examples:
   uv run python run_game.py --game co01 --version auto
   uv run python run_game.py --game co01 --mode auto --steps 50
-  uv run python run_game.py --game ls20 --mode auto --render-mode human
+  uv run python run_game.py --game ls20 --mode human
   uv run python run_game.py --game sk01 --mode human
   uv run python run_game.py --game sk01 --mode human-toolkit
   uv run python run_game.py --list
+  uv run python run_game.py --online --list        # API catalog (needs ARC_API_KEY)
+  uv run python run_game.py --online --game ls20 --version auto
 
 Render modes (https://docs.arcprize.org/toolkit/render-games):
-  default, none, terminal, terminal-fast, human
+  default, none, terminal, terminal-fast  (human GUI: use --mode human, pygame)
 
-Environment Variables:
-  ARC_GAME_ID=co01-<ver>     # Full game id from metadata
-  ARC_OPERATION_MODE=offline # online / offline / normal
-  ARC_API_KEY=...            # Required when OPERATION_MODE=online (see .env.example)
+Operation mode (pick one; default offline / local environments):
+  --online       API / online registry (put ARC_API_KEY in .env)
+  --offline      Force local environments even if .env sets ARC_OPERATION_MODE=online
+  --competition  Competition toolkit rules (API); see docs.arcprize.org/toolkit/competition_mode
+  If none of the above: ARC_OPERATION_MODE / OPERATION_MODE env (legacy), else offline.
 
-Optional:
-  Repo-root .env is loaded at startup when python-dotenv is installed (bundled with arc-agi).
+  Picking a game: prefer --game <stem>. No ARC_GAME_ID needed if you use --game.
+  If you omit --game: default stem co01 (offline/normal/competition) or ls20 (--online); ARC_GAME_ID overrides.
+
+Environment variables (optional):
+  ARC_API_KEY=...            # Required for --online / --competition API calls (.env.example)
+  ARC_OPERATION_MODE=...     # Only when no --online/--offline/--competition (legacy scripts)
+  OPERATION_MODE=...         # Toolkit alias if ARC_OPERATION_MODE unset
+  ARC_GAME_ID=...            # When --game omitted only (overrides default stem)
+
+Repo-root .env is loaded at startup when python-dotenv is installed (bundled with arc-agi).
 
 Note:
   No create_scorecard / scorecard_id / close_scorecard — use Arcade in a script or the quickstarter
@@ -357,7 +401,15 @@ Note:
         """,
     )
 
-    parser.add_argument("--game", "-g", type=str, help="Game ID (e.g., co01)")
+    parser.add_argument(
+        "--game",
+        "-g",
+        type=str,
+        help=(
+            "Game stem or full id. If set, ignores ARC_GAME_ID. If omitted: default stem is "
+            "co01 (local environments / competition) or ls20 (--online); ARC_GAME_ID env overrides that."
+        ),
+    )
     parser.add_argument(
         "--version",
         "-v",
@@ -375,18 +427,18 @@ Note:
         choices=["terminal", "auto", "human", "human-toolkit"],
         default="auto",
         help=(
-            "Play: terminal (typed 1–6), human (repo interactive WASD/click), "
-            "human-toolkit (typed 1–6 + official render_mode=human), or auto (random)"
+            "Play: terminal (typed 1–6), human (pygame WASD/click), "
+            "human-toolkit (same pygame UI; legacy name), or auto (random)"
         ),
     )
     parser.add_argument(
         "--render-mode",
         type=str,
-        choices=["default", "none", "terminal", "terminal-fast", "human"],
+        choices=["default", "none", "terminal", "terminal-fast"],
         default="default",
         help=(
-            "arc.make(render_mode=...): default=infer from --mode (terminal play uses "
-            "terminal; else none). Matches toolkit: terminal, terminal-fast, human, none."
+            "arc.make(render_mode=...): default=infer from --mode (terminal uses "
+            "terminal; else none). For a GUI use --mode human (pygame), not render_mode."
         ),
     )
     parser.add_argument(
@@ -403,6 +455,23 @@ Note:
         help="List games (Arcade.get_environments; see docs.arcprize.org/toolkit/list-games)",
     )
 
+    om = parser.add_mutually_exclusive_group()
+    om.add_argument(
+        "--online",
+        action="store_true",
+        help="Use API / online game registry (set ARC_API_KEY in .env)",
+    )
+    om.add_argument(
+        "--offline",
+        action="store_true",
+        help="Force local environments (ignore ARC_OPERATION_MODE=online in .env)",
+    )
+    om.add_argument(
+        "--competition",
+        action="store_true",
+        help="Competition toolkit mode (API); see docs.arcprize.org/toolkit/competition_mode",
+    )
+
     return parser
 
 
@@ -411,30 +480,20 @@ def main():
     _load_dotenv()
     parser = setup_argparser()
     args = parser.parse_args()
+    op_mode = resolve_operation_mode(args)
 
     if args.list:
-        list_available_games()
+        list_available_games(op_mode)
         return
 
-    # Get game ID from args or environment
-    game_id = args.game or get_game_id()
-
-    if not game_id:
-        print("Error: --game is required (unless using ARC_GAME_ID)")
-        parser.print_help()
-        sys.exit(1)
-
+    game_id = args.game or get_game_id(op_mode)
     full_game_id = resolve_full_game_id(game_id, args.version)
 
     # Resolve arc.make(render_mode=...) and which play loop runs.
     play_mode = args.mode
-    if args.mode == "human":
-        # Repo interactive window only; skip toolkit human to avoid double matplotlib.
+    if args.mode in ("human", "human-toolkit"):
+        # Pygame UI in run_game; do not attach arc-agi matplotlib renderer.
         make_render_mode: str | None = None
-    elif args.mode == "human-toolkit":
-        # Official toolkit matplotlib playback after each step; same loop as terminal.
-        make_render_mode = "human"
-        play_mode = "terminal"
     elif args.render_mode == "default":
         make_render_mode = "terminal" if args.mode == "terminal" else None
     elif args.render_mode == "none":
@@ -450,7 +509,7 @@ def main():
         steps=args.steps,
         mode=play_mode,
         render_mode=make_render_mode,
-        operation_mode=get_operation_mode(),
+        operation_mode=op_mode,
     )
 
     try:
