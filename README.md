@@ -142,11 +142,7 @@ Implement a new ARC-AGI-3 game {game_id} at environment_files/{game_id}/v1/. Fol
 
 Optional second pass for the preview column: follow **skills/generate-arc-game-gif/SKILL.md** (GIF-ready `RenderableUserDisplay`, then `uv run python scripts/render_arc_game_gif.py --stem {game_id}`).
 
-## Benchmarks
-
-### Official ARC-AGI-3 (ARC Prize)
-
-The primary benchmark and leaderboard for interactive reasoning is **[ARC-AGI-3](https://arcprize.org/arc-agi/3/)** from [ARC Prize](https://arcprize.org): 1,000+ levels across 150+ environments, scored partly on **action efficiency** (how many steps to the goal vs. humans). This repo ships **public environment** games compatible with that ecosystem; see the site for competition rules, toolkit, and human baselines.
+## Community Benchmarks
 
 ### Kaggle
 
