@@ -1,0 +1,30 @@
+{
+  "game_id": "lp01-v1",
+  "title": "Letter Path",
+  "description": "Visit letter pads in authored order (A\u2192B\u2192C\u2026); wrong letter loses.",
+  "default_fps": 20,
+  "baseline_actions": [
+    15
+  ],
+  "tags": [
+    "static",
+    "order"
+  ],
+  "local_dir": "environment_files/lp01/v1",
+  "date_created": "2026-03-20",
+  "training_metadata": {
+    "pcg_type": [],
+    "grid_range": [
+      9,
+      11
+    ],
+    "action_space": 4,
+    "physics_rules": [
+      "static",
+      "order"
+    ],
+    "reward_structure": "checkpoint-on-level-pass",
+    "episode_count": 1000000
+  },
+  "date_downloaded": "2026-03-20T12:00:00+00:00"
+}

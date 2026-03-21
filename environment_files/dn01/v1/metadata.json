@@ -1,0 +1,30 @@
+{
+  "game_id": "dn01-v1",
+  "title": "Donut Wind",
+  "description": "Torus wrap on a 16\u00d716 grid; crossing the east seam increments winding \u2014 need \u22652 winding to clear the goal.",
+  "default_fps": 20,
+  "baseline_actions": [
+    15
+  ],
+  "tags": [
+    "static",
+    "topology"
+  ],
+  "local_dir": "environment_files/dn01/v1",
+  "date_created": "2026-03-20",
+  "training_metadata": {
+    "pcg_type": [],
+    "grid_range": [
+      16,
+      16
+    ],
+    "action_space": 4,
+    "physics_rules": [
+      "static",
+      "topology"
+    ],
+    "reward_structure": "checkpoint-on-level-pass",
+    "episode_count": 1000000
+  },
+  "date_downloaded": "2026-03-20T12:00:00+00:00"
+}

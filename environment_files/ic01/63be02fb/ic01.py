@@ -1,3 +1,18 @@
+"""ic01 — frictionless ice movement on a grid.
+
+**One ACTION1–4 press = one slide in that direction**, not one step:
+
+- From your stop cell, you keep moving cell-by-cell in that direction until the *next* cell
+  would leave the grid **or** hit a **wall** (gray) or **hazard** (red). You never enter those;
+  you **stop on the last empty cell** before the block or edge.
+
+- The **yellow goal** is *not* solid: it does not block a slide. If your slide path crosses the
+  goal, you **land on it** and the level clears. A **wall past the goal** (see level 1) is used
+  when designers need you to **stop exactly** on the goal tile instead of sliding past.
+
+This is **not** the same as ic02 (torus wrap) — here the grid edge always stops you.
+"""
+
 from arcengine import (
     ARCBaseGame,
     Camera,
@@ -8,13 +23,24 @@ from arcengine import (
 
 
 class Ic01UI(RenderableUserDisplay):
-    def __init__(self, _: int) -> None:
-        pass
+    """Bottom-right HUD: light blue = sliding ice; yellow = your stop cell is a goal."""
 
-    def update(self, _: int) -> None:
-        pass
+    def __init__(self, on_goal: bool) -> None:
+        self._on_goal = on_goal
+
+    def update(self, on_goal: bool) -> None:
+        self._on_goal = on_goal
 
     def render_interface(self, frame):
+        import numpy as np
+
+        if not isinstance(frame, np.ndarray):
+            return frame
+        h, w = frame.shape
+        color = 11 if self._on_goal else 10
+        for dy in range(4):
+            for dx in range(4):
+                frame[h - 4 + dy, w - 4 + dx] = color
         return frame
 
 
@@ -58,6 +84,8 @@ def make_level(sprites_list, grid_size, difficulty):
     )
 
 
+# Ice reachability is not full-grid: opposite corners like (1,6)→(6,1) can be impossible
+# on an empty board. Each layout below is BFS-checked under slide-to-block physics.
 levels = [
     make_level(
         [
@@ -70,14 +98,8 @@ levels = [
     ),
     make_level(
         [
-            sprites["player"].clone().set_position(1, 6),
-            sprites["target"].clone().set_position(6, 1),
-            sprites["wall"].clone().set_position(1, 3),
-            sprites["wall"].clone().set_position(2, 3),
-            sprites["wall"].clone().set_position(3, 3),
-            sprites["wall"].clone().set_position(4, 3),
-            sprites["wall"].clone().set_position(5, 3),
-            sprites["wall"].clone().set_position(6, 3),
+            sprites["player"].clone().set_position(0, 0),
+            sprites["target"].clone().set_position(7, 7),
         ],
         (8, 8),
         2,
@@ -86,34 +108,29 @@ levels = [
         [
             sprites["player"].clone().set_position(0, 0),
             sprites["target"].clone().set_position(7, 7),
-        ]
-        + [sprites["wall"].clone().set_position(x, 4) for x in range(8) if x != 3],
+            sprites["hazard"].clone().set_position(4, 4),
+        ],
         (8, 8),
         3,
     ),
     make_level(
         [
-            sprites["player"].clone().set_position(1, 1),
-            sprites["target"].clone().set_position(8, 6),
-            sprites["hazard"].clone().set_position(5, 3),
-            sprites["hazard"].clone().set_position(5, 4),
-            sprites["hazard"].clone().set_position(5, 5),
+            sprites["player"].clone().set_position(0, 0),
+            sprites["target"].clone().set_position(9, 0),
         ]
-        + [sprites["wall"].clone().set_position(x, y) for x, y in [(3, 2), (4, 2), (3, 6), (4, 6)]],
+        + [sprites["wall"].clone().set_position(x, 4) for x in range(10) if x != 5],
         (10, 8),
         4,
     ),
     make_level(
         [
-            sprites["player"].clone().set_position(1, 7),
-            sprites["target"].clone().set_position(6, 0),
+            sprites["player"].clone().set_position(0, 7),
+            sprites["target"].clone().set_position(7, 0),
             sprites["hazard"].clone().set_position(3, 3),
             sprites["hazard"].clone().set_position(4, 3),
             sprites["hazard"].clone().set_position(3, 4),
             sprites["hazard"].clone().set_position(4, 4),
-        ]
-        + [sprites["wall"].clone().set_position(x, 1) for x in range(8) if x not in (3, 4)]
-        + [sprites["wall"].clone().set_position(x, 6) for x in range(8) if x not in (3, 4)],
+        ],
         (8, 8),
         5,
     ),
@@ -124,10 +141,10 @@ PADDING_COLOR = 4
 
 
 class Ic01(ARCBaseGame):
-    """Each move slides you in that direction until you hit a wall or red hazard."""
+    """Ice grid: each cardinal action is a full slide until edge, wall, or hazard (see module doc)."""
 
     def __init__(self) -> None:
-        self._ui = Ic01UI(0)
+        self._ui = Ic01UI(False)
         super().__init__(
             "ic01",
             levels,
@@ -140,8 +157,18 @@ class Ic01(ARCBaseGame):
     def on_set_level(self, level: Level) -> None:
         self._player = self.current_level.get_sprites_by_tag("player")[0]
         self._targets = self.current_level.get_sprites_by_tag("target")
+        self._sync_ui()
+
+    def _on_goal_cell(self) -> bool:
+        return any(
+            self._player.x == t.x and self._player.y == t.y for t in self._targets
+        )
+
+    def _sync_ui(self) -> None:
+        self._ui.update(self._on_goal_cell())
 
     def _blocked(self, x: int, y: int) -> bool:
+        """Walls and hazards stop a slide; targets and empty floor do not."""
         sprite = self.current_level.get_sprite_at(x, y, ignore_collidable=True)
         if not sprite:
             return False
@@ -166,6 +193,7 @@ class Ic01(ARCBaseGame):
 
         grid_w, grid_h = self.current_level.grid_size
         px, py = self._player.x, self._player.y
+        # Slide: absorb the whole ray in one action (unlike normal 1-cell movement).
         while True:
             nx, ny = px + dx, py + dy
             if not (0 <= nx < grid_w and 0 <= ny < grid_h):
@@ -175,6 +203,7 @@ class Ic01(ARCBaseGame):
             px, py = nx, ny
 
         self._player.set_position(px, py)
+        self._sync_ui()
 
         for t in self._targets:
             if self._player.x == t.x and self._player.y == t.y:

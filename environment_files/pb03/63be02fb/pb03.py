@@ -8,11 +8,16 @@ from arcengine import (
 
 
 class Pb03UI(RenderableUserDisplay):
-    def __init__(self, ok: bool) -> None:
-        self._ok = ok
+    """Bottom-left orange = decoy hazard cue. Bottom-right: green goal / maroon play / red fail."""
 
-    def update(self, ok: bool) -> None:
+    def __init__(self, ok: bool, decoy_fail: bool = False) -> None:
         self._ok = ok
+        self._decoy_fail = decoy_fail
+
+    def update(self, ok: bool, *, decoy_fail: bool | None = None) -> None:
+        self._ok = ok
+        if decoy_fail is not None:
+            self._decoy_fail = decoy_fail
 
     def render_interface(self, frame):
         import numpy as np
@@ -20,10 +25,19 @@ class Pb03UI(RenderableUserDisplay):
         if not isinstance(frame, np.ndarray):
             return frame
         h, w = frame.shape
-        color = 14 if self._ok else 13
+        if self._decoy_fail:
+            color = 8
+        elif self._ok:
+            color = 14
+        else:
+            color = 13
         for dy in range(4):
             for dx in range(4):
                 frame[h - 4 + dy, w - 4 + dx] = color
+        # Bottom-left orange tile matches decoy color on the grid.
+        for dy in range(3):
+            for dx in range(3):
+                frame[h - 4 + dy, dx] = 12
         return frame
 
 
@@ -123,6 +137,7 @@ class Pb03(ARCBaseGame):
         self._decoys = self.current_level.get_sprites_by_tag("decoy")
         self._step_limit = level.get_data("step_limit")
         self._steps = 0
+        self._ui.update(False, decoy_fail=False)
         self._sync_ui()
 
     def _on_real_goal(self) -> bool:
@@ -185,6 +200,7 @@ class Pb03(ARCBaseGame):
                 self.complete_action()
                 return
             if block_behind and "decoy" in block_behind.tags:
+                self._ui.update(self._on_real_goal(), decoy_fail=True)
                 self.lose()
                 self.complete_action()
                 return

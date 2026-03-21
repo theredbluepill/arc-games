@@ -1,0 +1,19 @@
+{
+  "game_id": "pk01-v1",
+  "title": "Polyomino Pack",
+  "description": "Cover gray marks with dominoes (ACTION5 mode + two clicks) or straight trominoes (three collinear clicks).",
+  "default_fps": 20,
+  "baseline_actions": [15],
+  "tags": ["static", "topology", "packing"],
+  "local_dir": "environment_files/pk01/v1",
+  "date_created": "2026-03-20",
+  "training_metadata": {
+    "pcg_type": [],
+    "grid_range": [8, 12],
+    "action_space": 2,
+    "physics_rules": ["click", "packing"],
+    "reward_structure": "checkpoint-on-level-pass",
+    "episode_count": 1000000
+  },
+  "date_downloaded": "2026-03-20T12:00:00+00:00"
+}

@@ -1,0 +1,30 @@
+{
+  "game_id": "lk01-v1",
+  "title": "Lock Tumblers",
+  "description": "ACTION1\u20133 cycle tumblers 0\u20135; when all match targets the door (gray wall) opens; reach goal.",
+  "default_fps": 20,
+  "baseline_actions": [
+    15
+  ],
+  "tags": [
+    "static",
+    "logic"
+  ],
+  "local_dir": "environment_files/lk01/v1",
+  "date_created": "2026-03-20",
+  "training_metadata": {
+    "pcg_type": [],
+    "grid_range": [
+      10,
+      10
+    ],
+    "action_space": 5,
+    "physics_rules": [
+      "static",
+      "logic"
+    ],
+    "reward_structure": "checkpoint-on-level-pass",
+    "episode_count": 1000000
+  },
+  "date_downloaded": "2026-03-20T12:00:00+00:00"
+}

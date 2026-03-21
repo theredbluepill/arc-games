@@ -1,0 +1,30 @@
+{
+  "game_id": "fc01-v1",
+  "title": "Follow Chain",
+  "description": "Three tail sprites copy your previous positions each step; avoid overlapping them; all must reach the exit zone.",
+  "default_fps": 20,
+  "baseline_actions": [
+    15
+  ],
+  "tags": [
+    "static",
+    "coordination"
+  ],
+  "local_dir": "environment_files/fc01/v1",
+  "date_created": "2026-03-20",
+  "training_metadata": {
+    "pcg_type": [],
+    "grid_range": [
+      14,
+      10
+    ],
+    "action_space": 4,
+    "physics_rules": [
+      "static",
+      "coordination"
+    ],
+    "reward_structure": "checkpoint-on-level-pass",
+    "episode_count": 1000000
+  },
+  "date_downloaded": "2026-03-20T12:00:00+00:00"
+}

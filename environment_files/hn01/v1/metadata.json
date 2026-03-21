@@ -1,0 +1,30 @@
+{
+  "game_id": "hn01-v1",
+  "title": "Tower of Hanoi",
+  "description": "ACTION1\u20133 select peg A/B/C; ACTION5 picks or drops top disk (no big-on-small). Stack on right peg to win.",
+  "default_fps": 20,
+  "baseline_actions": [
+    15
+  ],
+  "tags": [
+    "static",
+    "logic"
+  ],
+  "local_dir": "environment_files/hn01/v1",
+  "date_created": "2026-03-20",
+  "training_metadata": {
+    "pcg_type": [],
+    "grid_range": [
+      10,
+      12
+    ],
+    "action_space": 5,
+    "physics_rules": [
+      "static",
+      "logic"
+    ],
+    "reward_structure": "checkpoint-on-level-pass",
+    "episode_count": 1000000
+  },
+  "date_downloaded": "2026-03-20T12:00:00+00:00"
+}

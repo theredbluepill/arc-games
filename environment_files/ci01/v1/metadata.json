@@ -1,0 +1,19 @@
+{
+  "game_id": "ci01-v1",
+  "title": "Crate Ice",
+  "description": "Sokoban where the player moves normally but pushed crates slide until blocked by wall, crate, or mud.",
+  "default_fps": 20,
+  "baseline_actions": [15],
+  "tags": ["static", "planning", "push"],
+  "local_dir": "environment_files/ci01/v1",
+  "date_created": "2026-03-20",
+  "training_metadata": {
+    "pcg_type": [],
+    "grid_range": [8, 12],
+    "action_space": 4,
+    "physics_rules": ["movement", "push", "slide"],
+    "reward_structure": "checkpoint-on-level-pass",
+    "episode_count": 1000000
+  },
+  "date_downloaded": "2026-03-20T12:00:00+00:00"
+}

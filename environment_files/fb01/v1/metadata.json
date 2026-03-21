@@ -1,0 +1,30 @@
+{
+  "game_id": "fb01-v1",
+  "title": "Fuse Bomb",
+  "description": "Push orange bombs; fuse counts down each step; at 0 removes weak walls in radius 1 and loses if you are in the blast.",
+  "default_fps": 20,
+  "baseline_actions": [
+    15
+  ],
+  "tags": [
+    "static",
+    "hazard"
+  ],
+  "local_dir": "environment_files/fb01/v1",
+  "date_created": "2026-03-20",
+  "training_metadata": {
+    "pcg_type": [],
+    "grid_range": [
+      12,
+      12
+    ],
+    "action_space": 4,
+    "physics_rules": [
+      "static",
+      "hazard"
+    ],
+    "reward_structure": "checkpoint-on-level-pass",
+    "episode_count": 1000000
+  },
+  "date_downloaded": "2026-03-20T12:00:00+00:00"
+}

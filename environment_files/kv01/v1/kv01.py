@@ -1,0 +1,174 @@
+"""Kirchhoff-lite ladder: three series resistors between fixed 12 V and ground; cycle each R ∈ {1,2,4} and match probe voltages.
+
+Spec:
+- No grid entities; puzzle is driven purely by internal state (shown in HUD).
+- ``level.data``: ``r0``, ``r1``, ``r2`` — initial ohm values (each in {1,2,4}); ``t1_num``, ``t1_den``, ``t2_num``, ``t2_den`` — target ``Fraction`` for V(node1) and V(node2) with V0=12, V3=0 and nodes 0—1—2—3 in series.
+- Actions: **1** cycles ``r0**, **2** cycles ``r1**, **3** cycles ``r2** through (1,2,4). **5** checks win (no-op if wrong).
+- Win: ``V1 == t1`` and ``V2 == t2`` as exact ``Fraction``s. Lose: none.
+- Camera: 8×8 (minimal letterbox); optional decorative ``wall`` sprites optional — omitted here.
+"""
+
+from __future__ import annotations
+
+from fractions import Fraction
+
+from arcengine import (
+    ARCBaseGame,
+    Camera,
+    GameAction,
+    Level,
+    RenderableUserDisplay,
+)
+
+
+class Kv01UI(RenderableUserDisplay):
+    def __init__(
+        self,
+        r0: int,
+        r1: int,
+        r2: int,
+        v1n: int,
+        v1d: int,
+        v2n: int,
+        v2d: int,
+    ) -> None:
+        self._r0 = r0
+        self._r1 = r1
+        self._r2 = r2
+        self._v1n = v1n
+        self._v1d = v1d
+        self._v2n = v2n
+        self._v2d = v2d
+
+    def update(
+        self,
+        r0: int,
+        r1: int,
+        r2: int,
+        v1n: int,
+        v1d: int,
+        v2n: int,
+        v2d: int,
+    ) -> None:
+        self._r0 = r0
+        self._r1 = r1
+        self._r2 = r2
+        self._v1n = v1n
+        self._v1d = v1d
+        self._v2n = v2n
+        self._v2d = v2d
+
+    def render_interface(self, frame):
+        import numpy as np
+
+        if not isinstance(frame, np.ndarray):
+            return frame
+        h, w = frame.shape
+        for i, rv in enumerate((self._r0, self._r1, self._r2)):
+            c = 6 + (rv % 3) * 3
+            frame[h - 4, 2 + i] = c
+        frame[h - 3, 2] = min(15, max(0, self._v1n % 16))
+        frame[h - 3, 4] = min(15, max(0, self._v2n % 16))
+        return frame
+
+
+def _cycle_r(x: int) -> int:
+    opts = (1, 2, 4)
+    i = opts.index(x) if x in opts else 0
+    return opts[(i + 1) % len(opts)]
+
+
+def _voltages(r0: int, r1: int, r2: int) -> tuple[Fraction, Fraction]:
+    s = r0 + r1 + r2
+    if s == 0:
+        return Fraction(0), Fraction(0)
+    v1 = Fraction(12 * (r1 + r2), s)
+    v2 = Fraction(12 * r2, s)
+    return v1, v2
+
+
+def make_kv_level(
+    difficulty: int,
+    init_r0: int,
+    init_r1: int,
+    init_r2: int,
+    t1: tuple[int, int],
+    t2: tuple[int, int],
+) -> Level:
+    return Level(
+        sprites=[],
+        grid_size=(8, 8),
+        data={
+            "difficulty": difficulty,
+            "r0": init_r0,
+            "r1": init_r1,
+            "r2": init_r2,
+            "t1_num": t1[0],
+            "t1_den": t1[1],
+            "t2_num": t2[0],
+            "t2_den": t2[1],
+        },
+    )
+
+
+# Targets are V1,V2 with V0=12, V3=0; a solution exists by cycling each R in {1,2,4}.
+levels = [
+    make_kv_level(1, 2, 4, 2, (8, 1), (4, 1)),
+    make_kv_level(2, 1, 1, 1, (9, 1), (3, 1)),
+    make_kv_level(3, 1, 2, 4, (8, 1), (4, 1)),
+    make_kv_level(4, 2, 2, 2, (10, 1), (2, 1)),
+    make_kv_level(5, 1, 2, 1, (4, 1), (2, 1)),
+]
+
+BACKGROUND_COLOR = 5
+PADDING_COLOR = 4
+
+
+class Kv01(ARCBaseGame):
+    def __init__(self) -> None:
+        self._ui = Kv01UI(1, 1, 1, 8, 1, 4, 1)
+        super().__init__(
+            "kv01",
+            levels,
+            Camera(0, 0, 8, 8, BACKGROUND_COLOR, PADDING_COLOR, [self._ui]),
+            False,
+            1,
+            [1, 2, 3, 5],
+        )
+
+    def on_set_level(self, level: Level) -> None:
+        self._r0 = int(level.get_data("r0"))
+        self._r1 = int(level.get_data("r1"))
+        self._r2 = int(level.get_data("r2"))
+        self._t1 = Fraction(int(level.get_data("t1_num")), int(level.get_data("t1_den")))
+        self._t2 = Fraction(int(level.get_data("t2_num")), int(level.get_data("t2_den")))
+        self._paint_ui()
+
+    def _paint_ui(self) -> None:
+        v1, v2 = _voltages(self._r0, self._r1, self._r2)
+        self._ui.update(
+            self._r0,
+            self._r1,
+            self._r2,
+            v1.numerator,
+            v1.denominator,
+            v2.numerator,
+            v2.denominator,
+        )
+
+    def step(self) -> None:
+        aid = self.action.id
+        if aid == GameAction.ACTION1:
+            self._r0 = _cycle_r(self._r0)
+            self._paint_ui()
+        elif aid == GameAction.ACTION2:
+            self._r1 = _cycle_r(self._r1)
+            self._paint_ui()
+        elif aid == GameAction.ACTION3:
+            self._r2 = _cycle_r(self._r2)
+            self._paint_ui()
+        elif aid == GameAction.ACTION5:
+            v1, v2 = _voltages(self._r0, self._r1, self._r2)
+            if v1 == self._t1 and v2 == self._t2:
+                self.next_level()
+        self.complete_action()

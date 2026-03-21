@@ -34,6 +34,7 @@ sprites = {
         visible=True,
         collidable=True,
         tags=["player"],
+        layer=2,
     ),
     "wall": Sprite(
         pixels=[[3]],
@@ -41,6 +42,15 @@ sprites = {
         visible=True,
         collidable=True,
         tags=["wall"],
+        layer=1,
+    ),
+    "trail": Sprite(
+        pixels=[[12]],
+        name="trail",
+        visible=True,
+        collidable=False,
+        tags=["trail"],
+        layer=0,
     ),
 }
 
@@ -124,10 +134,15 @@ class Va01(ARCBaseGame):
                 o.add((x, y))
         return o
 
+    def _add_trail(self, x: int, y: int) -> None:
+        t = sprites["trail"].clone().set_position(x, y)
+        self.current_level.add_sprite(t)
+
     def on_set_level(self, level: Level) -> None:
         self._player = self.current_level.get_sprites_by_tag("player")[0]
         self._open_cells = self._compute_open_cells()
         self._visited: set[tuple[int, int]] = {(self._player.x, self._player.y)}
+        self._add_trail(self._player.x, self._player.y)
         self._ui.update(len(self._open_cells) - len(self._visited))
 
     def step(self) -> None:
@@ -164,7 +179,10 @@ class Va01(ARCBaseGame):
         if not sprite or not sprite.is_collidable:
             self._player.set_position(new_x, new_y)
 
-        self._visited.add((self._player.x, self._player.y))
+        pos = (self._player.x, self._player.y)
+        if pos not in self._visited:
+            self._add_trail(*pos)
+        self._visited.add(pos)
         self._ui.update(len(self._open_cells) - len(self._visited))
 
         if self._visited == self._open_cells:

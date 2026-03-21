@@ -8,13 +8,15 @@ from arcengine import (
 
 
 class Fs03UI(RenderableUserDisplay):
-    def __init__(self, idx: int, total: int) -> None:
-        self._idx = idx
-        self._total = total
+    """Exactly ``required`` (k) HUD ticks — fill yellow/green as distinct plates activate."""
 
-    def update(self, idx: int, total: int) -> None:
-        self._idx = idx
-        self._total = total
+    def __init__(self, activated: int, required: int) -> None:
+        self._activated = activated
+        self._required = required
+
+    def update(self, activated: int, required: int) -> None:
+        self._activated = activated
+        self._required = required
 
     def render_interface(self, frame):
         import numpy as np
@@ -22,11 +24,16 @@ class Fs03UI(RenderableUserDisplay):
         if not isinstance(frame, np.ndarray):
             return frame
         h, w = frame.shape
-        for i in range(min(self._total, 4)):
-            c = 14 if i < self._idx else 11
+        k = min(max(self._required, 1), 4)
+        done = self._activated >= self._required and self._required > 0
+        color = 14 if done else 11
+        n_fill = min(self._activated, k)
+        base_x = w - 2 * k
+        for i in range(k):
+            c = color if i < n_fill else 5
             for dy in range(2):
                 for dx in range(2):
-                    frame[h - 4 + dy, w - 8 + i * 2 + dx] = c
+                    frame[h - 4 + dy, base_x + i * 2 + dx] = c
         return frame
 
 
@@ -69,21 +76,26 @@ sprites = {
 }
 
 
-def mk(sl, grid_size, difficulty, order_len):
+def mk(sl, grid_size, difficulty, required_plates: int):
     return Level(
         sprites=sl,
         grid_size=grid_size,
-        data={"difficulty": difficulty, "order_len": order_len},
+        data={
+            "difficulty": difficulty,
+            "required_plates": required_plates,
+        },
     )
 
 
+# k-of-n: step on **required_plates** distinct yellow plates (any order); extras are optional.
 levels = [
     mk(
         [
             sprites["player"].clone().set_position(0, 3),
             sprites["switch"].clone().set_position(2, 3),
-            sprites["switch"].clone().set_position(6, 3),
-            sprites["door"].clone().set_position(4, 3),
+            sprites["switch"].clone().set_position(4, 1),
+            sprites["switch"].clone().set_position(4, 5),
+            sprites["door"].clone().set_position(6, 3),
             sprites["target"].clone().set_position(7, 3),
         ],
         (8, 8),
@@ -93,12 +105,18 @@ levels = [
     mk(
         [
             sprites["player"].clone().set_position(1, 1),
-            sprites["switch"].clone().set_position(1, 5),
-            sprites["switch"].clone().set_position(5, 1),
-            sprites["door"].clone().set_position(3, 3),
-            sprites["target"].clone().set_position(6, 6),
+            sprites["switch"].clone().set_position(2, 2),
+            sprites["switch"].clone().set_position(2, 6),
+            sprites["switch"].clone().set_position(6, 2),
+            sprites["switch"].clone().set_position(6, 6),
+            sprites["door"].clone().set_position(4, 4),
+            sprites["target"].clone().set_position(4, 7),
         ]
-        + [sprites["wall"].clone().set_position(x, 2) for x in range(8) if x != 3],
+        + [
+            sprites["wall"].clone().set_position(x, 4)
+            for x in range(8)
+            if x not in (1, 4, 6)
+        ],
         (8, 8),
         2,
         2,
@@ -107,13 +125,14 @@ levels = [
         [
             sprites["player"].clone().set_position(0, 0),
             sprites["switch"].clone().set_position(2, 0),
-            sprites["switch"].clone().set_position(0, 2),
-            sprites["switch"].clone().set_position(2, 2),
-            sprites["door"].clone().set_position(4, 1),
-            sprites["target"].clone().set_position(7, 1),
+            sprites["switch"].clone().set_position(0, 3),
+            sprites["switch"].clone().set_position(2, 3),
+            sprites["switch"].clone().set_position(1, 5),
+            sprites["door"].clone().set_position(5, 2),
+            sprites["target"].clone().set_position(8, 2),
         ]
-        + [sprites["wall"].clone().set_position(3, y) for y in range(8) if y != 1],
-        (8, 8),
+        + [sprites["wall"].clone().set_position(4, y) for y in range(6) if y != 2],
+        (9, 6),
         3,
         3,
     ),
@@ -122,8 +141,10 @@ levels = [
             sprites["player"].clone().set_position(1, 4),
             sprites["switch"].clone().set_position(2, 2),
             sprites["switch"].clone().set_position(2, 6),
+            sprites["switch"].clone().set_position(7, 2),
+            sprites["switch"].clone().set_position(7, 6),
             sprites["door"].clone().set_position(5, 4),
-            sprites["target"].clone().set_position(8, 4),
+            sprites["target"].clone().set_position(9, 4),
         ]
         + [sprites["wall"].clone().set_position(4, y) for y in range(8) if y != 4],
         (10, 8),
@@ -135,15 +156,19 @@ levels = [
             sprites["player"].clone().set_position(0, 7),
             sprites["switch"].clone().set_position(1, 1),
             sprites["switch"].clone().set_position(6, 1),
-            sprites["switch"].clone().set_position(1, 6),
-            sprites["switch"].clone().set_position(6, 6),
+            sprites["switch"].clone().set_position(1, 5),
+            sprites["switch"].clone().set_position(6, 5),
             sprites["door"].clone().set_position(3, 4),
             sprites["target"].clone().set_position(7, 4),
         ]
-        + [sprites["wall"].clone().set_position(x, 4) for x in range(8) if x not in (3, 4)],
+        + [
+            sprites["wall"].clone().set_position(x, 4)
+            for x in range(8)
+            if x not in (3, 4, 7)
+        ],
         (8, 8),
         5,
-        4,
+        3,
     ),
 ]
 
@@ -152,10 +177,10 @@ PADDING_COLOR = 4
 
 
 class Fs03(ARCBaseGame):
-    """Activate switches in row order (first plate in level list, then second, ...); then door opens."""
+    """k-of-n: activate **required_plates** distinct yellow plates (order-free); then the door opens."""
 
     def __init__(self) -> None:
-        self._ui = Fs03UI(0, 2)
+        self._ui = Fs03UI(0, 1)
         super().__init__(
             "fs03",
             levels,
@@ -168,18 +193,21 @@ class Fs03(ARCBaseGame):
     def on_set_level(self, level: Level) -> None:
         self._player = self.current_level.get_sprites_by_tag("player")[0]
         self._switches = self.current_level.get_sprites_by_tag("switch")
-        self._order = [(s.x, s.y) for s in self._switches]
-        self._next_i = 0
+        self._switch_positions = frozenset((s.x, s.y) for s in self._switches)
+        n = len(self._switches)
+        req = int(level.get_data("required_plates") or n)
+        self._required = max(1, min(req, n))
+        self._activated: set[tuple[int, int]] = set()
         self._door = self.current_level.get_sprites_by_tag("door")
         self._targets = self.current_level.get_sprites_by_tag("target")
-        self._ui.update(0, len(self._order))
+        self._open_door_if_ready()
 
-    def _open_door(self) -> None:
-        if self._door:
+    def _open_door_if_ready(self) -> None:
+        if len(self._activated) >= self._required and self._door:
             for d in list(self._door):
                 self.current_level.remove_sprite(d)
             self._door = []
-        self._ui.update(len(self._order), len(self._order))
+        self._ui.update(len(self._activated), self._required)
 
     def step(self) -> None:
         dx = 0
@@ -218,11 +246,13 @@ class Fs03(ARCBaseGame):
             self._player.set_position(new_x, new_y)
 
         pos = (self._player.x, self._player.y)
-        if self._next_i < len(self._order) and pos == self._order[self._next_i]:
-            self._next_i += 1
-            self._ui.update(self._next_i, len(self._order))
-            if self._next_i >= len(self._order):
-                self._open_door()
+        if pos in self._switch_positions and pos not in self._activated:
+            self._activated.add(pos)
+            for sw in self._switches:
+                if sw.x == pos[0] and sw.y == pos[1]:
+                    sw.color_remap(11, 10)
+                    break
+            self._open_door_if_ready()
 
         for t in self._targets:
             if self._player.x == t.x and self._player.y == t.y:

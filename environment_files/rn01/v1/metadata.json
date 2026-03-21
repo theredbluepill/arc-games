@@ -1,0 +1,32 @@
+{
+  "game_id": "rn01-v1",
+  "title": "Rope Anchors",
+  "description": "Click two orth-adjacent anchor posts (ACTION6) to place a walkable rope cell between them over water.",
+  "default_fps": 20,
+  "baseline_actions": [
+    15
+  ],
+  "tags": [
+    "static",
+    "planning",
+    "click"
+  ],
+  "local_dir": "environment_files/rn01/v1",
+  "date_created": "2026-03-20",
+  "training_metadata": {
+    "pcg_type": [],
+    "grid_range": [
+      12,
+      12
+    ],
+    "action_space": 6,
+    "physics_rules": [
+      "static",
+      "planning",
+      "click"
+    ],
+    "reward_structure": "checkpoint-on-level-pass",
+    "episode_count": 1000000
+  },
+  "date_downloaded": "2026-03-20T12:00:00+00:00"
+}

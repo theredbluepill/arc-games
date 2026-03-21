@@ -1,7 +1,7 @@
 {
   "game_id": "ic01-63be02fb",
   "title": "Ice Slide",
-  "description": "Movement slides in a straight line until blocked by a wall or hazard; reach the goal.",
+  "description": "Ice floor: one arrow/WASD action slides in that direction until the next cell would be out of bounds, a wall, or a red hazard (you stop on the cell before that). Yellow goals do not block sliding—use a wall beyond the goal if the puzzle must stop exactly on the tile. Not torus wrap (see ic02).",
   "default_fps": 20,
   "baseline_actions": [
     15

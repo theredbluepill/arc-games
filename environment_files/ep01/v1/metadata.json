@@ -1,0 +1,30 @@
+{
+  "game_id": "ep01-v1",
+  "title": "Pain Budget",
+  "description": "Entering a cell costs its visit count; exceed pain budget to lose.",
+  "default_fps": 20,
+  "baseline_actions": [
+    15
+  ],
+  "tags": [
+    "static",
+    "path"
+  ],
+  "local_dir": "environment_files/ep01/v1",
+  "date_created": "2026-03-20",
+  "training_metadata": {
+    "pcg_type": [],
+    "grid_range": [
+      12,
+      12
+    ],
+    "action_space": 4,
+    "physics_rules": [
+      "static",
+      "path"
+    ],
+    "reward_structure": "checkpoint-on-level-pass",
+    "episode_count": 1000000
+  },
+  "date_downloaded": "2026-03-20T12:00:00+00:00"
+}

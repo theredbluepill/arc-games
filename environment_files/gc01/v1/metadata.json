@@ -1,0 +1,30 @@
+{
+  "game_id": "gc01-v1",
+  "title": "Coral Creep",
+  "description": "Inert coral spreads to empty orth neighbors every M steps; coral blocks movement; reach the goal before you are boxed in.",
+  "default_fps": 20,
+  "baseline_actions": [
+    15
+  ],
+  "tags": [
+    "static",
+    "growth"
+  ],
+  "local_dir": "environment_files/gc01/v1",
+  "date_created": "2026-03-20",
+  "training_metadata": {
+    "pcg_type": [],
+    "grid_range": [
+      14,
+      14
+    ],
+    "action_space": 4,
+    "physics_rules": [
+      "static",
+      "growth"
+    ],
+    "reward_structure": "checkpoint-on-level-pass",
+    "episode_count": 1000000
+  },
+  "date_downloaded": "2026-03-20T12:00:00+00:00"
+}
