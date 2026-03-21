@@ -601,7 +601,7 @@ def step(self) -> None:
 ## Lessons Learned (plan-35 batch: bi01–ox01)
 
 1. **Sprite collision flag**: use **`sprite.is_collidable`**, not `sprite.collidable` (AttributeError in `arcengine`).
-2. **Local-only registry rows**: `run_game.py` defaults to **online** metadata fetch; use **`ARC_OPERATION_MODE=offline`** (or `OperationMode.OFFLINE`) so new stems load from disk before they exist on the API.
+2. **Local-only registry rows**: `run_game.py` defaults to **`OperationMode.OFFLINE`** (disk under `environment_files/`). Use **`--online`** (and **`ARC_API_KEY`** in `.env`) for API metadata, or legacy **`ARC_OPERATION_MODE=online`** when no `--online` / `--offline` / `--competition` CLI flag is passed.
 3. **Orthogonal solvability spot-check**: `scripts/verify_batch35_solvability.py` BFS‑checks a few level‑0 mazes; snake / prime / swap puzzles need rule‑aware review.
 
 ## Lessons Learned (ACTION6 remediation + 30-game batch)

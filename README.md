@@ -78,18 +78,22 @@ uv run python run_game.py \
 
 ### ARC Leaderboard
 
-**[three.arcprize.org](https://three.arcprize.org/)** is where you’ll find the **ARC Leaderboard**, play online games, and **get your `ARC_API_KEY`** (use the site’s sign-in / API setup). Only **online** runs are ratable on that leaderboard; local/offline play does not count. To use the online service from this repo, copy [`.env.example`](.env.example) to **`.env`** and set **`ARC_API_KEY`** and **`ARC_OPERATION_MODE=online`**. `run_game.py` loads repo-root **`.env`** on startup (via `python-dotenv` from `arc-agi`).
+**[three.arcprize.org](https://three.arcprize.org/)** is where you’ll find the **ARC Leaderboard**, play online games, and **get your `ARC_API_KEY`** (use the site’s sign-in / API setup). Only **online** runs are ratable on that leaderboard; local/offline play does not count. `run_game.py` defaults to **offline** (disk under **`environment_files/`**) with no `.env`. For API-backed runs, copy [`.env.example`](.env.example) to **`.env`**, set **`ARC_API_KEY`**, and pass **`--online`** on the command line (no `ARC_OPERATION_MODE` in `.env` needed). `run_game.py` loads repo-root **`.env`** on startup (via `python-dotenv` from `arc-agi`).
+
+**Which game?** Use **`--game <stem>`** (plus **`--version auto`** when the stem has a local package). You do **not** need **`ARC_GAME_ID`** unless you want a default stem without **`--game`**. If you omit **`--game`**: default stem is **`co01`** on disk / **`--competition`**; **`ls20`** with **`--online`**. Optional **`ARC_GAME_ID`** in `.env` overrides that when **`--game`** is omitted.
 
 ```bash
-# .env — replace angle-bracket placeholders; see .env.example for more options
+# .env — API key only; pair with --online or --competition on the CLI
 ARC_API_KEY=<your-arc-api-key>
-ARC_OPERATION_MODE=online
-# ARC_GAME_ID=<full-game-id>   # optional, e.g. ls20
+```
+
+```bash
+uv run python run_game.py --online --game ls20 --version auto
 ```
 
 #### Competition mode
 
-The official toolkit’s [Competition mode](https://docs.arcprize.org/toolkit/competition_mode) matches Kaggle and the unverified leaderboard: API-only environments, one `make` per environment, a single scorecard, no inflight `get_scorecard`, and stricter reset semantics. Set **`ARC_OPERATION_MODE=competition`** (or `OPERATION_MODE=COMPETITION` if you follow the env name from those docs and leave `ARC_OPERATION_MODE` unset). `run_game.py` wires the same `Arcade(..., operation_mode=...)` as in your own scripts; it still does not attach a scorecard—use the toolkit scorecard flow under competition rules for scored runs.
+The official toolkit’s [Competition mode](https://docs.arcprize.org/toolkit/competition_mode) matches Kaggle and the unverified leaderboard: API-only environments, one `make` per environment, a single scorecard, no inflight `get_scorecard`, and stricter reset semantics. Use **`--competition`** (plus **`ARC_API_KEY`** in `.env`). Same game selection as above: prefer **`--game`**; **`ARC_GAME_ID`** is optional when **`--game`** is omitted (default stem **`co01`**). Legacy: **`ARC_OPERATION_MODE=competition`** still works if you pass neither **`--online`** nor **`--offline`** nor **`--competition`**. `run_game.py` wires the same `Arcade(..., operation_mode=...)` as in your own scripts; it still does not attach a scorecard—use the toolkit scorecard flow under competition rules for scored runs.
 
 ### Create a game with AI Agent
 
