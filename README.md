@@ -74,7 +74,9 @@ uv run python run_game.py \
 
 Discover stems: `uv run python run_game.py --list` (add **`--offline`** there too if you want a listing pinned to **local environments**). **`--version auto`** picks the sole package under that stem.
 
-### Acquire Knowledge
+### Acquire Game Knowledge (For Human)
+
+Open an interactive **pygame** window to play a stem locally by hand: **`--mode human`** launches `scripts/human_play_pygame.py`, which maps keyboard input to the game’s abstract actions (often arrows or WASD for ACTION1–4) and can forward mouse clicks as **ACTION6** when that stem uses coordinate actions. Swap **`ez01`** for any stem from `uv run python run_game.py --list` (add **`--offline`** there to list only local `environment_files/` packages).
 
 ```bash
 uv run python run_game.py \
