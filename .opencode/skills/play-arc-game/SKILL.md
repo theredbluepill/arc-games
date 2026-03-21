@@ -4,12 +4,15 @@ Skill for playing and testing ARC-AGI-3 games using `run_game.py`.
 
 ## Running Games
 
-### Interactive Mode
+### Terminal mode (default)
 ```bash
 uv run python run_game.py --game <stem> --version auto
 ```
 
 (`<stem>` is the two-letter+digits id from `GAMES.md`, e.g. `ez01`. `auto` picks the sole package dir under `environment_files/<stem>/`.)
+
+### Hand-play (pygame window)
+Add **`--mode human`** — opens **`scripts/human_play_pygame.py`** (WASD / arrows, click for ACTION6 in display space). There is no separate matplotlib player in this repo.
 
 ### Auto Mode (Random Actions)
 ```bash

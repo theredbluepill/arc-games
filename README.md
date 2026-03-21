@@ -45,7 +45,7 @@ These games are designed to be easy for humans to solve, but very hard for moder
 
 ## Why use ARC-Interactive?
 
-You can create games quickly with the patterns in [`AGENTS.md`](AGENTS.md) and the create-game skill (static levels are enough); games land in a community pool through normal repo contributions, so you can fork and share layouts; many stems live in one tree, so the catalog grows with `main` and is handy for probing mechanics; locally, `run_game.py --mode human` opens an interactive window (persistent grid + mouse clicks for ACTION6) before you automate; and Arcade plus `environment_files/` matches ARC-AGI / ARCEngine expectations.
+You can create games quickly with the patterns in [`AGENTS.md`](AGENTS.md) and the skills under [`.opencode/skills/`](.opencode/skills/) (mirrored at [`skills/`](skills/) — **create-arc-game**, **play-arc-game**, **generate-arc-game-gif** for preview GIFs); see [CONTRIBUTING.md](CONTRIBUTING.md#creating-a-new-game). Static levels are enough; games land in a community pool through normal repo contributions. Many stems live in one tree, so the catalog grows with `main`. Locally, `run_game.py --mode human` opens a **pygame** window (grid + mouse for ACTION6 via `scripts/human_play_pygame.py`). Preview GIFs use **`scripts/render_arc_game_gif.py`** per the **generate-arc-game-gif** skill. Arcade plus `environment_files/` matches ARC-AGI / ARCEngine expectations.
 
 ## Quickstart
 
@@ -114,8 +114,10 @@ uv run python run_game.py --competition \
 Paste into your coding agent (replace `{game_id}` and the bracketed design). Full checklist: [CONTRIBUTING.md](CONTRIBUTING.md#creating-a-new-game).
 
 ```
-Implement a new ARC-AGI-3 game {game_id} at environment_files/{game_id}/v1/. Follow AGENTS.md and skills/create-arc-game/SKILL.md: static levels only, ARCBaseGame + metadata.json, register a row in GAMES.md. Game design: [grid size, entities, win/lose, which actions 1–7 do].
+Implement a new ARC-AGI-3 game {game_id} at environment_files/{game_id}/v1/. Follow AGENTS.md and skills/create-arc-game/SKILL.md (or .opencode/skills/create-arc-game/SKILL.md): static levels only, ARCBaseGame + metadata.json, register a row in GAMES.md. Game design: [grid size, entities, win/lose, which actions 1–7 do].
 ```
+
+Optional second pass for the preview column: follow **skills/generate-arc-game-gif/SKILL.md** (GIF-ready `RenderableUserDisplay`, then `uv run python scripts/render_arc_game_gif.py --stem {game_id}`).
 
 ## Benchmarks
 

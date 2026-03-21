@@ -233,3 +233,4 @@ Maintainers: turn on **required status checks** for `main` as described in [`.gi
 - [ARC-AGI-3 Docs](https://docs.arcprize.org/add_game)
 - [AGENTS.md](AGENTS.md) — implementation patterns and pitfalls
 - [Game Registry](GAMES.md)
+- Agent skills (mirrored under **`skills/`**, **`.opencode/skills/`**, **`.agents/skills/`**): **create-arc-game**, **play-arc-game**, **generate-arc-game-gif**

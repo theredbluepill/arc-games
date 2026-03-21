@@ -40,7 +40,8 @@ When you author games in this repo, treat **human solvability (given that shared
 
 **Steps**:
 1. Add entry to `GAMES.md` with all metadata columns
-2. If you discover a **reusable** pattern (not stem-specific), add a short bullet under **Lessons learned (cross-repo)** below; otherwise rely on `GAMES.md`, `{stem}.py`, and **`scripts/render_arc_game_gif.py`** (see skill **`generate-arc-game-gif`**)
+2. If you discover a **reusable** pattern (not stem-specific), add a short bullet under **Lessons learned (cross-repo)** below; otherwise rely on `GAMES.md`, `{stem}.py`, and **`scripts/render_arc_game_gif.py`** (see skill **`generate-arc-game-gif`** in **`skills/`** / **`.opencode/skills/`** / **`.agents/skills/`**)
+3. Optional: add **`assets/{stem}.gif`** using the **generate-arc-game-gif** skill (advancing levels + 1–2 fail clips, HUD in **`RenderableUserDisplay`**)
 
 ## Established Game Patterns
 
