@@ -55,7 +55,7 @@ Requires [Python 3.12+](https://www.python.org/) and [uv](https://github.com/ast
 uv sync
 ```
 
-Then run a game (example: tutorial **ez01**). `--game` is last so you can swap the stem in one place (handy for forks and small git diffs):
+Run a game (tutorial **ez01**). **`--game` last** makes swapping stems a one-line edit:
 
 ```bash
 uv run python run_game.py \
@@ -63,9 +63,9 @@ uv run python run_game.py \
   --game ez01
 ```
 
-Use any stem / version folder shown by `uv run python run_game.py --list`, or pass `--version auto` so the sole package under that stem is used.
+Discover stems: `uv run python run_game.py --list`. **`--version auto`** picks the sole package under that stem.
 
-### Play by hand (pygame window)
+### Play by hand (pygame)
 
 ```bash
 uv run python run_game.py \
@@ -74,26 +74,20 @@ uv run python run_game.py \
   --game sk01
 ```
 
-`--mode human-toolkit` uses the same pygame UI (legacy name). Requires a working SDL/video backend for pygame (see [pygame Getting Started](https://www.pygame.org/wiki/GettingStarted)).
+### API / leaderboard / competition
 
-### ARC Leaderboard
+**[three.arcprize.org](https://three.arcprize.org/)** — leaderboard, online play, and **`ARC_API_KEY`**. Only **online** runs count there; local disk play does not.
 
-**[three.arcprize.org](https://three.arcprize.org/)** is where you’ll find the **ARC Leaderboard**, play online games, and **get your `ARC_API_KEY`** (use the site’s sign-in / API setup). Only **online** runs are ratable on that leaderboard; local/offline play does not count. `run_game.py` defaults to **offline** (disk under **`environment_files/`**) with no `.env`. For API-backed runs, copy [`.env.example`](.env.example) to **`.env`**, set **`ARC_API_KEY`**, and pass **`--online`** on the command line (no `ARC_OPERATION_MODE` in `.env` needed). `run_game.py` loads repo-root **`.env`** on startup (via `python-dotenv` from `arc-agi`).
-
-**Which game?** Use **`--game <stem>`** (plus **`--version auto`** when the stem has a local package). You do **not** need **`ARC_GAME_ID`** unless you want a default stem without **`--game`**. If you omit **`--game`**: default stem is **`co01`** on disk / **`--competition`**; **`ls20`** with **`--online`**. Optional **`ARC_GAME_ID`** in `.env` overrides that when **`--game`** is omitted.
-
-```bash
-# .env — API key only; pair with --online or --competition on the CLI
-ARC_API_KEY=<your-arc-api-key>
-```
+1. Copy [`.env.example`](.env.example) → **`.env`** and set **`ARC_API_KEY`** (nothing else required in the template).
+2. For API play, pass **`--online`** (registry) or **`--competition`** ([competition rules](https://docs.arcprize.org/toolkit/competition_mode), Kaggle-style) — pick one; they are mutually exclusive. Omit both to use **local disk** (same as Quickstart). More flags: **`uv run python run_game.py --help`**.
 
 ```bash
-uv run python run_game.py --online --game ls20 --version auto
+uv run python run_game.py --online \
+  --version auto \
+  --game ls20
 ```
 
-#### Competition mode
-
-The official toolkit’s [Competition mode](https://docs.arcprize.org/toolkit/competition_mode) matches Kaggle and the unverified leaderboard: API-only environments, one `make` per environment, a single scorecard, no inflight `get_scorecard`, and stricter reset semantics. Use **`--competition`** (plus **`ARC_API_KEY`** in `.env`). Same game selection as above: prefer **`--game`**; **`ARC_GAME_ID`** is optional when **`--game`** is omitted (default stem **`co01`**). Legacy: **`ARC_OPERATION_MODE=competition`** still works if you pass neither **`--online`** nor **`--offline`** nor **`--competition`**. `run_game.py` wires the same `Arcade(..., operation_mode=...)` as in your own scripts; it still does not attach a scorecard—use the toolkit scorecard flow under competition rules for scored runs.
+`run_game.py` does not create a scorecard or attach **`scorecard_id`** to **`make`** — for scored remote runs, use the toolkit scorecard flow in the ARC docs.
 
 ### Create a game with AI Agent
 
