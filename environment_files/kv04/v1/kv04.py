@@ -4,11 +4,75 @@ from __future__ import annotations
 
 from fractions import Fraction
 
-from arcengine import ARCBaseGame, Camera, GameAction, Level, RenderableUserDisplay
+from arcengine import ARCBaseGame, Camera, GameAction, GameState, Level, RenderableUserDisplay
+
+
+def _rp(frame, h, w, x, y, c):
+    if 0 <= x < w and 0 <= y < h:
+        frame[y, x] = c
+
+
+def _r_dots(frame, h, w, li, n, y0=0):
+    for i in range(min(n, 14)):
+        cx = 1 + i * 2
+        if cx >= w:
+            break
+        c = 14 if i < li else (11 if i == li else 3)
+        _rp(frame, h, w, cx, y0, c)
+
+
+def _r_ticks(frame, h, w, n, y=None):
+    row = (h - 1) if y is None else y
+    for i in range(max(0, min(n, 8))):
+        _rp(frame, h, w, 1 + i, row, 11)
+
+
+def _r_bar(frame, h, w, game_over, win):
+    if not (game_over or win):
+        return
+    r = h - 3
+    if r < 0:
+        return
+    c = 14 if win else 8
+    for x in range(min(w, 16)):
+        _rp(frame, h, w, x, r, c)
 
 
 class Kv04UI(RenderableUserDisplay):
+    def __init__(self, level_index: int = 0, num_levels: int = 1, ticks: int = 1) -> None:
+        self._level_index = level_index
+        self._num_levels = num_levels
+        self._ticks = ticks
+        self._state = None
+
+    def update(
+        self,
+        *,
+        level_index: int | None = None,
+        num_levels: int | None = None,
+        ticks: int | None = None,
+        state=None,
+    ) -> None:
+        if level_index is not None:
+            self._level_index = level_index
+        if num_levels is not None:
+            self._num_levels = num_levels
+        if ticks is not None:
+            self._ticks = ticks
+        if state is not None:
+            self._state = state
+
     def render_interface(self, frame):
+        import numpy as np
+
+        if not isinstance(frame, np.ndarray):
+            return frame
+        h, w = frame.shape
+        _r_dots(frame, h, w, self._level_index, self._num_levels, 0)
+        _r_ticks(frame, h, w, self._ticks)
+        go = self._state == GameState.GAME_OVER
+        win = self._state == GameState.WIN
+        _r_bar(frame, h, w, go, win)
         return frame
 
 
@@ -62,13 +126,26 @@ levels = [
 
 class Kv04(ARCBaseGame):
     def __init__(self) -> None:
+        self._ui = Kv04UI(0, len(levels), 1)
         super().__init__(
             "kv04",
             levels,
-            Camera(0, 0, 8, 8, 5, 4, [Kv04UI()]),
+            Camera(0, 0, 8, 8, 5, 4, [self._ui]),
             False,
             1,
             [1, 2, 3, 4, 5],
+        )
+
+    def _tick_hud(self) -> int:
+        s = self._r0 + self._r1 + self._r2 + self._r3 + self._r4 + self._r5
+        return min(8, max(1, (s % 8) + 1))
+
+    def _sync_ui(self) -> None:
+        self._ui.update(
+            level_index=self.level_index,
+            num_levels=len(levels),
+            ticks=self._tick_hud(),
+            state=self._state,
         )
 
     def on_set_level(self, level: Level) -> None:
@@ -83,6 +160,7 @@ class Kv04(ARCBaseGame):
         self._t2 = Fraction(int(d("t2n")), int(d("t2d")))
         self._t3 = Fraction(int(d("t3n")), int(d("t3d")))
         self._t4 = Fraction(int(d("t4n")), int(d("t4d")))
+        self._sync_ui()
 
     def step(self) -> None:
         aid = self.action.id
@@ -99,4 +177,5 @@ class Kv04(ARCBaseGame):
             v3, v4 = _v(self._r3, self._r4, self._r5)
             if v1 == self._t1 and v2 == self._t2 and v3 == self._t3 and v4 == self._t4:
                 self.next_level()
+        self._sync_ui()
         self.complete_action()

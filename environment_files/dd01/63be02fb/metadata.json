@@ -1,7 +1,7 @@
 {
   "game_id": "dd01-63be02fb",
-  "title": "Drone Relay",
-  "description": "48\u00d748 logistics grid. Move with ACTION1\u20134; ACTION5 picks up a crate, delivers while holding, or pings the nearest yellow pad when idle.",
+  "title": "Routed Delivery",
+  "description": "48\u00d748 logistics grid. Colored parcels are orders for matching customers (same color). Per-order SLA deadlines; global step budget. ACTION1\u20134 move; ACTION5 pickup, drop on matching customer only, or ping nearest relevant stop (target customer if carrying, else nearest parcel).",
   "default_fps": 20,
   "baseline_actions": [
     1,
@@ -24,7 +24,9 @@
     ],
     "action_space": 5,
     "physics_rules": [
-      "pickup-deliver"
+      "pickup-deliver",
+      "typed-destinations",
+      "per-order-deadlines"
     ],
     "reward_structure": "checkpoint-on-level-pass",
     "episode_count": 1000000

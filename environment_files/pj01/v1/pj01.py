@@ -1,8 +1,57 @@
 """Plan #28: stepping bolt + mirrors."""
-from arcengine import ARCBaseGame, Camera, GameAction, Level, RenderableUserDisplay, Sprite
+from arcengine import ARCBaseGame, GameState, Camera, GameAction, Level, RenderableUserDisplay, Sprite
 BG, PAD = 5, 4
+def _rp(frame, h, w, x, y, c):
+    if 0 <= x < w and 0 <= y < h:
+        frame[y, x] = c
+
+
+def _r_dots(frame, h, w, li, n, y0=0):
+    for i in range(min(n, 14)):
+        cx = 1 + i * 2
+        if cx >= w:
+            break
+        c = 14 if i < li else (11 if i == li else 3)
+        _rp(frame, h, w, cx, y0, c)
+
+
+def _r_bar(frame, h, w, game_over, win):
+    if not (game_over or win):
+        return
+    r = h - 3
+    if r < 0:
+        return
+    c = 14 if win else 8
+    for x in range(min(w, 16)):
+        _rp(frame, h, w, x, r, c)
+
+
 class U(RenderableUserDisplay):
-    def render_interface(self, f): return f
+    def __init__(self, num_levels: int) -> None:
+        self._num_levels = num_levels
+        self._level_index = 0
+        self._state = None
+
+    def update(self, *, level_index: int | None = None, state=None) -> None:
+        if level_index is not None:
+            self._level_index = level_index
+        if state is not None:
+            self._state = state
+
+    def render_interface(self, f):
+        import numpy as np
+
+        from arcengine import GameState
+
+        if not isinstance(f, np.ndarray):
+            return f
+        h, w = f.shape
+        _r_dots(f, h, w, self._level_index, self._num_levels, 0)
+        go = self._state == GameState.GAME_OVER
+        win = self._state == GameState.WIN
+        _r_bar(f, h, w, go, win)
+        return f
+
 def spr():
     return {"p": Sprite(pixels=[[9]], name="p", visible=True, collidable=True, tags=["player"]),
             "b": Sprite(pixels=[[8]], name="b", visible=True, collidable=False, tags=["bolt"]),
@@ -20,9 +69,12 @@ levels = [
 ]
 class Pj01(ARCBaseGame):
     def __init__(self):
-        super().__init__("pj01", levels, Camera(0,0,16,16,BG,PAD,[U()]), False, 1, [1,2,3,4,6])
+        self._ui = U(len(levels))
+        super().__init__("pj01", levels, Camera(0,0,16,16,BG,PAD,[self._ui]), False, 1, [1,2,3,4,6])
     def on_set_level(self, level: Level):
         self._p = self.current_level.get_sprites_by_tag("player")[0]
+        self._ui.update(level_index=self.level_index, state=self._state)
+
         self._bolt = self.current_level.get_sprites_by_tag("bolt")[0]
         self._sink = self.current_level.get_sprites_by_tag("sink")[0]
         self._bdx, self._bdy = 1, 0
@@ -42,6 +94,7 @@ class Pj01(ARCBaseGame):
                     else:
                         cell.tags.remove("bs")
                         cell.tags.append("fs")
+            self._ui.update(level_index=self.level_index, state=self._state)
             self.complete_action(); return
         dx=dy=0
         v=self.action.id.value
@@ -58,6 +111,7 @@ class Pj01(ARCBaseGame):
                 self._p.set_position(nx,ny)
         bx, by = self._bolt.x + self._bdx, self._bolt.y + self._bdy
         if not (0 <= bx < gw and 0 <= by < gh):
+            self._ui.update(level_index=self.level_index, state=self._state)
             self.complete_action()
             return
         mh = self.current_level.get_sprite_at(bx, by, ignore_collidable=True)
@@ -68,7 +122,9 @@ class Pj01(ARCBaseGame):
                 self._bdx, self._bdy = self._bdy, self._bdx
         self._bolt.set_position(bx, by)
         if self._bolt.x==self._p.x and self._bolt.y==self._p.y:
+            self._ui.update(level_index=self.level_index, state=self._state)
             self.lose(); self.complete_action(); return
         if self._bolt.x==self._sink.x and self._bolt.y==self._sink.y:
             self.next_level()
+        self._ui.update(level_index=self.level_index, state=self._state)
         self.complete_action()

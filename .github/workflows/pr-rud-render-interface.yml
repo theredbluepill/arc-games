@@ -1,0 +1,32 @@
+# No-op RenderableUserDisplay.render_interface guard (AST heuristic; stdlib only).
+name: RUD render_interface
+
+on:
+  pull_request:
+    paths:
+      - "environment_files/**"
+      - "devtools/check_rud_render_interface.py"
+      - ".github/workflows/pr-rud-render-interface.yml"
+  push:
+    branches: [main]
+    paths:
+      - "environment_files/**"
+      - "devtools/check_rud_render_interface.py"
+      - ".github/workflows/pr-rud-render-interface.yml"
+  workflow_dispatch:
+
+concurrency:
+  group: rud-hud-${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Check RUD render_interface
+        run: python3 devtools/check_rud_render_interface.py

@@ -1,12 +1,59 @@
 """hn04: four-peg Hanoi — ACTION1–4 pick peg; ACTION5 pick/drop."""
 
-from arcengine import ARCBaseGame, Camera, GameAction, Level, RenderableUserDisplay, Sprite
+from arcengine import ARCBaseGame, Camera, GameAction, GameState, Level, RenderableUserDisplay, Sprite
 
 BG, PAD = 5, 4
 
 
+def _rp(frame, h, w, x, y, c):
+    if 0 <= x < w and 0 <= y < h:
+        frame[y, x] = c
+
+
+def _r_dots(frame, h, w, li, n, y0=0):
+    for i in range(min(n, 14)):
+        cx = 1 + i * 2
+        if cx >= w:
+            break
+        c = 14 if i < li else (11 if i == li else 3)
+        _rp(frame, h, w, cx, y0, c)
+
+
+def _r_bar(frame, h, w, game_over, win):
+    if not (game_over or win):
+        return
+    r = h - 3
+    if r < 0:
+        return
+    c = 14 if win else 8
+    for x in range(min(w, 16)):
+        _rp(frame, h, w, x, r, c)
+
+
 class U(RenderableUserDisplay):
+    def __init__(self, num_levels: int) -> None:
+        self._num_levels = num_levels
+        self._level_index = 0
+        self._state = None
+
+    def update(self, *, level_index: int | None = None, state=None) -> None:
+        if level_index is not None:
+            self._level_index = level_index
+        if state is not None:
+            self._state = state
+
     def render_interface(self, f):
+        import numpy as np
+
+        from arcengine import GameState
+
+        if not isinstance(f, np.ndarray):
+            return f
+        h, w = f.shape
+        _r_dots(f, h, w, self._level_index, self._num_levels, 0)
+        go = self._state == GameState.GAME_OVER
+        win = self._state == GameState.WIN
+        _r_bar(f, h, w, go, win)
         return f
 
 
@@ -73,10 +120,11 @@ levels = [lvl(i) for i in range(1, 8)]
 
 class Hn04(ARCBaseGame):
     def __init__(self) -> None:
+        self._ui = U(len(levels))
         super().__init__(
             "hn04",
             levels,
-            Camera(0, 0, 16, 16, BG, PAD, [U()]),
+            Camera(0, 0, 16, 16, BG, PAD, [self._ui]),
             False,
             1,
             [1, 2, 3, 4, 5],
@@ -84,6 +132,8 @@ class Hn04(ARCBaseGame):
 
     def on_set_level(self, level: Level) -> None:
         self._st = [[4, 3, 2, 1], [], [], []]
+        self._ui.update(level_index=self.level_index, state=self._state)
+
         self._hand = None
         self._peg = 0
         self._ds: dict[int, Sprite | None] = {1: None, 2: None, 3: None, 4: None}
@@ -123,4 +173,5 @@ class Hn04(ARCBaseGame):
         self._layout()
         if self._st[3] == [4, 3, 2, 1]:
             self.next_level()
+        self._ui.update(level_index=self.level_index, state=self._state)
         self.complete_action()

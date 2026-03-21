@@ -1,20 +1,97 @@
 from arcengine import (
     ARCBaseGame,
     Camera,
+    GameState,
     Level,
     RenderableUserDisplay,
     Sprite,
 )
 
+def _rp(frame, h, w, x, y, c):
+    if 0 <= x < w and 0 <= y < h:
+        frame[y, x] = c
+
+
+def _r_dots(frame, h, w, li, n, y0=0):
+    for i in range(min(n, 14)):
+        cx = 1 + i * 2
+        if cx >= w:
+            break
+        c = 14 if i < li else (11 if i == li else 3)
+        _rp(frame, h, w, cx, y0, c)
+
+
+def _r_ticks(frame, h, w, n, y=None):
+    row = (h - 1) if y is None else y
+    for i in range(max(0, min(n, 8))):
+        _rp(frame, h, w, 1 + i, row, 11)
+
+
+def _r_bar(frame, h, w, game_over, win):
+    if not (game_over or win):
+        return
+    r = h - 3
+    if r < 0:
+        return
+    c = 14 if win else 8
+    for x in range(min(w, 16)):
+        _rp(frame, h, w, x, r, c)
+
+
+
+def _r_xticks(frame, h, w, value, cap, y=None, fc=10, ec=3):
+    row = (h - 2) if y is None else y
+    m = min(cap, max(0, w - 2))
+    v = max(0, min(value, m))
+    for i in range(m):
+        _rp(frame, h, w, 1 + i, row, fc if i < v else ec)
+
 
 class Ic03UI(RenderableUserDisplay):
-    def __init__(self, _: int) -> None:
-        pass
+    def __init__(
+        self,
+        targets_remaining: int,
+        slide_cap: int = 3,
+        level_index: int = 0,
+        num_levels: int = 5,
+    ) -> None:
+        self._targets = targets_remaining
+        self._slide_cap = slide_cap
+        self._level_index = level_index
+        self._num_levels = num_levels
+        self._state: GameState | None = None
 
-    def update(self, _: int) -> None:
-        pass
+    def update(
+        self,
+        targets_remaining: int,
+        *,
+        slide_cap: int | None = None,
+        level_index: int | None = None,
+        num_levels: int | None = None,
+        state: GameState | None = None,
+    ) -> None:
+        self._targets = targets_remaining
+        if slide_cap is not None:
+            self._slide_cap = slide_cap
+        if level_index is not None:
+            self._level_index = level_index
+        if num_levels is not None:
+            self._num_levels = num_levels
+        if state is not None:
+            self._state = state
 
     def render_interface(self, frame):
+        import numpy as np
+
+        if not isinstance(frame, np.ndarray):
+            return frame
+        h, w = frame.shape
+        _r_dots(frame, h, w, self._level_index, self._num_levels, 0)
+        _r_ticks(frame, h, w, self._targets)
+        _r_xticks(frame, h, w, self._slide_cap, 6, y=h - 2)
+        go = self._state == GameState.GAME_OVER
+        win = self._state == GameState.WIN
+        _r_bar(frame, h, w, go, win)
         return frame
 
 
@@ -138,6 +215,13 @@ class Ic03(ARCBaseGame):
         self._player = self.current_level.get_sprites_by_tag("player")[0]
         self._targets = self.current_level.get_sprites_by_tag("target")
         self._cap = int(level.get_data("slide_cap") or 3)
+        self._ui.update(
+            len(self._targets),
+            slide_cap=self._cap,
+            level_index=self.level_index,
+            num_levels=len(levels),
+            state=self._state,
+        )
 
     def _blocked(self, x: int, y: int) -> bool:
         sprite = self.current_level.get_sprite_at(x, y, ignore_collidable=True)
@@ -180,4 +264,11 @@ class Ic03(ARCBaseGame):
                 self.next_level()
                 break
 
+        self._ui.update(
+            len(self._targets),
+            slide_cap=self._cap,
+            level_index=self.level_index,
+            num_levels=len(levels),
+            state=self._state,
+        )
         self.complete_action()

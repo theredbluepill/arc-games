@@ -2,9 +2,41 @@
 
 from __future__ import annotations
 
-from arcengine import ARCBaseGame, Camera, GameAction, Level, RenderableUserDisplay, Sprite
+from arcengine import ARCBaseGame, Camera, GameAction, GameState, Level, RenderableUserDisplay, Sprite
 
 BG, PAD = 5, 4
+
+
+def _rp(frame, h, w, x, y, c):
+    if 0 <= x < w and 0 <= y < h:
+        frame[y, x] = c
+
+
+def _r_dots(frame, h, w, li, n, y0=0):
+    for i in range(min(n, 14)):
+        cx = 1 + i * 2
+        if cx >= w:
+            break
+        c = 14 if i < li else (11 if i == li else 3)
+        _rp(frame, h, w, cx, y0, c)
+
+
+def _r_ticks(frame, h, w, n, y=None):
+    row = (h - 1) if y is None else y
+    for i in range(max(0, min(n, 8))):
+        _rp(frame, h, w, 1 + i, row, 11)
+
+
+def _r_bar(frame, h, w, game_over, win):
+    if not (game_over or win):
+        return
+    r = h - 3
+    if r < 0:
+        return
+    c = 14 if win else 8
+    for x in range(min(w, 16)):
+        _rp(frame, h, w, x, r, c)
+
 W, H = 8, 8
 CAM = 16
 HEADER_X = 0
@@ -21,7 +53,42 @@ def pix(c: int) -> Sprite:
 
 
 class Pt05UI(RenderableUserDisplay):
+    def __init__(self, level_index: int = 0, num_levels: int = 1, ticks: int = 1) -> None:
+        self._level_index = level_index
+        self._num_levels = num_levels
+        self._ticks = ticks
+        self._state = None
+
+    def update(
+        self,
+        *,
+        level_index: int | None = None,
+        num_levels: int | None = None,
+        ticks: int | None = None,
+        state=None,
+    ) -> None:
+        if level_index is not None:
+            self._level_index = level_index
+        if num_levels is not None:
+            self._num_levels = num_levels
+        if ticks is not None:
+            self._ticks = ticks
+        if state is not None:
+            self._state = state
+
     def render_interface(self, frame):
+        import numpy as np
+
+        from arcengine import GameState
+
+        if not isinstance(frame, np.ndarray):
+            return frame
+        h, w = frame.shape
+        _r_dots(frame, h, w, self._level_index, self._num_levels, 0)
+        _r_ticks(frame, h, w, self._ticks)
+        go = self._state == GameState.GAME_OVER
+        win = self._state == GameState.WIN
+        _r_bar(frame, h, w, go, win)
         return frame
 
 
@@ -190,13 +257,23 @@ levels = [
 
 class Pt05(ARCBaseGame):
     def __init__(self) -> None:
+        self._ui = Pt05UI(0, len(levels), 1)
         super().__init__(
             "pt05",
             levels,
-            Camera(0, 0, CAM, CAM, BG, PAD, [Pt05UI()]),
+            Camera(0, 0, CAM, CAM, BG, PAD, [self._ui]),
             False,
             1,
             [1, 2, 3, 4, 6],
+        )
+
+
+    def _sync_ui(self) -> None:
+        self._ui.update(
+            level_index=self.level_index,
+            num_levels=len(levels),
+            ticks=1,
+            state=self._state,
         )
 
     def on_set_level(self, level: Level) -> None:
@@ -237,6 +314,8 @@ class Pt05(ARCBaseGame):
                     self._cycle_row(gy)
                     if self._win():
                         self.next_level()
+            self._sync_ui()
             self.complete_action()
             return
+        self._sync_ui()
         self.complete_action()

@@ -1,8 +1,57 @@
 """Plan #12: vertical mirror ghost."""
-from arcengine import ARCBaseGame, Camera, Level, RenderableUserDisplay, Sprite
+from arcengine import ARCBaseGame, GameState, Camera, Level, RenderableUserDisplay, Sprite
 BG, PAD = 5, 4
+def _rp(frame, h, w, x, y, c):
+    if 0 <= x < w and 0 <= y < h:
+        frame[y, x] = c
+
+
+def _r_dots(frame, h, w, li, n, y0=0):
+    for i in range(min(n, 14)):
+        cx = 1 + i * 2
+        if cx >= w:
+            break
+        c = 14 if i < li else (11 if i == li else 3)
+        _rp(frame, h, w, cx, y0, c)
+
+
+def _r_bar(frame, h, w, game_over, win):
+    if not (game_over or win):
+        return
+    r = h - 3
+    if r < 0:
+        return
+    c = 14 if win else 8
+    for x in range(min(w, 16)):
+        _rp(frame, h, w, x, r, c)
+
+
 class U(RenderableUserDisplay):
-    def render_interface(self, f): return f
+    def __init__(self, num_levels: int) -> None:
+        self._num_levels = num_levels
+        self._level_index = 0
+        self._state = None
+
+    def update(self, *, level_index: int | None = None, state=None) -> None:
+        if level_index is not None:
+            self._level_index = level_index
+        if state is not None:
+            self._state = state
+
+    def render_interface(self, f):
+        import numpy as np
+
+        from arcengine import GameState
+
+        if not isinstance(f, np.ndarray):
+            return f
+        h, w = f.shape
+        _r_dots(f, h, w, self._level_index, self._num_levels, 0)
+        go = self._state == GameState.GAME_OVER
+        win = self._state == GameState.WIN
+        _r_bar(f, h, w, go, win)
+        return f
+
 def spr():
     return {"p": Sprite(pixels=[[9]], name="p", visible=True, collidable=True, tags=["player"]),
             "g": Sprite(pixels=[[14]], name="g", visible=True, collidable=False, tags=["goal"]),
@@ -20,9 +69,12 @@ levels = [
 ]
 class Ec01(ARCBaseGame):
     def __init__(self):
-        super().__init__("ec01", levels, Camera(0,0,16,16,BG,PAD,[U()]), False, 1, [1,2,3,4])
+        self._ui = U(len(levels))
+        super().__init__("ec01", levels, Camera(0,0,16,16,BG,PAD,[self._ui]), False, 1, [1,2,3,4])
     def on_set_level(self, level: Level):
         self._p = self.current_level.get_sprites_by_tag("player")[0]
+        self._ui.update(level_index=self.level_index, state=self._state)
+
         self._e = self.current_level.get_sprites_by_tag("echo")[0]
         self._g = self.current_level.get_sprites_by_tag("goal")[0]
         self._mx = 5
@@ -38,18 +90,23 @@ class Ec01(ARCBaseGame):
         gw, gh = self.current_level.grid_size
         enx, eny = self._e.x + gdx, self._e.y + dy
         if not (0 <= enx < gw and 0 <= eny < gh):
+            self._ui.update(level_index=self.level_index, state=self._state)
             self.complete_action(); return
         eh = self.current_level.get_sprite_at(enx, eny, ignore_collidable=True)
         if eh and eh.is_collidable and "wall" in eh.tags:
+            self._ui.update(level_index=self.level_index, state=self._state)
             self.complete_action(); return
         nx, ny = self._p.x + dx, self._p.y + dy
         if not (0 <= nx < gw and 0 <= ny < gh):
+            self._ui.update(level_index=self.level_index, state=self._state)
             self.complete_action(); return
         h = self.current_level.get_sprite_at(nx, ny, ignore_collidable=True)
         if h and h.is_collidable:
+            self._ui.update(level_index=self.level_index, state=self._state)
             self.complete_action(); return
         self._e.set_position(enx, eny)
         self._p.set_position(nx, ny)
         if self._p.x==self._g.x and self._p.y==self._g.y:
             self.next_level()
+        self._ui.update(level_index=self.level_index, state=self._state)
         self.complete_action()
