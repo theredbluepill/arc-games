@@ -45,7 +45,7 @@ These games are designed to be easy for humans to solve, but very hard for moder
 
 ## Why use ARC-Interactive?
 
-You can create games quickly with the patterns in [`AGENTS.md`](AGENTS.md) and the skills under [`.opencode/skills/`](.opencode/skills/) (mirrored at [`skills/`](skills/) — **create-arc-game**, **play-arc-game**, **generate-arc-game-gif** for preview GIFs); see [CONTRIBUTING.md](CONTRIBUTING.md#creating-a-new-game). Static levels are enough; games land in a community pool through normal repo contributions. Many stems live in one tree, so the catalog grows with `main`. Locally, `run_game.py --mode human` opens a **pygame** window (grid + mouse for ACTION6 via `scripts/human_play_pygame.py`). Preview GIFs use **`scripts/render_arc_game_gif.py`** per the **generate-arc-game-gif** skill. Arcade plus `environment_files/` matches ARC-AGI / ARCEngine expectations.
+You can create games quickly with the patterns in [`AGENTS.md`](AGENTS.md) and the skills under [`.opencode/skills/`](.opencode/skills/) (mirrored at [`skills/`](skills/) — **create-arc-game**, **play-arc-game**, **generate-arc-game-gif** for preview GIFs); see [CONTRIBUTING.md](CONTRIBUTING.md#creating-a-new-game). Static levels are enough; games land in a community pool through normal repo contributions. Many stems live in one tree, so the catalog grows with `main`. Preview GIFs use **`scripts/render_arc_game_gif.py`** per the **generate-arc-game-gif** skill. Arcade plus `environment_files/` matches ARC-AGI / ARCEngine expectations.
 
 ## Quickstart
 
@@ -74,9 +74,28 @@ uv run python run_game.py \
 
 Discover stems: `uv run python run_game.py --list` (add **`--offline`** there too if you want a listing pinned to **local environments**). **`--version auto`** picks the sole package under that stem.
 
-### Acquire Game Knowledge (For Human)
+### Human play
 
-Open an interactive **pygame** window to play a stem locally by hand: **`--mode human`** launches `scripts/human_play_pygame.py`, which maps keyboard input to the game’s abstract actions (often arrows or WASD for ACTION1–4) and can forward mouse clicks as **ACTION6** when that stem uses coordinate actions. Swap **`ez01`** for any stem from `uv run python run_game.py --list` (add **`--offline`** there to list only local `environment_files/` packages).
+**`--mode human`** runs [`scripts/human_play_pygame.py`](scripts/human_play_pygame.py) (pygame). Abstract actions and human bindings are the same as in the official ARC Prize doc **[Actions](https://docs.arcprize.org/actions)**; each game still defines what ACTION1–7 mean.
+
+| Action | Role |
+| --- | --- |
+| `RESET` | Initialize or restart |
+| `ACTION1`–`ACTION4` | Simple actions (UI maps to up / down / left / right; semantics are game-specific) |
+| `ACTION5` | Special (e.g. interact, rotate, execute) |
+| `ACTION6` | Coordinate action (`x`, `y` in 0–63) |
+| `ACTION7` | Undo |
+
+Local pygame mapping (aligned with that doc’s WASD + Space and arrows + F schemes; digits `1`–`5` also send ACTION1–5):
+
+| Input | Action |
+| --- | --- |
+| `W` / `↑`, `S` / `↓`, `A` / `←`, `D` / `→` (or `1`–`4`) | `ACTION1`–`ACTION4` |
+| `Space` / `F` / `5` | `ACTION5` |
+| Click grid | `ACTION6` |
+| `U` or `Ctrl`/`Cmd`+`Z` | `ACTION7` |
+| `R` | Restart (calls `environment.reset()`) |
+| `Q` / `Esc` | Quit window |
 
 ```bash
 uv run python run_game.py \
@@ -85,6 +104,8 @@ uv run python run_game.py \
   --mode human \
   --game ez01
 ```
+
+Swap **`ez01`** for any stem from `uv run python run_game.py --list` (use **`--offline`** to list only local `environment_files/` packages).
 
 ### API / leaderboard / competition
 
