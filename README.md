@@ -77,26 +77,9 @@ uv run python run_game.py --list
 # uv run python run_game.py --offline --list
 ```
 
-Headless random smoke:
-
-```bash
-# Omit --mode or pass --mode random-agent; --steps is how many random ACTION1–ACTION5 steps (default 100).
-uv run python run_game.py --offline --version auto --mode random-agent --steps 50 --game ez01
-```
-
 ### Human play
 
-**`--mode human`** runs [`scripts/human_play_pygame.py`](scripts/human_play_pygame.py) (pygame). Abstract actions and human bindings are the same as in the official ARC Prize doc **[Actions](https://docs.arcprize.org/actions)**; each game still defines what ACTION1–7 mean.
-
-| Action | Role |
-| --- | --- |
-| `RESET` | Initialize or restart |
-| `ACTION1`–`ACTION4` | Simple actions (UI maps to up / down / left / right; semantics are game-specific) |
-| `ACTION5` | Special (e.g. interact, rotate, execute) |
-| `ACTION6` | Coordinate action (`x`, `y` in 0–63) |
-| `ACTION7` | Undo |
-
-Local pygame mapping (aligned with that doc’s WASD + Space and arrows + F schemes; digits `1`–`5` also send ACTION1–5):
+With **`--mode human`**, local keys map to abstract actions as in **[Actions](https://docs.arcprize.org/actions)** (WASD + Space, arrows + F; digits `1`–`5` also send ACTION1–5):
 
 | Input | Action |
 | --- | --- |
@@ -140,8 +123,6 @@ uv run python run_game.py --competition \
   --game ls20
 ```
 
-`run_game.py` never passes **`scorecard_id`** into **`arc.make`** and does not call **`create_scorecard`**, **`get_scorecard`**, or **`close_scorecard`**. In **online** mode the toolkit may still attach play to its **default** scorecard ([Local vs Online](https://docs.arcprize.org/local-vs-online), [Get Scorecard](https://docs.arcprize.org/toolkit/get-scorecard)). For **custom** scorecards or create → close workflows: [Create Scorecard](https://docs.arcprize.org/toolkit/create-scorecard), [Close Scorecard](https://docs.arcprize.org/toolkit/close-scorecard).
-
 ### Create a game with AI Agent
 
 Example prompt (replace `{game_id}` and the bracketed design):
@@ -157,19 +138,3 @@ Implement a new ARC-AGI-3 game {game_id} at environment_files/{game_id}/v1/. Fol
 - **[generate-arc-game-gif](.opencode/skills/generate-arc-game-gif/SKILL.md)** — GIF-ready `RenderableUserDisplay` and registry previews via `scripts/render_arc_game_gif.py`.
 
 Full checklist: [CONTRIBUTING.md](CONTRIBUTING.md#creating-a-new-game).
-
-## Community Benchmarks
-
-### Kaggle
-
-Community or parallel evaluation can use Kaggle-style task notebooks derived from this tree. From the repo root, generate notebooks (then attach a dataset with **`environment_files/`** and publish tasks on Kaggle as in [`benchmarks/README.md`](benchmarks/README.md)):
-
-```bash
-# Four canonical tasks → benchmarks/kaggle/notebooks/*.ipynb
-python3 benchmarks/kaggle/rebuild_kaggle_notebooks.py
-
-# One notebook per game stem → benchmarks/kaggle/notebooks/all/ (gitignored)
-uv run python benchmarks/kaggle/export_kaggle_notebooks_all_stems.py
-```
-
-Local smoke (no hosted model): `uv run python -m benchmarks.kaggle.run_task_kbench_mock`. Papermill / proxy / region notes: [`benchmarks/kaggle/notebooks/README.md`](benchmarks/kaggle/notebooks/README.md).
