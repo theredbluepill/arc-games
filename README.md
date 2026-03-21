@@ -1,6 +1,6 @@
 # ARC-Interactive
 
-A collection of community games for the ARC-AGI-3 benchmark.
+A collection of community game environments for the ARC-AGI-3 benchmark.
 
 <table align="center">
   <tr>
@@ -45,7 +45,7 @@ These games are designed to be easy for humans to solve, but very hard for moder
 
 ## Why use ARC-Interactive?
 
-You can create games quickly with the patterns in [`AGENTS.md`](AGENTS.md) and the skills under [`.opencode/skills/`](.opencode/skills/) (mirrored at [`skills/`](skills/) — **create-arc-game**, **play-arc-game**, **generate-arc-game-gif** for preview GIFs); see [CONTRIBUTING.md](CONTRIBUTING.md#creating-a-new-game). Static levels are enough; games land in a community pool through normal repo contributions. Many stems live in one tree, so the catalog grows with `main`. Preview GIFs use **`scripts/render_arc_game_gif.py`** per the **generate-arc-game-gif** skill. Arcade plus `environment_files/` matches ARC-AGI / ARCEngine expectations.
+You can create or modify games quickly with the patterns in [`AGENTS.md`](AGENTS.md) and the skills under [`.opencode/skills/`](.opencode/skills/) (mirrored at [`skills/`](skills/) — **create-arc-game**, **play-arc-game**, **generate-arc-game-gif** for preview GIFs); see [CONTRIBUTING.md](CONTRIBUTING.md#creating-a-new-game). Static levels are enough; games land in a community pool through normal repo contributions. Many stems live in one tree, so the catalog grows with `main`. Preview GIFs use **`scripts/render_arc_game_gif.py`** per the **generate-arc-game-gif** skill. Arcade plus `environment_files/` matches ARC-AGI / ARCEngine expectations.
 
 ## Quickstart
 
@@ -138,17 +138,19 @@ uv run python run_game.py --competition \
 
 ### Create a game with AI Agent
 
-Use the skills under [`.opencode/skills/`](.opencode/skills/) with your coding agent; full checklist: [CONTRIBUTING.md](CONTRIBUTING.md#creating-a-new-game).
-
-- **[create-arc-game](.opencode/skills/create-arc-game/SKILL.md)** — Guides end-to-end game design and implementation (`environment_files/`, `ARCBaseGame`, `metadata.json`, `GAMES.md`) aligned with [`AGENTS.md`](AGENTS.md).
-- **[play-arc-game](.opencode/skills/play-arc-game/SKILL.md)** — Covers running and smoke-testing stems with `run_game.py` (list, random agent, human pygame, offline/online flags).
-- **[generate-arc-game-gif](.opencode/skills/generate-arc-game-gif/SKILL.md)** — Explains GIF-ready `RenderableUserDisplay` and capturing registry previews via `scripts/render_arc_game_gif.py`.
-
 Example prompt (replace `{game_id}` and the bracketed design):
 
 ```
 Implement a new ARC-AGI-3 game {game_id} at environment_files/{game_id}/v1/. Follow AGENTS.md and .opencode/skills/create-arc-game/SKILL.md: static levels only, ARCBaseGame + metadata.json, register a row in GAMES.md. Game design: [grid size, entities, win/lose, which actions 1–7 do].
 ```
+
+**Available skills** (under [`.opencode/skills/`](.opencode/skills/), mirrored at [`skills/`](skills/)):
+
+- **[create-arc-game](.opencode/skills/create-arc-game/SKILL.md)** — End-to-end game design and implementation (`environment_files/`, `ARCBaseGame`, `metadata.json`, `GAMES.md`) aligned with [`AGENTS.md`](AGENTS.md).
+- **[play-arc-game](.opencode/skills/play-arc-game/SKILL.md)** — Run and smoke-test stems with `run_game.py` (list, random agent, human pygame, offline/online flags).
+- **[generate-arc-game-gif](.opencode/skills/generate-arc-game-gif/SKILL.md)** — GIF-ready `RenderableUserDisplay` and registry previews via `scripts/render_arc_game_gif.py`.
+
+Full checklist: [CONTRIBUTING.md](CONTRIBUTING.md#creating-a-new-game).
 
 ## Community Benchmarks
 
