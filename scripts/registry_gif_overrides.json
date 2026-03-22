@@ -363,5 +363,54 @@
     "target_levels": 5,
     "bi_level_hold_frames": 16,
     "gif_duration_ms": 140
+  },
+  "rk01": {
+    "rk_jw_level_hold_frames": 18,
+    "gif_duration_ms": 175
+  },
+  "sn01": {
+    "rk_jw_level_hold_frames": 16,
+    "gif_duration_ms": 175
+  },
+  "tr01": {
+    "rk_jw_level_hold_frames": 16,
+    "gif_duration_ms": 175
+  },
+  "vp01": {
+    "rk_jw_level_hold_frames": 16,
+    "gif_duration_ms": 175
+  },
+  "bt01": {
+    "rk_jw_level_hold_frames": 16,
+    "gif_duration_ms": 175
+  },
+  "dg01": {
+    "rk_jw_level_hold_frames": 16,
+    "gif_duration_ms": 175
+  },
+  "mb01": {
+    "rk_jw_level_hold_frames": 16,
+    "gif_duration_ms": 175
+  },
+  "op01": {
+    "rk_jw_level_hold_frames": 18,
+    "gif_duration_ms": 175
+  },
+  "kb01": {
+    "rk_jw_fail_hold_frames": 22,
+    "rk_jw_level_hold_frames": 18,
+    "gif_duration_ms": 175
+  },
+  "eb01": {
+    "rk_jw_level_hold_frames": 18,
+    "gif_duration_ms": 175
+  },
+  "fg01": {
+    "rk_jw_level_hold_frames": 16,
+    "gif_duration_ms": 175
+  },
+  "jw01": {
+    "rk_jw_level_hold_frames": 18,
+    "gif_duration_ms": 175
   }
 }

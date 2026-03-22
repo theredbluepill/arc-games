@@ -21,7 +21,8 @@ class Bt01UI(RenderableUserDisplay):
 
         if not isinstance(frame, np.ndarray):
             return frame
-        h, _w = frame.shape
+        h, w = frame.shape
+        frame[1, min(2, w - 1)] = 11
         for i in range(min(self._ch, 14)):
             frame[h - 2, 1 + i] = 14
         return frame

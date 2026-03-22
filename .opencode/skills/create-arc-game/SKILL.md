@@ -359,9 +359,9 @@ Registry GIFs live under **`assets/{stem}.gif`** (final frame **64×64**).
 
 ## Examples
 
+Stems that appear here in a **concrete** path `environment_files/<stem>/<8-hex>/` (not `<version>`) are treated as official/reference examples for CI: they are **ignored** by [`devtools/check_official_stem_overlap.py`](../../devtools/check_official_stem_overlap.py) when detecting remote stem collisions. Add another such line when a new reference package should be excluded.
+
 See established games:
 - `environment_files/vc33/9851e02b/vc33.py`
 - `environment_files/ls20/cb3b57cc/ls20.py`
 - `environment_files/ft09/9ab2447a/ft09.py`
-- `environment_files/ez01/<version>/ez01.py`
-- `environment_files/sq01/<version>/sq01.py` (ACTION6, grid→frame click FX)

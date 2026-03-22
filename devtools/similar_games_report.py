@@ -318,11 +318,18 @@ def load_stem_features(
 
 def _suspicious_components(
     pairs: list[dict[str, Any]],
+    min_edge_score: float = 0.0,
 ) -> list[dict[str, Any]]:
-    """Connected components over pairs flagged ``suspicious_overlap`` (undirected)."""
+    """Connected components over pairs flagged ``suspicious_overlap`` (undirected).
+
+    ``min_edge_score`` filters edges (pair ``score`` must be >= threshold) so
+    raising it splits large components without changing the main pair table.
+    """
     adj: dict[str, set[str]] = {}
     for p in pairs:
         if not p.get("suspicious_overlap"):
+            continue
+        if float(p.get("score", 0)) < min_edge_score:
             continue
         a, b = p["a"], p["b"]
         adj.setdefault(a, set()).add(b)
@@ -447,6 +454,16 @@ def main() -> int:
         default=0.8,
         help="Weight for levels source fingerprint match (0 if missing)",
     )
+    parser.add_argument(
+        "--suspicious-min-score",
+        type=float,
+        default=None,
+        metavar="SCORE",
+        help=(
+            "Minimum composite score for an edge to appear in suspicious "
+            "overlap components (default: same as --min-score)"
+        ),
+    )
     args = parser.parse_args()
 
     packages = _discover_packages()
@@ -551,7 +568,14 @@ def main() -> int:
 
     pairs_out.sort(key=lambda r: (-r["score"], r["a"], r["b"]))
 
-    suspicious_components = _suspicious_components(pairs_out)
+    susp_edge = (
+        args.suspicious_min_score
+        if args.suspicious_min_score is not None
+        else args.min_score
+    )
+    suspicious_components = _suspicious_components(
+        pairs_out, min_edge_score=susp_edge
+    )
 
     args.out_dir.mkdir(parents=True, exist_ok=True)
     report = {
@@ -561,6 +585,7 @@ def main() -> int:
             "only_games_md": args.only_games_md,
             "top_k": args.top_k,
             "min_score": args.min_score,
+            "suspicious_min_score": susp_edge,
             "weights": {
                 "meta": args.w_meta,
                 "text": args.w_text,
@@ -612,7 +637,7 @@ def main() -> int:
             "## Suspicious overlap components",
             "",
             "Undirected connected components over pairs with **Suspicious** = yes "
-            "(batch-triage one component at a time).",
+            f"and composite **≥ {susp_edge:.3f}** (see `--suspicious-min-score`).",
             "",
         ]
     )

@@ -45,7 +45,7 @@ jobs:
           body: |
             Automated report from `devtools/check_official_stem_overlap.py` (ONLINE `get_environments()` vs `environment_files/`).
 
-            Reference stems `vc33`, `ls20`, and `ft09` (create-arc-game skill) are **not** flagged.
+            Reference stems are loaded from the create-arc-game skill **`## Examples`** (paths with a concrete 8-hex version segment); see `devtools/check_official_stem_overlap.py`.
 
             **Review** [`devtools/reports/official_stem_overlap.md`](devtools/reports/official_stem_overlap.md) and [`devtools/reports/official_stem_overlap.json`](devtools/reports/official_stem_overlap.json). Rename the affected **community** stem and update `metadata.json`, module name, `GAMES.md`, and any registry/GIF references (see [CONTRIBUTING.md](CONTRIBUTING.md)).
 

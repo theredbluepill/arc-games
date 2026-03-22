@@ -4,6 +4,7 @@ from arcengine import (
     ARCBaseGame,
     Camera,
     GameAction,
+    GameState,
     Level,
     RenderableUserDisplay,
     Sprite,
@@ -11,18 +12,68 @@ from arcengine import (
 
 
 class Jw01UI(RenderableUserDisplay):
-    def __init__(self, swaps: int) -> None:
+    def __init__(self, swaps: int, num_levels: int) -> None:
         self._swaps = swaps
+        self._li = 0
+        self._nl = num_levels
+        self._state: GameState | None = None
+        self._click_pos: tuple[int, int] | None = None
+        self._click_frames = 0
 
-    def update(self, swaps: int) -> None:
+    def set_click(self, x: int, y: int) -> None:
+        self._click_pos = (int(x), int(y))
+        self._click_frames = 8
+
+    def update(
+        self,
+        swaps: int,
+        *,
+        level_index: int | None = None,
+        num_levels: int | None = None,
+        state: GameState | None = None,
+    ) -> None:
         self._swaps = swaps
+        if level_index is not None:
+            self._li = level_index
+        if num_levels is not None:
+            self._nl = num_levels
+        if state is not None:
+            self._state = state
 
     def render_interface(self, frame):
         import numpy as np
 
         if not isinstance(frame, np.ndarray):
             return frame
-        h, _w = frame.shape
+        h, w = frame.shape
+        for i in range(min(self._nl, 14)):
+            cx = 1 + i * 2
+            if cx >= w:
+                break
+            c = 14 if i < self._li else (11 if i == self._li else 3)
+            frame[0, cx] = c
+        if self._click_pos and self._click_frames > 0:
+            cx, cy = self._click_pos
+            if 0 <= cx < w and 0 <= cy < h:
+                hit = 11
+                for px, py in (
+                    (cx, cy),
+                    (cx - 1, cy),
+                    (cx + 1, cy),
+                    (cx, cy - 1),
+                    (cx, cy + 1),
+                ):
+                    if 0 <= px < w and 0 <= py < h:
+                        frame[py, px] = hit
+            self._click_frames -= 1
+        else:
+            self._click_pos = None
+        if self._state in (GameState.GAME_OVER, GameState.WIN):
+            r = h - 3
+            if r >= 0:
+                cc = 14 if self._state == GameState.WIN else 8
+                for x in range(min(w, 16)):
+                    frame[r, x] = cc
         for i in range(min(self._swaps, 8)):
             frame[h - 2, 1 + i] = 11
         return frame
@@ -144,7 +195,7 @@ def _cells(x: int, y: int, w: int, h: int) -> list[tuple[int, int]]:
 
 class Jw01(ARCBaseGame):
     def __init__(self) -> None:
-        self._ui = Jw01UI(0)
+        self._ui = Jw01UI(0, len(levels))
         super().__init__(
             "jw01",
             levels,
@@ -162,7 +213,15 @@ class Jw01(ARCBaseGame):
         self._ra = tuple(int(x) for x in ra)
         self._rb = tuple(int(x) for x in rb)
         self._swap_count = 0
-        self._ui.update(0)
+        self._sync_ui()
+
+    def _sync_ui(self) -> None:
+        self._ui.update(
+            self._swap_count,
+            level_index=self.level_index,
+            num_levels=len(levels),
+            state=self._state,
+        )
 
     def _swap_rects(self) -> None:
         x0, y0, w0, h0 = self._ra
@@ -198,20 +257,23 @@ class Jw01(ARCBaseGame):
         self._player = self.current_level.get_sprites_by_tag("player")[0]
         self._goal = self.current_level.get_sprites_by_tag("goal")[0]
         self._swap_count += 1
-        self._ui.update(self._swap_count)
+        self._sync_ui()
 
     def step(self) -> None:
         if self.action.id == GameAction.ACTION6:
             raw_x = self.action.data.get("x", 0)
             raw_y = self.action.data.get("y", 0)
+            self._ui.set_click(int(raw_x), int(raw_y))
             g = self.camera.display_to_grid(int(raw_x), int(raw_y))
             if g is None:
+                self._sync_ui()
                 self.complete_action()
                 return
             gx, gy = g
             sp = self.current_level.get_sprite_at(gx, gy, ignore_collidable=True)
             if sp and "trigger" in sp.tags:
                 self._swap_rects()
+            self._sync_ui()
             self.complete_action()
             return
 
@@ -260,4 +322,5 @@ class Jw01(ARCBaseGame):
         if self._player.x == self._goal.x and self._player.y == self._goal.y:
             self.next_level()
 
+        self._sync_ui()
         self.complete_action()

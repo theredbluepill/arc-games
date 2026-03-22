@@ -43,7 +43,7 @@ Or run the same command from a local `Makefile` if you keep one (the repo gitign
 
 Tune **weights** (`--w-meta`, `--w-text`, `--w-code`, `--w-level`) and **threshold** (`--min-score`) when a family dominates the list.
 
-The Markdown report includes **Suspicious overlap components** (connected components over pairs marked suspicious). At the default `--min-score`, cross-family links are dense, so you often get **one large component**—use the sorted **pair table** for fine-grained work, or raise `--min-score` to fragment the graph. JSON field: `suspicious_components`.
+The Markdown report includes **Suspicious overlap components** (connected components over pairs marked suspicious). At the default `--min-score`, cross-family links are dense, so you often get **one large component**—use the sorted **pair table** for fine-grained work, or pass **`--suspicious-min-score 0.40`** (or higher) to build components from **stronger** edges only while keeping the pair table threshold unchanged. JSON field: `suspicious_components`; option echo: `options.suspicious_min_score`.
 
 ## Resolved notes (maintenance log)
 
@@ -51,6 +51,8 @@ The Markdown report includes **Suspicious overlap components** (connected compon
 - **`av01` / `sb01`**: Rules in code are the same “fall into empty below” step; **sb01** levels were rewritten to new geometry and **GAMES.md** spells out the shared rule vs distinct layouts / sprite color.
 - **`sv*` vs `wm*`**: High **code** + **lvl** overlap is largely **shared boilerplate** and unrelated survival vs click mechanics—treat as a **false positive** unless a diff shows copied level data.
 - **Registry pass**: Many **Variant of `xy01`** prefixes and pipe/HUD clarifications were added in [GAMES.md](../GAMES.md); plumbing stems gained distinct **metadata tags** / **physics_rules** strings.
+- **wm\* vs sv\***: Identical `levels = [create_level(i) for i in range(1, 6)]` text caused a false **levels** match; **wm01–wm03** now use `(1, 2, 3, 4, 5)` so the fingerprint differs without changing gameplay.
+- **Priority batch (coverage / dp–dv / meters / sand / P2 blurbs)**: [GAMES.md](../GAMES.md) revisit-rule leads for **va01, bd01, hm01, gl01, tr01, vp01, cf01**; **dp01**/**dv01** HUD corner cues + descriptions; **bt01**/**tm01** contrast + **bt01** HUD marker; **cq01**/**tw01**/**vp01**/**pw01**; **sp01**/**sp04**/**ab01** + metadata; **pb04**/**sk04** mechanics + grid **10×10**; adjacency/drill/melt/dig/swap; escort/chase; **gp01**/**lo01**/**lo05**; **bl01**/**rc01**, **fg01**/**kb01**, **pb01**/**sk01**, **lf01**/**rh01**, **rb01**/**tf01**.
 
 ## Reference stems
 

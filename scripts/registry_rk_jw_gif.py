@@ -7,7 +7,6 @@ from pathlib import Path
 from typing import Any
 
 from arcengine import GameAction, Level
-
 from env_resolve import full_game_id_for_stem, load_stem_game_py
 from gif_common import (
     append_frame_repeats,
@@ -15,9 +14,9 @@ from gif_common import (
     offline_arcade,
 )
 from registry_gif_lib import (
-    _StepAbort,
-    _frame_layer0,
     _cap_gif_frames,
+    _frame_layer0,
+    _StepAbort,
     safe_env_step,
 )
 
@@ -430,13 +429,25 @@ def plan_dg01(level: Level) -> list[PlanStep] | None:
     return None
 
 
-def _eb_escalate(walls: set[tuple[int, int]], gw: int, gh: int, row: int, x: int, y: int) -> tuple[int, int]:
+def _eb_escalate(
+    walls: set[tuple[int, int]],
+    gw: int,
+    gh: int,
+    row: int,
+    goals: set[tuple[int, int]],
+    x: int,
+    y: int,
+) -> tuple[int, int, bool]:
     while y == row:
+        if (x, y) in goals:
+            return (x, y, True)
         nx = x + 1
         if not (0 <= nx < gw and 0 <= y < gh) or (nx, y) in walls:
             break
         x = nx
-    return (x, y)
+        if (x, y) in goals:
+            return (x, y, True)
+    return (x, y, False)
 
 
 def plan_eb01(level: Level) -> list[int] | None:
@@ -462,7 +473,17 @@ def plan_eb01(level: Level) -> list[int] | None:
             nx, ny = x + dx, y + dy
             if not (0 <= nx < gw and 0 <= ny < gh) or (nx, ny) in walls:
                 continue
-            fx, fy = _eb_escalate(walls, gw, gh, row, nx, ny)
+            fx, fy, won = _eb_escalate(walls, gw, gh, row, goals, nx, ny)
+            if won:
+                out: list[int] = []
+                cur = (x, y)
+                while prev[cur] is not None:
+                    p, a = prev[cur]
+                    out.append(a)
+                    cur = p
+                out.reverse()
+                out.append(av)
+                return out
             nxt = (fx, fy)
             if nxt not in prev:
                 prev[nxt] = ((x, y), av)

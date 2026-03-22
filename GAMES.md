@@ -14,18 +14,18 @@ Human-edited registry for this repo. To **enumerate installable packages** from 
 | sv01 | Survival / Timing | 8-24 | 5 | Survival game. Manage hunger and warmth. Green food restores hunger; orange warm zones stop warmth loss. Survive 60 frames to advance. | ![sv01](assets/sv01.gif) | • 1-4: Movement • 5: Idle (wait) |
 | pt01 | Pattern Puzzles | 64×64 | 5 | Pattern rotation puzzle. Click tiles to rotate them 90° clockwise and match the target pattern. | ![pt01](assets/pt01.gif) | • 6: Click/Rotate |
 | sy01 | Pattern Puzzles | 11×11 | 5 | Mirror Maker. Mirror the pattern from the left side onto the right side. Create a perfect reflection! | ![sy01](assets/sy01.gif) | • 6: Click (place/remove block) |
-| sk01 | Environmental Manipulation | 8-12 | 5 | Sokoban. Push blocks onto target pads. Green = placed. Wall blockers ramp up by level. Step limit exceeded = lose. | ![sk01](assets/sk01.gif) | • 1-4: Movement |
+| sk01 | Environmental Manipulation | 8-12 | 5 | **Classic multi-crate sokoban**: several crates/pads; green = placed; harder topology than **pb01** one-box intro. Step limit exceeded = lose. | ![sk01](assets/sk01.gif) | • 1-4: Movement |
 | tb01 | Environmental Manipulation | 24×24 | 5 | Bridge Builder. **Multi-island** routes (waypoints + optional reef clusters); bridge open water (ACTION6), walk island-to-island to the green goal. Later levels add **max_bridges** / **step_limit**; blue ticks show level index. Swimming costs a life. | ![tb01](assets/tb01.gif) | • 1-4: Movement • 6: Toggle bridge on water (click) |
 | ff01 | Precision / Topology | 64×64 | 5 | Flood fill: click inside **closed** regions to paint them yellow. Five levels mix **rectangles**, **donut/ring**, and **C-bays** with ramping shape count. Sq01-style click ripple in final frame space; **ACTION1–4** are no-ops (pacing). | ![ff01](assets/ff01.gif) | • 1-4: No-op • 6: Click |
 | mm01 | Memory / Hidden State | 64×64 | 7 | Memory Match. Level 1 has 2 pairs, then +1 pair per level up to 8 pairs. Flip pairs of hidden tiles to find matching colors. Match all pairs to win. Time runs out = lose. | ![mm01](assets/mm01.gif) | • 6: Click tile |
 | ms01 | Memory / Hidden State | 8-16 | 5 | Blind Sapper. Navigate a hidden minefield using deduction. Safe tiles reveal adjacent mine counts. Step on a mine = lose. Reach the goal to win. Tests working memory and deductive planning. | ![ms01](assets/ms01.gif) | • 1-4: Movement |
 | sq01 | Sequencing / Ordering | 12×12 | 5 | Sequencing. Click colored blocks in the correct order. Follow the sequence shown at the top! | ![sq01](assets/sq01.gif) | • 6: Click block |
 | rs01 | Cognitive Flexibility / Rule Switching | 8-16 | 5 | Rule Switcher. Collect colored targets that match the signpost color at top. Wrong color = lose. After all colors cycle through as safe, collect remaining targets. Tests cognitive flexibility and rule adaptation. | ![rs01](assets/rs01.gif) | • 1-4: Movement |
-| pb01 | Environmental Manipulation | 8-10 | 5 | One-box push. Single crate and one goal per level; push the block onto the yellow pad. Step limit exceeded = lose. | ![pb01](assets/pb01.gif) | • 1-4: Movement |
+| pb01 | Environmental Manipulation | 8-10 | 5 | **Single-crate sokoban**: one box + one pad + normal walking; not multi-crate **sk01** complexity. Step limit exceeded = lose. | ![pb01](assets/pb01.gif) | • 1-4: Movement |
 | fs01 | Puzzle Mechanics | 8-10 | 5 | Floor switches. Step on every yellow pressure plate (any order) to open the gray door, then reach the green goal. | ![fs01](assets/fs01.gif) | • 1-4: Movement |
 | tp01 | Puzzle Mechanics | 8-10 | 5 | **Symmetric** teleporters: either end of a pair warps to the other (HUD: ↔ + pair ticks). Reach the yellow goal. | ![tp01](assets/tp01.gif) | • 1-4: Movement |
 | ic01 | Puzzle Mechanics | 8-10 | 5 | **Ice slide:** one movement action = **slide in a straight line** until the next cell would be **OOB**, a **wall**, or a **red hazard** (you **stop before** entering those). **Yellow goal does not block** a slide—you can land on it mid-slide; a **wall past the goal** forces a stop on the goal tile. Corner HUD: **light blue** = ice, **yellow** = standing on goal. | ![ic01](assets/ic01.gif) | • 1-4: Movement |
-| va01 | Coverage / Path | 4-8 | 5 | Visit all. Walk on every walkable floor cell at least once to clear the level. | ![va01](assets/va01.gif) | • 1-4: Movement |
+| va01 | Coverage / Path | 4-8 | 5 | **Revisit rule: allowed** — cover every walkable floor **at least once**; revisits OK. Goal: full coverage, not Hamiltonian. | ![va01](assets/va01.gif) | • 1-4: Movement |
 | pb02 | Environmental Manipulation | 8-10 | 5 | Two crates, two yellow goals; push both blocks onto pads (sk01-style). | ![pb02](assets/pb02.gif) | • 1-4: Movement |
 | pb03 | Environmental Manipulation | 8-10 | 5 | Decoy orange pad — pushing a crate onto it loses; real goals stay yellow. | ![pb03](assets/pb03.gif) | • 1-4: Movement |
 | fs02 | Puzzle Mechanics | 8-10 | 5 | Floor switches **OR**: **orange** plates — stepping on **any one** opens the door (redundant branches, not a count). | ![fs02](assets/fs02.gif) | • 1-4: Movement |
@@ -37,17 +37,17 @@ Human-edited registry for this repo. To **enumerate installable packages** from 
 | va02 | Coverage / Path | 4-8 | 5 | Visit every **non-hazard** floor cell; red hazard cells never need coverage. **Visited** cells stay **green** (trail). **Three** blocked moves (OOB / wall / hazard) on a level = lose; corner HUD shows strikes left. | ![va02](assets/va02.gif) | • 1-4: Movement |
 | va03 | Coverage / Path | 4-8 | 5 | Visit yellow waypoints **in order** with a **fixed move budget** (shortest solve length). OOB/wall don’t use moves. Waste the budget or mistime the final step = lose. | ![va03](assets/va03.gif) | • 1-4: Movement |
 | nw01 | Puzzle Mechanics | 8-10 | 5 | **Arrow tiles:** stepping onto one **queues** its direction; your **next** move uses that vector instead of your key (then it clears). **Orange** HUD = forced move queued. | ![nw01](assets/nw01.gif) | • 1-4: Movement |
-| bd01 | Coverage / Path | 5-8 | 5 | **No revisits** — entering any cell twice **loses**; reach the goal. **Red** tiles mark cells you already left; HUD corners **red** on revisit fail. | ![bd01](assets/bd01.gif) | • 1-4: Movement |
+| bd01 | Coverage / Path | 5-8 | 5 | **Revisit rule: forbidden** — **any** cell entered twice **loses** (stricter than visit-all **va01**). **Red** marks cells you left; HUD flashes red on revisit fail. | ![bd01](assets/bd01.gif) | • 1-4: Movement |
 | gr01 | Puzzle Mechanics | 8-10 | 6 | **Gravity**: after each move, one auto-step **down** (if clear). **Lose** if the goal is **unreachable** (BFS with same rules), confirmed on **two** consecutive steps. **Dense gray walls** per level (still fully solvable); L0 keeps the **walled pit** for the registry fail beat. | ![gr01](assets/gr01.gif) | • 1-4: Movement |
 | dt01 | Puzzle Mechanics | 8-10 | 5 | **Detour:** cyan waypoint arms only when you **enter it from the required side** (`waypoint_enter_from`: **n**/ **e**/ **s**/ **w**); then the yellow goal counts. | ![dt01](assets/dt01.gif) | • 1-4: Movement |
 | wk01 | Puzzle Mechanics | 8-10 | 5 | **Weak floor**: brown tiles collapse to holes after you leave; holes are lethal. HUD turns **red** on hole death. | ![wk01](assets/wk01.gif) | • 1-4: Movement |
 | rf01 | Puzzle Mechanics | 8-10 | 5 | **Mirror half-plane**: on `x >= mid`, left/right inputs are swapped. | ![rf01](assets/rf01.gif) | • 1-4: Movement |
 | mo01 | Puzzle Mechanics | 8-10 | 5 | **Momentum**: need **≥2** steps in a row before changing direction; early turn = lose. | ![mo01](assets/mo01.gif) | • 1-4: Movement |
 | zq01 | Puzzle Mechanics | 8-10 | 5 | **Zone timer**: blinking red hazard cells toggle on a fixed period (`period`, `hazard_cells`). | ![zq01](assets/zq01.gif) | • 1-4: Movement |
-| hm01 | Coverage / Path | 3-6 | 5 | **Hamiltonian** tour — every open cell **exactly once**; revisit = lose. | ![hm01](assets/hm01.gif) | • 1-4: Movement |
+| hm01 | Coverage / Path | 3-6 | 5 | **Revisit rule: forbidden** — **Hamiltonian**: every open cell **exactly once** (same strictness as **bd01** but win = full grid, not goal-only). | ![hm01](assets/hm01.gif) | • 1-4: Movement |
 | ex01 | Puzzle Mechanics | 8-10 | 5 | **Exit hold**: stand on green exit pad and repeat **ACTION5** `hold_frames` times to clear. | ![ex01](assets/ex01.gif) | • 1-4: Movement • 5: Hold / charge exit |
-| gp01 | Pattern Puzzles | 8×8 | 5 | **Grid paint**: **ACTION6** toggles yellow on cells to match gray hints; **ACTION1–4** are no-ops. | ![gp01](assets/gp01.gif) | • 1-4: No-op • 6: Click |
-| lo01 | Pattern Puzzles | 3×3–5×5 | 5 | **Lights Out**: **ACTION6** toggles a cell and its neighbors; clear all lights. **ACTION1–4** are no-ops. | ![lo01](assets/lo01.gif) | • 1-4: No-op • 6: Click |
+| gp01 | Pattern Puzzles | 8×8 | 5 | **Per-cell paint to match hints**: **ACTION6** flips **only** the clicked cell yellow/off to match gray template — **no** neighbor kernel (**lo01** / **lo05**). | ![gp01](assets/gp01.gif) | • 1-4: No-op • 6: Click |
+| lo01 | Pattern Puzzles | 3×3–5×5 | 5 | **Orthogonal Lights Out**: **ACTION6** toggles **self + 4 orth neighbors**; clear all on — not **gp01** hint paint or **lo05** knight kernel. | ![lo01](assets/lo01.gif) | • 1-4: No-op • 6: Click |
 | lw01 | Path / Topology | 24–32 | 5 | **Line weave**: connect colored starts to matching ends with orthogonal paths; colors cannot share cells. | ![lw01](assets/lw01.gif) | • 1–2: Prev/next color • 3–4: No-op • 5: Undo segment • 6: Extend path (click) |
 | rp01 | Graph / Logic | 32×32 | 5 | **Relay pulse**: **ACTION6** toggles relays; **ACTION5** fires from the source; orthogonal relay chain must light every lamp (adjacent to a visited relay). | ![rp01](assets/rp01.gif) | • 1–4: No-op • 5: Fire pulse • 6: Toggle relay |
 | ml01 | Geometry | 24×24 | 5 | **Mirror laser (single goal)**: **global** **ACTION6** clicks place/cycle mirrors (**purple** = ``/``, **light magenta** = ``\\``) on any valid floor cell; **ACTION5** fires a full ray; **1–4** no-op. **No** blue avatar — only emitter / receptor / walls / mirrors. Levels: wall detours → preset shortcut → south emitter + hazards → diagonal posts. **Magenta** = last-shot trace. | ![ml01](assets/ml01.gif) | • 1–4: No-op • 5: Fire • 6: Mirror (click) • 7: Undo last 5/6 |
@@ -71,7 +71,7 @@ Human-edited registry for this repo. To **enumerate installable packages** from 
 | qr01 | Pattern Puzzles | 8×8 | 5 | **Quad twist**: **ACTION6** rotates the 2×2 block of tiles anchored at the click clockwise; match the target pattern. | ![qr01](assets/qr01.gif) | • 1-4: No-op • 6: Rotate 2×2 |
 | rs02 | Cognitive Flexibility | 8-16 | 5 | **Dual safe**: collect targets matching **either** color of the active pair (`dual_pairs`); after all pairs have been safe, any remaining target is allowed. | ![rs02](assets/rs02.gif) | • 1-4: Move |
 | sk02 | Environmental Manipulation | 8-12 | 5 | **Sliding crate sokoban**: after a successful push, if the cell beyond the crate is empty, the crate slides one more step. | ![sk02](assets/sk02.gif) | • 1-4: Move |
-| sp01 | Simulation | 12×12 | 5 | **Sandpile**: **ACTION6** adds a grain; cells with ≥4 topple to neighbors; win when the grid is stable and total grains equals **target_sum**. | ![sp01](assets/sp01.gif) | • 1-4: No-op • 6: Add grain |
+| sp01 | Simulation | 12×12 | 5 | **Win: stable + Σ grains = `target_sum`** (classic sandpile). **ACTION6** adds a grain; ≥4 topples to neighbors; no sinks (**sp04**) / no mod goal (**ab01**). | ![sp01](assets/sp01.gif) | • 1-4: No-op • 6: Add grain |
 | sq02 | Sequencing | 12×12 | 5 | **Shrinking queue**: like sequencing, but only the current expected color block is eligible/visible until unlocked; wrong order resets progress. | ![sq02](assets/sq02.gif) | • 6: Click block |
 | sv02 | Survival / Timing | 8-24 | 5 | **Shelter survival**: warmth decay pauses only inside magenta **shelter** zones; hunger rules unchanged; survive 60 steps per level. | ![sv02](assets/sv02.gif) | • 1-4: Move • 5: Idle |
 | tb02 | Environmental Manipulation | 24×24 | 5 | **Bridge decay**: like bridge builder, but a bridge sprite is removed when you **leave** that water cell. | ![tb02](assets/tb02.gif) | • 1-4: Move • 6: Toggle bridge |
@@ -92,7 +92,7 @@ Human-edited registry for this repo. To **enumerate installable packages** from 
 | ml02 | Geometry | 24×24 | 5 | **Dual-receptor laser**: like **ml01** optics but **all** yellow receptors in **one** shot; **blue** technician **moves** (**1–4**); **ACTION6** only on cells **orthogonally adjacent** to technician; mirrors **persist** after each shot. Column-gap line clears + one mirror detour level. | ![ml02](assets/ml02.gif) | • 1-4: Move • 5: Fire • 6: Mirror |
 | mm02 | Memory / Hidden State | 64×64 | 5 | **Memory triples**: flip three tiles; clear when all three match color. | ![mm02](assets/mm02.gif) | • 6: Click tile |
 | ms02 | Memory / Hidden State | 8-16 | 5 | **Flag sapper**: **ACTION6** plants flags on hidden mines; wrong flag = lose; reach the goal. | ![ms02](assets/ms02.gif) | • 1-4: Move • 6: Flag |
-| mx01 | Puzzle Mechanics | 10×10 | 5 | **Maze melt**: **ACTION5** melts one adjacent wall segment (budget); reach exit when a path exists. | ![mx01](assets/mx01.gif) | • 1-4: Move • 5: Melt |
+| mx01 | Puzzle Mechanics | 10×10 | 5 | **Melt (wall erosion)**: **ACTION5** removes **one** adjacent **wall** tile up to a **melt budget**; open a path to exit — walls only, not **dg01** mud. | ![mx01](assets/mx01.gif) | • 1-4: Move • 5: Melt |
 | nw02 | Puzzle Mechanics | 8-12 | 5 | **Vector arrows**: arrow tiles **add** to a pending (dx,dy); next move executes the **sum** clamped to one step. | ![nw02](assets/nw02.gif) | • 1-4: Move |
 | ph02 | Field / Math | 24×24 | 5 | **Phase multiply**: **ACTION5** applies multiply-style update with orthogonal neighbors **mod N** (`mod_n` in data). | ![ph02](assets/ph02.gif) | • 1-4: No-op • 5: Step • 6: Inc |
 | pt02 | Pattern Puzzles | 64×64 | 5 | **Row/column rotate**: **ACTION6** rotates a full row **or** column of 3×3 tiles (nearest axis wins). | ![pt02](assets/pt02.gif) | • 6: Click band |
@@ -112,7 +112,7 @@ Human-edited registry for this repo. To **enumerate installable packages** from 
 | co01 | Puzzle Mechanics | 10×10 | 5 | **Color gate**: recolor pads set active hue; only matching doors open. | ![co01](assets/co01.gif) | • 1-4: Move |
 | em01 | Puzzle / Planning | 10×10 | 5 | **Echo move**: every second step repeats your previous cardinal delta. | ![em01](assets/em01.gif) | • 1-4: Move |
 | nu01 | Collection / Order | 10×10 | 5 | **Number fuse**: collect numbered tokens in descending order; wrong pickup loses. | ![nu01](assets/nu01.gif) | • 1-4: Move |
-| gl01 | Hazard / Path | 10×10 | 5 | **Glass floor**: third visit to the same glass cell loses. | ![gl01](assets/gl01.gif) | • 1-4: Move |
+| gl01 | Hazard / Path | 10×10 | 5 | **Revisit rule: 2 free, 3rd loses** — same cell **third** visit loses (vs **vp01** one-and-done). | ![gl01](assets/gl01.gif) | • 1-4: Move |
 | or01 | Puzzle / Timing | 10×10 | 5 | **Orbit keys**: keys rotate clockwise around a pillar each step; pick up when orth-adjacent, then reach the goal. | ![or01](assets/or01.gif) | • 1-4: Move |
 | ex03 | Puzzle Mechanics | 8×8 | 5 | **Moving exit hold**: like ex02, but the green pad slides on a timer (`pad_period`, `pad_delta`). | ![ex03](assets/ex03.gif) | • 1-4: Move • 5: Hold |
 | zq03 | Puzzle Mechanics | 8-10 | 5 | **Synced hazard masks**: one safe beat per cycle where both fields are off (`mask_a` / `mask_b`). | ![zq03](assets/zq03.gif) | • 1-4: Move |
@@ -120,7 +120,7 @@ Human-edited registry for this repo. To **enumerate installable packages** from 
 | rs03 | Cognitive Flexibility | 8-16 | 5 | **Forbidden stripe**: HUD shows a color that is **never** collectible; clear all other targets. | ![rs03](assets/rs03.gif) | • 1-4: Move |
 | sv03 | Survival / Timing | 8-24 | 5 | **Dual shelters**: yellow pauses hunger decay, magenta pauses warmth; **alternate** shelter types on entry. | ![sv03](assets/sv03.gif) | • 1-4: Move • 5: Idle |
 | sq03 | Sequencing | 12×12 | 5 | **Dual queue**: two color queues; **ACTION6** on either head; wrong tap resets **both**. | ![sq03](assets/sq03.gif) | • 6: Click block |
-| dr01 | Puzzle / Rush | 10×10 | 5 | **Drill rush**: **ACTION5** breaks one adjacent wall; tight **step** budget. | ![dr01](assets/dr01.gif) | • 1-4: Move • 5: Drill |
+| dr01 | Puzzle / Rush | 10×10 | 5 | **Drill (wall + rush)**: **ACTION5** destroys **one orth-adjacent grid wall**; **strict step budget** — not **mx01** melt budget style or **dg01** mud dig. | ![dr01](assets/dr01.gif) | • 1-4: Move • 5: Drill |
 | vi01 | Survival / Hazard | 12×12 | 5 | **Infection**: plague spreads every **K** steps; cyan **vaccine** then green exit. | ![vi01](assets/vi01.gif) | • 1-4: Move |
 | wa01 | Movement | 12×12 | 5 | **Warp line**: crossing a warp band shifts **+2** on its axis when clear. | ![wa01](assets/wa01.gif) | • 1-4: Move |
 | fi01 | Simulation / Hazard | 14×14 | 5 | **Firebreak**: fire spreads each step; **ACTION5** places a blue **break** tile blocking spread. | ![fi01](assets/fi01.gif) | • 1-4: Move • 5: Place break |
@@ -141,37 +141,37 @@ Human-edited registry for this repo. To **enumerate installable packages** from 
 | bi01 | Movement / Chess | 10×10 | 5 | **Bishop courier**: ACTION1–4 slide diagonally (NW/NE/SW/SE) until a wall blocks. | ![bi01](assets/bi01.gif) | • 1-4: Diagonal slide |
 | rk01 | Movement / Chess | 10×10 | 5 | **Rook courier**: ACTION1–4 slide orthogonally until a wall blocks. | ![rk01](assets/rk01.gif) | • 1-4: Rook slide |
 | sn01 | Collection / Classic | 12×12 | 5 | **Snake collect**: eat all yellow food; grow; walls and self-collision lose. | ![sn01](assets/sn01.gif) | • 1-4: Move |
-| tr01 | Hazard / Path | 10×10 | 5 | **Toxic floor**: cells expire `ttl` world steps after first visit; standing on expired tile loses. | ![tr01](assets/tr01.gif) | • 1-4: Move |
-| vp01 | Hazard / Path | 10×10 | 5 | **Void path**: each cell allows only one visit; second visit loses. | ![vp01](assets/vp01.gif) | • 1-4: Move |
-| bt01 | Resource / Movement | 10×10 | 5 | **Battery steps**: charge drops each move; cyan pads refill; 0 charge loses. | ![bt01](assets/bt01.gif) | • 1-4: Move |
-| dg01 | Environmental | 10×10 | 5 | **Dig mud**: ACTION5 removes one orth-adjacent mud tile (per-level budget). | ![dg01](assets/dg01.gif) | • 1-4: Move • 5: Dig |
+| tr01 | Hazard / Path | 10×10 | 5 | **Revisit rule: time-decay** — after **first** visit, cell expires in **`ttl`** world steps; standing there when expired loses (not simple visit-count like **gl01**). | ![tr01](assets/tr01.gif) | • 1-4: Move |
+| vp01 | Hazard / Path | 10×10 | 5 | **Revisit rule: one visit only** — **second** entry to **any** cell loses (path hazard; **not** **cq01**/**tw01** ordering or **pw01** plates). | ![vp01](assets/vp01.gif) | • 1-4: Move |
+| bt01 | Resource / Movement | 10×10 | 5 | **Single charge bar** (not **tm01**): one **charge** integer drops **every move**; cyan pads refill; **0** charge loses. HUD: bottom green ticks + yellow corner (vs **tm01** two colored bars + survive row). | ![bt01](assets/bt01.gif) | • 1-4: Move |
+| dg01 | Environmental | 10×10 | 5 | **Dig mud only**: **ACTION5** clears **one orth-adjacent brown mud** cell (budget); does **not** break **dr01**/**mx01** stone walls. | ![dg01](assets/dg01.gif) | • 1-4: Move • 5: Dig |
 | mb01 | Environmental | 10×10 | 5 | **Magnet crates**: after each move, metal crates slide one cell toward you when free. | ![mb01](assets/mb01.gif) | • 1-4: Move |
 | op01 | Environmental | 8-10 | 5 | **One-push crate**: each crate may be pushed at most once; second push loses. | ![op01](assets/op01.gif) | • 1-4: Move |
-| kb01 | Puzzle / Key | 10×10 | 5 | **Key leash**: yellow key must stay within Manhattan **R** of the player or lose. | ![kb01](assets/kb01.gif) | • 1-4: Move |
+| kb01 | Puzzle / Key | 10×10 | 5 | **Key leash**: yellow key must stay within Manhattan **R** of you or lose — **positional** rule, not **fg01** sight fog. | ![kb01](assets/kb01.gif) | • 1-4: Move |
 | eb01 | Movement / Field | 10×10 | 5 | **Escalator row**: on the marked row, after each move you auto-slide east while free. | ![eb01](assets/eb01.gif) | • 1-4: Move |
-| fg01 | Memory / Exploration | 10×10 | 5 | **Fog of war**: Chebyshev radius **r** hides distant sprites (logic unchanged). | ![fg01](assets/fg01.gif) | • 1-4: Move |
+| fg01 | Memory / Exploration | 10×10 | 5 | **Fog (visibility)**: Chebyshev radius **r** hides far tiles in **render** only — no **kb01** key-distance leash rule. | ![fg01](assets/fg01.gif) | • 1-4: Move |
 | jw01 | Pattern | 10×10 | 5 | **Jigsaw swap**: ACTION6 on magenta trigger swaps two authored rectangles; push boxes to the goal. | ![jw01](assets/jw01.gif) | • 1-4: Move • 6: Click trigger |
 | pd01 | Graph / Plumbing | 10×10 | 5 | **Pipe drop**: ACTION6 cycles empty → H → V pipe; connect cyan source to yellow sink. | ![pd01](assets/pd01.gif) | • 1-4: No-op • 6: Cycle pipe |
-| rh01 | Survival / Hazard | 10×10 | 5 | **Rotating hazard row**: lethal band advances one row every **N** moves. | ![rh01](assets/rh01.gif) | • 1-4: Move |
+| rh01 | Survival / Hazard | 10×10 | 5 | **Advancing band**: lethal **horizontal band shifts one row** every **N** moves — sweeps down grid, not **lf01** stationary blink row. | ![rh01](assets/rh01.gif) | • 1-4: Move |
 | av01 | Simulation | 10×10 | 5 | **Avalanche**: rocks fall after each move; crushed loses. | ![av01](assets/av01.gif) | • 1-4: Move |
-| pw01 | Puzzle / Logic | 10×10 | 5 | **Dual plate crates**: both yellow plates must hold a crate; then reach the goal. | ![pw01](assets/pw01.gif) | • 1-4: Move |
-| es01 | Escort | 10×10 | 5 | **Escort**: NPC moves toward you each turn; both reach colored goals; collision loses. | ![es01](assets/es01.gif) | • 1-4: Move |
+| pw01 | Puzzle / Logic | 10×10 | 5 | **Two yellow pads + crates** (`pw01`): each pad needs a **crate** on it, then touch goal — **not** a waypoint order puzzle (**tw01** / **cq01**) or weight sum (**wp01**). | ![pw01](assets/pw01.gif) | • 1-4: Move |
+| es01 | Escort | 10×10 | 5 | **Co-op escort**: friendly NPC steps **one** toward you **every player move**; both must reach colored goals; bump = lose — not **hs01** hunter cadence. | ![es01](assets/es01.gif) | • 1-4: Move |
 | wg01 | Movement / Chaos | 10×10 | 5 | **Wind gust**: every **K** steps you are pushed one cell east when free. | ![wg01](assets/wg01.gif) | • 1-4: Move |
-| hs01 | Stealth / Chase | 10×10 | 5 | **Heatseeker**: hunter steps toward you every two player moves; reach goal safely. | ![hs01](assets/hs01.gif) | • 1-4: Move |
-| tm01 | Survival / Resource | 10×10 | 5 | **Twin meters**: oxygen + heat decay; pads refill; survive **T** steps. | ![tm01](assets/tm01.gif) | • 1-4: Move |
+| hs01 | Stealth / Chase | 10×10 | 5 | **Hostile chase**: hunter moves **one** toward you every **two** player moves (slower than **es01** NPC); reach goal without capture. | ![hs01](assets/hs01.gif) | • 1-4: Move |
+| tm01 | Survival / Resource | 10×10 | 5 | **Twin decay meters** (not **bt01**): **oxygen** + **heat** each tick down; cyan / magenta pads refill respective bars; survive **T** steps. HUD shows **two** bar rows + time-left row. | ![tm01](assets/tm01.gif) | • 1-4: Move |
 | cy01 | Movement / Field | 10×10 | 5 | **Cyclic conveyor**: on conveyor row, after each step slide west while free. | ![cy01](assets/cy01.gif) | • 1-4: Move |
 | in01 | Path / Hazard | 10×10 | 5 | **Ink trail**: leaving a cell drops blocking ink. | ![in01](assets/in01.gif) | • 1-4: Move |
-| rc01 | Puzzle / Teleport | 10×10 | 5 | **Recall once**: ACTION5 teleports back to start (one use per level). | ![rc01](assets/rc01.gif) | • 1-4: Move • 5: Recall |
-| bl01 | Puzzle / Phase | 10×10 | 5 | **Phase wall**: ACTION5 arms the next move to pass through one wall cell. | ![bl01](assets/bl01.gif) | • 1-4: Move • 5: Arm phase |
-| sw01 | Manipulation | 10×10 | 5 | **Swap partner**: ACTION5 swaps with orth-adjacent magenta partner. | ![sw01](assets/sw01.gif) | • 1-4: Move • 5: Swap |
-| tw01 | Ordering | 10×10 | 5 | **Two-touch**: visit orange waypoint before green goal counts. | ![tw01](assets/tw01.gif) | • 1-4: Move |
+| rc01 | Puzzle / Teleport | 10×10 | 5 | **Recall to spawn**: **ACTION5** jumps you to **level start** (once) — teleport, not **bl01** wall phasing. | ![rc01](assets/rc01.gif) | • 1-4: Move • 5: Recall |
+| bl01 | Puzzle / Phase | 10×10 | 5 | **Phase-through (one tile)**: **ACTION5** arms **next cardinal** move to walk through **one** wall cell — not **rc01** warp to start. | ![bl01](assets/bl01.gif) | • 1-4: Move • 5: Arm phase |
+| sw01 | Manipulation | 10×10 | 5 | **Swap positions**: **ACTION5** swaps **you** with the **orth-adjacent magenta partner** — no terrain removal (**dg01** / **dr01**). | ![sw01](assets/sw01.gif) | • 1-4: Move • 5: Swap |
+| tw01 | Ordering | 10×10 | 5 | **Two-stop order**: **orange** waypoint **before** **green** goal validates — only **two** landmarks, fixed order (not **cq01** many ring markers). | ![tw01](assets/tw01.gif) | • 1-4: Move |
 | pm01 | Movement / Meta | 10×10 | 5 | **Prime steps**: cardinal moves only apply on prime step indices; composites no-op. | ![pm01](assets/pm01.gif) | • 1-4: Move |
 | hz01 | Hazard / Growth | 10×10 | 5 | **Hazard growth**: red hazards spread orthogonally every **M** steps. | ![hz01](assets/hz01.gif) | • 1-4: Move |
-| cq01 | Territory / Coverage | 10×10 | 5 | **Ring tour**: visit every orange ring marker, then the goal. | ![cq01](assets/cq01.gif) | • 1-4: Move |
-| lf01 | Timing | 10×10 | 5 | **Laser fence row**: fixed row lethal on alternating periods of **P** steps. | ![lf01](assets/lf01.gif) | • 1-4: Move |
+| cq01 | Territory / Coverage | 10×10 | 5 | **Many ordered rings**: hit **every** orange ring marker (set), **then** goal — multi-stop route (not **tw01**’s single orange-before-green). | ![cq01](assets/cq01.gif) | • 1-4: Move |
+| lf01 | Timing | 10×10 | 5 | **Blinking row hazard**: one **fixed** row toggles lethal/safe every **P** steps — on/off stripe, not **rh01** advancing band. | ![lf01](assets/lf01.gif) | • 1-4: Move |
 | sb01 | Simulation | 10×10 | 5 | **Sand fall**: sand piles fall like rocks; crushed loses. | ![sb01](assets/sb01.gif) | • 1-4: Move |
-| wp01 | Logistics | 10×10 | 5 | **Weight plate**: orth-adjacent weight (you=1, crate=2) must reach **W** to unlock goal tile. | ![wp01](assets/wp01.gif) | • 1-4: Move |
-| dv01 | Puzzle / Timeline | 10×10 | 5 | **Divergent walls**: ACTION5 toggles timeline; only active timeline’s walls collide. | ![dv01](assets/dv01.gif) | • 1-4: Move • 5: Toggle |
+| wp01 | Logistics | 10×10 | 5 | **Weight plate** (`wp01`): one tile; sum of **orth-adjacent** weights (you=1, crate=2) = **W** unlocks — not **`pw01`** dual yellow pads. | ![wp01](assets/wp01.gif) | • 1-4: Move |
+| dv01 | Puzzle / Timeline | 10×10 | 5 | **Timeline walls** (not **dp01** planes): ACTION5 swaps **which wall set** is solid (`t0` / `t1`); HUD **red** top cue = branch timeline. | ![dv01](assets/dv01.gif) | • 1-4: Move • 5: Toggle |
 | ox01 | Field / XOR | 10×10 | 5 | **XOR hazards**: red vs magenta hazard layers alternate collidable each step. | ![ox01](assets/ox01.gif) | • 1-4: Move |
 | sl01 | Permutation / Puzzle | 3×3 | 5 | Slide puzzle: swap the hole with adjacent tiles until the board matches the goal; step limit. | ![sl01](assets/sl01.gif) | • 1-4: Swap with up/down/left/right neighbor |
 | ci01 | Environmental Manipulation | 8–12 | 5 | **Crate ice**: player moves normally; pushed crates slide until wall, crate, or mud. | ![ci01](assets/ci01.gif) | • 1-4: Move |
@@ -179,20 +179,20 @@ Human-edited registry for this repo. To **enumerate installable packages** from 
 | pk01 | Topology / Packing | 8–12 | 5 | **Polyomino pack**: ACTION5 toggles domino vs straight-tromino mode; ACTION6 clicks place pieces on marked cells. | ![pk01](assets/pk01.gif) | • 5: Mode • 6: Click |
 | kv01 | Circuit / Logic | 8×8 | 5 | **Voltage ladder**: cycle three series resistors (1/2/4 Ω); ACTION5 checks probe voltages vs targets. | ![kv01](assets/kv01.gif) | • 1-3: Cycle R • 5: Check |
 | wr01 | Spatial / Rotation | 12×12 | 5 | **World rotation**: entire level rotates 90° CW every N steps; ACTION5 braces to skip the next rotation (budget). | ![wr01](assets/wr01.gif) | • 1-4: Move • 5: Brace |
-| dp01 | Puzzle / Planes | 10×14 | 5 | **Dual plane**: ACTION5 toggles A/B; `plane_a` / `plane_b` walls only collide on their plane. | ![dp01](assets/dp01.gif) | • 1-4: Move • 5: Toggle plane |
+| dp01 | Puzzle / Planes | 10×14 | 5 | **Spatial A/B planes** (not **dv01** timeline): ACTION5 swaps **plane_a** vs **plane_b** wall layers on the **same** board; HUD **yellow** top cue = overlay planes. | ![dp01](assets/dp01.gif) | • 1-4: Move • 5: Toggle plane |
 | df01 | Field / Simulation | 16×16 | 5 | **Heat diffusion**: hot/cold sources; temperature diffuses each step; goal needs band hit; ACTION6 vents 3×3. | ![df01](assets/df01.gif) | • 1-4: Move • 6: Vent |
 | rn01 | Environmental / Graph | 12×12 | 5 | **Rope anchors**: ACTION6 two orth-adjacent anchors over water places a walkable rope on the middle cell. | ![rn01](assets/rn01.gif) | • 1-4: Move • 6: Click anchors |
 | sc01 | Stealth / Trail | 14×14 | 5 | **Scent + cone**: guard sees eastward; high scent under LOS loses; ACTION5 masks scent briefly. | ![sc01](assets/sc01.gif) | • 1-4: Move • 5: Mask |
 | au01 | Resource / Path | 10×10 | 5 | **Bonus steps**: tight move budget; cyan bonus pads add steps when entered. | ![au01](assets/au01.gif) | • 1-4: Move |
-| cf01 | Hazard / Time | 10×10 | 5 | **Fallow**: re-entering a cell before F world steps pass loses. | ![cf01](assets/cf01.gif) | • 1-4: Move |
+| cf01 | Hazard / Time | 10×10 | 5 | **Revisit rule: cooldown** — re-enter a cell before **F** world steps since **leave** loses (cooldown gate, not **tr01** TTL decay). | ![cf01](assets/cf01.gif) | • 1-4: Move |
 | ep01 | Path / Budget | 12×12 | 5 | **Pain budget**: entering a cell costs its visit count; exceed the global budget to lose. | ![ep01](assets/ep01.gif) | • 1-4: Move |
-| tf01 | Timing / Traffic | 14×14 | 5 | **Crossing light**: orange crossing tiles may be entered only on green phase (4-step cycle). | ![tf01](assets/tf01.gif) | • 1-4: Move |
+| tf01 | Timing / Traffic | 14×14 | 5 | **Local crossing phase**: **orange** marked cells may be entered only on **green** phase of a short cycle — other floor always walkable (unlike **rb01** global beat). | ![tf01](assets/tf01.gif) | • 1-4: Move |
 | ec01 | Coordination / Mirror | 12×12 | 5 | **Echo ghost**: a mirror copy moves with reflected horizontal delta; wall collision for the echo blocks the whole move. | ![ec01](assets/ec01.gif) | • 1-4: Move |
 | tk01 | Manipulation | 10×10 | 5 | **Telekinetic tug**: ACTION5 pulls the nearest crate one greedy Manhattan hop toward you; else push sokoban-style. | ![tk01](assets/tk01.gif) | • 1-4: Move • 5: Tug |
 | hn01 | Logic / Classic | 10×12 | 5 | **Tower of Hanoi**: ACTION1–3 pick peg; ACTION5 pick/drop top disk; stack all on the right peg. | ![hn01](assets/hn01.gif) | • 1-3: Peg • 5: Pick/drop |
 | fb01 | Hazard / Push | 12×12 | 5 | **Fuse bombs**: push bombs with countdown; blast removes adjacent weak walls and loses if you are adjacent. | ![fb01](assets/fb01.gif) | • 1-4: Move |
 | lp01 | Ordering / Lexical | 9×11 | 5 | **Letter path**: visit letter pads in the authored word order; wrong letter loses. | ![lp01](assets/lp01.gif) | • 1-4: Move |
-| rb01 | Timing / Rhythm | 11×11 | 5 | **Rhythm gate**: movement only applies every B world steps (beat). | ![rb01](assets/rb01.gif) | • 1-4: Move |
+| rb01 | Timing / Rhythm | 11×11 | 5 | **Global movement beat**: **all** cardinal moves only register every **B** world steps — not **tf01** where only **orange crossing tiles** are phase-gated. | ![rb01](assets/rb01.gif) | • 1-4: Move |
 | at01 | Simulation / Steering | 16×16 | 5 | **Ant trail**: ACTION5 drops pheromone; ant follows strongest adjacent scent toward the exit hole. | ![at01](assets/at01.gif) | • 1-4: Move • 5: Scent |
 | wb01 | Dynamic / Walls | 16×16 | 5 | **Wall belt**: marked wall segments on a row shift east each step (wrap); crushed if a wall lands on you. | ![wb01](assets/wb01.gif) | • 1-4: Move |
 | lk01 | Logic / Lock | 10×10 | 5 | **Lock tumblers**: while the door exists ACTION1–3 cycle digits; when matched the door vanishes; then 1-4 move to goal. | ![lk01](assets/lk01.gif) | • 1-4: Tumble / move |
@@ -210,7 +210,7 @@ Human-edited registry for this repo. To **enumerate installable packages** from 
 | ff04 | Precision / Topology | 8×8 | 7 | **Gradient budget flood**: grow paint from seed; total Manhattan cost to seed ≤ budget; match gray hints. | ![ff04](assets/ff04.gif) | • 1-4: No-op • 6: Add cell |
 | gp04 | Pattern Puzzles | 8×8 | 7 | **Blob cap**: paint like **gp01** but also keep ≤ **K** orthogonal yellow components. | ![gp04](assets/gp04.gif) | • 1-4: No-op • 6: Toggle paint |
 | lo04 | Pattern Puzzles | 5–6 | 7 | **Diagonal Lights Out**: **ACTION6** toggles cell + four diagonals only. | ![lo04](assets/lo04.gif) | • 1-4: No-op • 6: Click |
-| lo05 | Pattern Puzzles | 8×8 | 7 | **Knight Lights Out**: **ACTION6** toggles cell + all knight-move neighbors. | ![lo05](assets/lo05.gif) | • 1-4: No-op • 6: Click |
+| lo05 | Pattern Puzzles | 8×8 | 7 | **Knight kernel**: **ACTION6** toggles **self + all chess-knight L-step neighbors** — not **lo01** orth neighborhood or **gp01** single-cell paint. | ![lo05](assets/lo05.gif) | • 1-4: No-op • 6: Click |
 | qr04 | Pattern Puzzles | 8×8 | 7 | **3×3 twist**: **ACTION6** rotates a **3×3** color block clockwise (**qr01** kernel). | ![qr04](assets/qr04.gif) | • 1-4: No-op • 6: Click |
 | sq04 | Sequencing / Ordering | 12×12 | 7 | **LIFO sequencing**: clear blocks in **stack** order (last in HUD first), **sq01**-style clicks. | ![sq04](assets/sq04.gif) | • 6: Click block |
 | sq05 | Sequencing / Ordering | 12×12 | 7 | **Double-tap lock**: FIFO order; each block needs **two** consecutive correct taps to clear. | ![sq05](assets/sq05.gif) | • 6: Click block |
@@ -222,9 +222,9 @@ Human-edited registry for this repo. To **enumerate installable packages** from 
 | fl04 | Path / Click | 12×12 | 7 | **Capped path**: connect **A→B** with click path length ≤ **max_len**. | ![fl04](assets/fl04.gif) | • 1–4: Move • 6: Path |
 | lw04 | Path / Click | 12×12 | 7 | **Corner budget**: connect **A→B** with length and **turn** caps. | ![lw04](assets/lw04.gif) | • 1–4: Move • 6: Path |
 | sf04 | Pattern / Stencil | 16×16 | 7 | **Rotate stencil**: **ACTION5** spins L-tromino mask; **ACTION6** paints. | ![sf04](assets/sf04.gif) | • 5: Rotate • 6: Paint |
-| sp04 | Simulation | 12×12 | 7 | **Sandpile sinks**: like **sp01** but grains falling into cyan sinks disappear. | ![sp04](assets/sp04.gif) | • 1–4: No-op • 6: Add grain |
+| sp04 | Simulation | 12×12 | 7 | **Win: stable + same target-sum rule as sp01**, but grains that topple **into cyan sink cells are removed** (mass loss; not **ab01** mod **P**/**R**). | ![sp04](assets/sp04.gif) | • 1–4: No-op • 6: Add grain |
 | ll04 | Simulation | 12×12 | 7 | **Torus Life**: Conway on a torus; **ACTION6** toggles; **ACTION5** steps. | ![ll04](assets/ll04.gif) | • 5: Gen • 6: Toggle |
-| ab01 | Simulation | 10×10 | 7 | **Mod sandpile**: stabilize with total grain count **mod P == R**. | ![ab01](assets/ab01.gif) | • 1–4: No-op • 6: Add grain |
+| ab01 | Simulation | 10×10 | 7 | **Win: stable + (total grains mod P) == R** — modular target, not **sp01** fixed sum or **sp04** sinks. | ![ab01](assets/ab01.gif) | • 1–4: No-op • 6: Add grain |
 | df04 | Field / Simulation | 10×10 | 7 | **Diffuse only**: **ACTION5** heat step; **ACTION6** 3×3 vent; probe in band. | ![df04](assets/df04.gif) | • 5: Tick • 6: Vent |
 | ih01 | Field / Simulation | 10×10 | 7 | **Heaters**: **ACTION5** global chill; **ACTION6** toggles heater pads. | ![ih01](assets/ih01.gif) | • 5: Tick • 6: Toggle heater |
 | tc04 | Simulation / Routing | 10×10 | 7 | **Conveyor**: **ACTION5** moves packages on arrows; **ACTION6** rotates arrow. | ![tc04](assets/tc04.gif) | • 5: Step • 6: Rotate |
@@ -240,8 +240,8 @@ Human-edited registry for this repo. To **enumerate installable packages** from 
 | sg04 | Timing / Rhythm | 12×12 | 7 | **Dual commit**: two-arm timing like **sg01**. | ![sg04](assets/sg04.gif) | • 5–6: Timing |
 | ng04 | Pattern / Layer | 12×12 | 7 | **Multi-layer** cycle path edit (**ng01** family). | ![ng04](assets/ng04.gif) | • 6: Edit |
 | bn04 | Stealth / Reveal | 16×16 | 7 | **Line/column flash**: **ACTION5** axis reveal (**bn01** family). | ![bn04](assets/bn04.gif) | • 5: Axis • 6: Flag |
-| sk04 | Manipulation | 8×8 | 7 | **Fixed / winch sokoban**: minimal walking. | ![sk04](assets/sk04.gif) | • 1–4 / 6: Per level |
-| pb04 | Push / Minimal | 8×8 | 7 | **One crate** with constrained interaction. | ![pb04](assets/pb04.gif) | • 1–4 / 6: Per level |
+| sk04 | Manipulation | 10×10 | 7 | **Fixed avatar, click-pull**: **ACTION6** on an **orth-adjacent** crate pulls it **one step toward you**; **ACTION1–4 no-op** — not **pb04**’s remote **ACTION5** winch. | ![sk04](assets/sk04.gif) | • 6: Pull crate |
+| pb04 | Push / Minimal | 10×10 | 7 | **No player movement**: cyan **winch** tile; **ACTION5** pulls the **nearest** crate **one step along** the level’s `(dx,dy)` toward the winch; cover all **yellow pads** with crates — not **sk04**’s fixed-player **ACTION6** adjacency pull. | ![pb04](assets/pb04.gif) | • 5: Winch pull |
 | rr01 | Dynamic / Physics | 12×12 | 7 | **Ramp rollout**: ball keeps a **heading**; **ACTION5** steps one cell (ramps **rotate CW** first); **ACTION6** toggles a ramp on a free cell. Reach the green exit. | ![rr01](assets/rr01.gif) | • 5: Tick • 6: Ramp |
 | hn04 | Logic / Classic | 10×12 | 7 | **4 peg Hanoi**: **ACTION1–4** select peg; **ACTION5** pick/drop. | ![hn04](assets/hn04.gif) | • 1–4: Peg • 5: Pick/drop |
 | kv04 | Circuit / Logic | 8×8 | 7 | **Two ladders**: **ACTION1–3** / **ACTION4** cycle branches; **ACTION5** verify. | ![kv04](assets/kv04.gif) | • 1–4: Cycle • 5: Check |

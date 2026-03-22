@@ -34,7 +34,9 @@ class Dp01UI(RenderableUserDisplay):
                     break
                 dot = 14 if i < self._li else (11 if i == self._li else 3)
                 frame[0, cx] = dot
+            # Bottom: active **plane** A=blue / B=magenta; top-right yellow = spatial overlay mode (not timeline).
             frame[h - 2, 2] = 9 if self._p == "a" else 7
+            frame[1, min(w - 2, 20)] = 11
         return frame
 
 

@@ -12,10 +12,10 @@ A **conflict** exists when some remote game shares a stem with a local package
 but its full ``game_id`` is not exactly any local ``metadata.json`` game_id
 (same artifact mirrored remotely is ignored).
 
-Stems listed as established **reference / official-pattern** games in
-``.opencode/skills/create-arc-game/SKILL.md`` (and copies under ``skills/`` /
-``.agents/skills/``) — ``vc33``, ``ls20``, ``ft09`` — are **ignored**: remote
-overlap for those stems is expected.
+Stems to ignore are parsed from the **Examples** section of the create-arc-game
+skill: lines that mention ``environment_files/<stem>/<8-hex>/`` (concrete
+version dir). Placeholder paths such as ``<version>`` are not counted. If no
+skill file or no matching paths are found, a built-in default set is used.
 
 When there are no conflicts, this script writes nothing (avoids noisy bot PRs).
 """
@@ -25,6 +25,7 @@ from __future__ import annotations
 import argparse
 import json
 import os
+import re
 import sys
 from collections import defaultdict
 from datetime import UTC, datetime
@@ -36,8 +37,43 @@ REPORT_DIR = ROOT / "devtools" / "reports"
 JSON_PATH = REPORT_DIR / "official_stem_overlap.json"
 MD_PATH = REPORT_DIR / "official_stem_overlap.md"
 
-# Same trio as create-arc-game SKILL "Good references" / check_registry omissions.
-OFFICIAL_REFERENCE_STEMS = frozenset({"vc33", "ls20", "ft09"})
+# Tried in order; first existing file wins (keep copies in sync).
+_CREATE_ARC_GAME_SKILL_PATHS: tuple[Path, ...] = (
+    ROOT / ".opencode" / "skills" / "create-arc-game" / "SKILL.md",
+    ROOT / "skills" / "create-arc-game" / "SKILL.md",
+    ROOT / ".agents" / "skills" / "create-arc-game" / "SKILL.md",
+)
+
+# If the skill is missing or ``## Examples`` has no concrete ``.../xxxxxxxx/`` paths.
+_DEFAULT_OFFICIAL_REFERENCE_STEMS = frozenset({"vc33", "ls20", "ft09"})
+
+_EXAMPLES_HEADER = re.compile(r"(?m)^## Examples\s*$")
+_CONCRETE_ENV_PATH = re.compile(
+    r"environment_files/([a-z0-9]+)/[0-9a-f]{8}/",
+    re.IGNORECASE,
+)
+
+
+def load_ignored_reference_stems() -> tuple[frozenset[str], str | None]:
+    """Stems from create-arc-game SKILL ``## Examples``; optional source path."""
+    for path in _CREATE_ARC_GAME_SKILL_PATHS:
+        if not path.is_file():
+            continue
+        text = path.read_text(encoding="utf-8")
+        m = _EXAMPLES_HEADER.search(text)
+        if not m:
+            return frozenset(_DEFAULT_OFFICIAL_REFERENCE_STEMS), str(
+                path.relative_to(ROOT)
+            )
+        rest = text[m.end() :]
+        m2 = re.search(r"(?m)^## ", rest)
+        section = rest[: m2.start()] if m2 else rest
+        stems = {s.lower() for s in _CONCRETE_ENV_PATH.findall(section)}
+        rel = str(path.relative_to(ROOT))
+        if stems:
+            return frozenset(stems), rel
+        return frozenset(_DEFAULT_OFFICIAL_REFERENCE_STEMS), rel
+    return frozenset(_DEFAULT_OFFICIAL_REFERENCE_STEMS), None
 
 
 def stem_from_game_id(game_id: str) -> str:
@@ -93,6 +129,8 @@ def main() -> int:
 
     from arc_agi import Arcade, OperationMode
 
+    ignored_stems, skill_source = load_ignored_reference_stems()
+
     local_stems, local_game_ids, stem_to_local_ids = discover_local_packages()
 
     arc = Arcade(
@@ -128,7 +166,7 @@ def main() -> int:
 
     conflicts: list[dict[str, object]] = []
     for stem in sorted(local_stems):
-        if stem in OFFICIAL_REFERENCE_STEMS:
+        if stem in ignored_stems:
             continue
         remotes = remote_by_stem.get(stem, [])
         if not remotes:
@@ -145,8 +183,11 @@ def main() -> int:
     print(f"remote_game_count={remote_count}")
     print(f"local_stem_count={len(local_stems)}")
     print(
-        "ignored_official_reference_stems="
-        + ",".join(sorted(OFFICIAL_REFERENCE_STEMS))
+        "ignored_official_reference_stems=" + ",".join(sorted(ignored_stems))
+    )
+    print(
+        "ignored_official_reference_stems_source="
+        + (skill_source or "default_builtin")
     )
     print(f"conflict_stem_count={len(conflicts)}")
 
@@ -159,7 +200,8 @@ def main() -> int:
         "checked_at_utc": checked_at,
         "remote_game_count": remote_count,
         "local_stem_count": len(local_stems),
-        "ignored_official_reference_stems": sorted(OFFICIAL_REFERENCE_STEMS),
+        "ignored_official_reference_stems": sorted(ignored_stems),
+        "ignored_official_reference_stems_source": skill_source or "default_builtin",
         "conflicts": conflicts,
     }
     JSON_PATH.write_text(json.dumps(payload, indent=2) + "\n", encoding="utf-8")
@@ -180,8 +222,15 @@ def main() -> int:
         "See [CONTRIBUTING.md](../CONTRIBUTING.md) (environment package layout, "
         "`metadata.json`, `GAMES.md`).",
         "",
-        "**Ignored stems** (official/reference games per create-arc-game skill): "
-        + ", ".join(f"`{s}`" for s in sorted(OFFICIAL_REFERENCE_STEMS))
+        "**Ignored stems** (from create-arc-game `## Examples`, concrete "
+        "`environment_files/<stem>/<8-hex>/` paths"
+        + (
+            f" in `{skill_source}`"
+            if skill_source
+            else " — skill missing; using built-in default"
+        )
+        + "): "
+        + ", ".join(f"`{s}`" for s in sorted(ignored_stems))
         + ".",
         "",
     ]

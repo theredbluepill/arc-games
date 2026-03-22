@@ -32,7 +32,9 @@ class Dv01UI(RenderableUserDisplay):
                 break
             c = 14 if i < self._li else (11 if i == self._li else 3)
             frame[0, cx] = c
+        # Bottom: active **timeline** 0 vs 1; top-right red = time-branch walls (not A/B planes).
         frame[h - 2, 2] = 10 if self._t == 0 else 7
+        frame[1, min(w - 2, 20)] = 8
         return frame
 
 

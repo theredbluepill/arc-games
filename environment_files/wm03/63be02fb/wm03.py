@@ -189,7 +189,7 @@ def create_level(difficulty: int):
     )
 
 
-levels = [create_level(i) for i in range(1, 6)]
+levels = [create_level(d) for d in (1, 2, 3, 4, 5)]
 
 BACKGROUND_COLOR = 5
 PADDING_COLOR = 4

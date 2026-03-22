@@ -3,6 +3,7 @@
 from arcengine import (
     ARCBaseGame,
     Camera,
+    GameState,
     Level,
     RenderableUserDisplay,
     Sprite,
@@ -10,18 +11,46 @@ from arcengine import (
 
 
 class Kb01UI(RenderableUserDisplay):
-    def __init__(self, r: int) -> None:
+    def __init__(self, r: int, num_levels: int) -> None:
         self._r = r
+        self._li = 0
+        self._nl = num_levels
+        self._state: GameState | None = None
 
-    def update(self, r: int) -> None:
+    def update(
+        self,
+        r: int,
+        *,
+        level_index: int | None = None,
+        num_levels: int | None = None,
+        state: GameState | None = None,
+    ) -> None:
         self._r = r
+        if level_index is not None:
+            self._li = level_index
+        if num_levels is not None:
+            self._nl = num_levels
+        if state is not None:
+            self._state = state
 
     def render_interface(self, frame):
         import numpy as np
 
         if not isinstance(frame, np.ndarray):
             return frame
-        h, _w = frame.shape
+        h, w = frame.shape
+        for i in range(min(self._nl, 14)):
+            cx = 1 + i * 2
+            if cx >= w:
+                break
+            c = 14 if i < self._li else (11 if i == self._li else 3)
+            frame[0, cx] = c
+        if self._state in (GameState.GAME_OVER, GameState.WIN):
+            rrow = h - 3
+            if rrow >= 0:
+                cc = 14 if self._state == GameState.WIN else 8
+                for x in range(min(w, 16)):
+                    frame[rrow, x] = cc
         for i in range(min(self._r + 1, 8)):
             frame[h - 2, 1 + i] = 7
         return frame
@@ -77,7 +106,7 @@ levels = [
         [
             sprites["player"].clone().set_position(0, 5),
             sprites["key"].clone().set_position(2, 5),
-            sprites["goal"].clone().set_position(8, 5),
+            sprites["goal"].clone().set_position(5, 5),
         ],
         2,
         3,
@@ -118,7 +147,7 @@ PADDING_COLOR = 4
 
 class Kb01(ARCBaseGame):
     def __init__(self) -> None:
-        self._ui = Kb01UI(4)
+        self._ui = Kb01UI(4, len(levels))
         super().__init__(
             "kb01",
             levels,
@@ -133,7 +162,15 @@ class Kb01(ARCBaseGame):
         self._key = self.current_level.get_sprites_by_tag("key")[0]
         self._goal = self.current_level.get_sprites_by_tag("goal")[0]
         self._r = int(level.get_data("leash") or 4)
-        self._ui.update(self._r)
+        self._sync_ui()
+
+    def _sync_ui(self) -> None:
+        self._ui.update(
+            self._r,
+            level_index=self.level_index,
+            num_levels=len(levels),
+            state=self._state,
+        )
 
     def _leash_ok(self) -> bool:
         d = abs(self._player.x - self._key.x) + abs(self._player.y - self._key.y)
@@ -151,6 +188,7 @@ class Kb01(ARCBaseGame):
             dx = 1
 
         if dx == 0 and dy == 0:
+            self._sync_ui()
             self.complete_action()
             return
 
@@ -158,11 +196,13 @@ class Kb01(ARCBaseGame):
         ny = self._player.y + dy
         gw, gh = self.current_level.grid_size
         if not (0 <= nx < gw and 0 <= ny < gh):
+            self._sync_ui()
             self.complete_action()
             return
 
         sp = self.current_level.get_sprite_at(nx, ny, ignore_collidable=True)
         if sp and "wall" in sp.tags:
+            self._sync_ui()
             self.complete_action()
             return
 
@@ -170,10 +210,12 @@ class Kb01(ARCBaseGame):
 
         if not self._leash_ok():
             self.lose()
+            self._sync_ui()
             self.complete_action()
             return
 
         if self._player.x == self._goal.x and self._player.y == self._goal.y:
             self.next_level()
 
+        self._sync_ui()
         self.complete_action()

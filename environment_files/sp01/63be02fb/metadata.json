@@ -24,7 +24,8 @@
     ],
     "action_space": 6,
     "physics_rules": [
-      "abelian-sandpile"
+      "abelian-sandpile",
+      "win-stable-total-equals-target-sum"
     ],
     "reward_structure": "checkpoint-on-level-pass",
     "episode_count": 1000000

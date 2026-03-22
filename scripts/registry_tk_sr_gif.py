@@ -10,9 +10,9 @@ from arcengine import GameAction, GameState
 from env_resolve import full_game_id_for_stem
 from gif_common import append_frame_repeats, offline_arcade
 from registry_gif_lib import (
-    _StepAbort,
     _cap_gif_frames,
     _frame_layer0,
+    _StepAbort,
     safe_env_step,
 )
 
@@ -57,25 +57,6 @@ def record_gc01_registry_gif(
         fr = _frame_layer0(res)
         if fr:
             append_frame_repeats(images, fr[0], 24)
-    rng = random.Random(seed + 41)
-    extra = int(o.get("gc01_extra_random_steps", 96))
-    for _ in range(extra):
-        if len(images) > max_gif * 2:
-            break
-        act = rng.choice(_MOVE_ACTIONS)
-        try:
-            res = safe_env_step(env, act, reasoning={}, data={})
-        except _StepAbort:
-            break
-        fr = _frame_layer0(res)
-        if fr:
-            append_frame_repeats(images, fr[0], 1)
-        if res.state in (GameState.WIN, GameState.GAME_OVER):
-            append_frame_repeats(images, fr[0], 12)
-            res = env.reset()
-            fr = _frame_layer0(res)
-            if fr:
-                append_frame_repeats(images, fr[0], 8)
     snap_repeats(12)
     _cap_gif_frames(images, max_gif)
     if verbose:
