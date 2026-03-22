@@ -23,6 +23,26 @@ A collection of community game environments for the ARC-AGI-3 benchmark.
     <td align="center"><code>ms01</code></td>
     <td align="center"><code>ff01</code></td>
   </tr>
+  <tr>
+    <td align="center"><img src="assets/st01.gif" alt="st01 Sentry sweep" width="64" height="64" /></td>
+    <td align="center"><img src="assets/sv03.gif" alt="sv03 Dual shelters" width="64" height="64" /></td>
+    <td align="center"><img src="assets/lo02.gif" alt="lo02" width="64" height="64" /></td>
+    <td align="center"><img src="assets/ph01.gif" alt="ph01" width="64" height="64" /></td>
+    <td align="center"><img src="assets/or01.gif" alt="or01" width="64" height="64" /></td>
+    <td align="center"><img src="assets/tt03.gif" alt="tt03 Collector spawns" width="64" height="64" /></td>
+    <td align="center"><img src="assets/zq03.gif" alt="zq03" width="64" height="64" /></td>
+    <td align="center"><img src="assets/ml01.gif" alt="ml01" width="64" height="64" /></td>
+  </tr>
+  <tr>
+    <td align="center"><code>s101</code></td>
+    <td align="center"><code>sv03</code></td>
+    <td align="center"><code>lo02</code></td>
+    <td align="center"><code>ph01</code></td>
+    <td align="center"><code>or01</code></td>
+    <td align="center"><code>tt03</code></td>
+    <td align="center"><code>zq03</code></td>
+    <td align="center"><code>ml01</code></td>
+  </tr>
 </table>
 
 <!-- Auto-updated on push to `main` when `GAMES.md` changes (see `.github/workflows/readme-stats.yml`, `devtools/scripts/update_readme_stats.py`). -->
