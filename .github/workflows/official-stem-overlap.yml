@@ -1,0 +1,53 @@
+# Weekly (and manual) check: remote ONLINE catalog stems vs local environment_files stems.
+# If a stem matches but full game_id differs, writes devtools/reports/official_stem_overlap.*
+# and opens/updates a bot PR for human rename follow-up.
+#
+# Requires repository secret ARC_API_KEY (same as run_game.py --online / .env.example).
+name: Official stem overlap report
+
+on:
+  schedule:
+    - cron: "0 12 * * 1"
+  workflow_dispatch:
+
+concurrency:
+  group: official-stem-overlap-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: write
+  pull-requests: write
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: astral-sh/setup-uv@v4
+        with:
+          enable-cache: true
+
+      - name: Install dependencies
+        run: uv sync
+
+      - name: Compare ONLINE catalog to local stems
+        env:
+          ARC_API_KEY: ${{ secrets.ARC_API_KEY }}
+        run: uv run python devtools/check_official_stem_overlap.py
+
+      - name: Create Pull Request
+        uses: peter-evans/create-pull-request@v7
+        with:
+          commit-message: "chore: report official vs community stem overlap [skip ci]"
+          branch: bot/official-stem-overlap
+          title: "chore: official vs community stem overlap detected"
+          body: |
+            Automated report from `devtools/check_official_stem_overlap.py` (ONLINE `get_environments()` vs `environment_files/`).
+
+            Reference stems `vc33`, `ls20`, and `ft09` (create-arc-game skill) are **not** flagged.
+
+            **Review** [`devtools/reports/official_stem_overlap.md`](devtools/reports/official_stem_overlap.md) and [`devtools/reports/official_stem_overlap.json`](devtools/reports/official_stem_overlap.json). Rename the affected **community** stem and update `metadata.json`, module name, `GAMES.md`, and any registry/GIF references (see [CONTRIBUTING.md](CONTRIBUTING.md)).
+
+            Merge after resolving overlaps, or close if false positive.
+          delete-branch: false
