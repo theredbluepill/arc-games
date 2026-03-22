@@ -24,7 +24,7 @@ A collection of community game environments for the ARC-AGI-3 benchmark.
     <td align="center"><code>ff01</code></td>
   </tr>
   <tr>
-    <td align="center"><img src="assets/sl01.gif" alt="sl01 Slide puzzle" width="64" height="64" /></td>
+    <td align="center"><img src="assets/sl01.gif" alt="sl01 Permutation / Puzzle — slide puzzle: swap the hole with adjacent tiles until the board matches the goal; step limit." width="64" height="64" /></td>
     <td align="center"><img src="assets/sv03.gif" alt="sv03 Dual shelters" width="64" height="64" /></td>
     <td align="center"><img src="assets/lo02.gif" alt="lo02" width="64" height="64" /></td>
     <td align="center"><img src="assets/ph01.gif" alt="ph01" width="64" height="64" /></td>
