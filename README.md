@@ -65,8 +65,11 @@ These games are designed to be easy for humans to solve, but very hard for moder
 
 ## Why use ARC-Interactive?
 
-- **200+** ARC games in [`GAMES.md`](GAMES.md) next to the [official ARC-AGI-3 list](https://docs.arcprize.org/available-games).
-- Create or modify games quickly using patterns in [`AGENTS.md`](AGENTS.md) and the skills under [`.opencode/skills/`](.opencode/skills/) (mirrored at [`skills/`](skills/)): [create-arc-game](.opencode/skills/create-arc-game/SKILL.md), [play-arc-game](.opencode/skills/play-arc-game/SKILL.md).
+- **Massive testing ground** — 200+ community games in [`GAMES.md`](GAMES.md) beside the [official ARC-AGI-3 list](https://docs.arcprize.org/available-games); train, test, and evaluate agents on varied unseen tasks for generalization.
+- **Competition mode** — `uv run python run_game.py --competition` matches the real toolkit ([competition rules](https://docs.arcprize.org/toolkit/competition_mode)) before you submit.
+- **Official leaderboard** — With **`ARC_API_KEY`** and **`--online`**, runs can count on **[three.arcprize.org](https://three.arcprize.org/)** (see [API / leaderboard / competition](#api--leaderboard--competition) below).
+- **Fast prototyping** — Local offline `environment_files/`, agent step-through, and **`--mode human`** to learn win conditions by playing.
+- **LLM-friendly authoring** — [`AGENTS.md`](AGENTS.md) plus skills under [`.opencode/skills/`](.opencode/skills/) (mirrored at [`skills/`](skills/)): [create-arc-game](.opencode/skills/create-arc-game/SKILL.md), [play-arc-game](.opencode/skills/play-arc-game/SKILL.md).
 
 ## Quickstart
 
