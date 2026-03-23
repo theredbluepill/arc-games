@@ -4,6 +4,8 @@ from __future__ import annotations
 
 from collections import deque
 
+import numpy as np
+
 from arcengine import ARCBaseGame, Camera, GameAction, Level, RenderableUserDisplay, Sprite
 
 BG, PAD = 5, 4
@@ -93,6 +95,13 @@ class Pd04(ARCBaseGame):
         self._src = (s.x, s.y)
         self._snk = (k.x, k.y)
         self._ui.update(self._flow())
+        self._paint_ducts()
+
+    def _paint_ducts(self) -> None:
+        for (x, y), on in self._duct.items():
+            sp = self.current_level.get_sprite_at(x, y, ignore_collidable=True)
+            if sp and "duct" in sp.tags:
+                sp.pixels = np.array([[12 if on else 3]], dtype=np.int8)
 
     def _sh(self, x, y):
         if (x, y) == self._src:
@@ -145,6 +154,7 @@ class Pd04(ARCBaseGame):
         gx, gy = int(c[0]), int(c[1])
         if (gx, gy) in self._duct:
             self._duct[(gx, gy)] = not self._duct[(gx, gy)]
+            self._paint_ducts()
             ok = self._flow()
             self._ui.update(ok)
             if ok:

@@ -8,6 +8,8 @@ from arcengine import ARCBaseGame, Camera, GameAction, Level, RenderableUserDisp
 
 BG, PAD = 5, 4
 CAM = 16
+# Visual discriminant for H / V / tee (learnable cycle on ACTION6).
+PIPE_VIS = (12, 13, 14)
 H_P = (0, 1, 0, 1)
 V_P = (1, 0, 1, 0)
 T_P = (1, 1, 1, 0)
@@ -51,8 +53,14 @@ SP = {
 
 def mk(walls, pipes, src, snk, d):
     sl = [SP["wall"].clone().set_position(wx, wy) for wx, wy in walls]
-    for px, py, _ in pipes:
-        sl.append(SP["pipe"].clone().set_position(px, py))
+    for px, py, o in pipes:
+        o = int(o) % 3
+        pc = SP["pipe"].clone().set_position(px, py)
+        want = PIPE_VIS[o]
+        cur = int(pc.pixels[0][0])
+        if cur != want:
+            pc.color_remap(cur, want)
+        sl.append(pc)
     sl.append(SP["source"].clone().set_position(*src))
     sl.append(SP["sink"].clone().set_position(*snk))
     return Level(
@@ -197,7 +205,14 @@ class Pu04(ARCBaseGame):
             return
         gx, gy = int(c[0]), int(c[1])
         if (gx, gy) in self._pipe:
-            self._pipe[(gx, gy)] = (self._pipe[(gx, gy)] + 1) % 3
+            prev_o = self._pipe[(gx, gy)]
+            new_o = (prev_o + 1) % 3
+            self._pipe[(gx, gy)] = new_o
+            old_c, new_c = PIPE_VIS[prev_o], PIPE_VIS[new_o]
+            for s in self.current_level.get_sprites_by_tag("pipe"):
+                if s.x == gx and s.y == gy:
+                    s.color_remap(old_c, new_c)
+                    break
             ok = self._ok()
             self._ui.update(ok)
             if ok:

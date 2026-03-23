@@ -57,6 +57,14 @@ class Sf04UI(RenderableUserDisplay):
         self._q, self._ok, self._tot = rotq, ok, tot
         self._li, self._nl = li, nl
         self._state = None
+        self._click_pos: tuple[int, int] | None = None
+        self._click_frames = 0
+        self._click_ok = False
+
+    def set_click_feedback(self, px: int, py: int, ok: bool) -> None:
+        self._click_pos = (px, py)
+        self._click_frames = 8
+        self._click_ok = ok
 
     def update(
         self,
@@ -89,6 +97,21 @@ class Sf04UI(RenderableUserDisplay):
         go = self._state == GameState.GAME_OVER
         win = self._state == GameState.WIN
         _r_bar(frame, h, w, go, win)
+        if self._click_pos and self._click_frames > 0:
+            cx, cy = self._click_pos
+            hit = 11 if self._click_ok else 8
+            for px, py in (
+                (cx, cy),
+                (cx - 1, cy),
+                (cx + 1, cy),
+                (cx, cy - 1),
+                (cx, cy + 1),
+            ):
+                if 0 <= px < w and 0 <= py < h:
+                    frame[py, px] = hit
+            self._click_frames -= 1
+        else:
+            self._click_pos = None
         return frame
 
 
@@ -196,28 +219,32 @@ class Sf04(ARCBaseGame):
             return
 
         if self.action.id == GameAction.ACTION6:
-            hit = self.camera.display_to_grid(
-                self.action.data.get("x", 0), self.action.data.get("y", 0)
+            px, py = int(self.action.data.get("x", 0)), int(
+                self.action.data.get("y", 0)
             )
+            hit = self.camera.display_to_grid(px, py)
+            click_ok = False
             if hit:
                 ax, ay = int(hit[0]), int(hit[1])
+                bad = False
                 for cx, cy in self._cells(ax, ay):
                     if not (0 <= cx < GW and 0 <= cy < GH):
-                        self._steps += 1
-                        self._sync()
-                        self.complete_action()
-                        return
+                        bad = True
+                        break
                     sp = self.current_level.get_sprite_at(cx, cy, ignore_collidable=True)
                     if sp and "wall" in sp.tags:
-                        self._steps += 1
-                        self._sync()
-                        self.complete_action()
-                        return
-                for cx, cy in self._cells(ax, ay):
-                    ex = self.current_level.get_sprite_at(cx, cy, ignore_collidable=True)
-                    if ex and "paint" in ex.tags:
-                        continue
-                    self.current_level.add_sprite(P.clone().set_position(cx, cy))
+                        bad = True
+                        break
+                if not bad:
+                    click_ok = True
+                    for cx, cy in self._cells(ax, ay):
+                        ex = self.current_level.get_sprite_at(
+                            cx, cy, ignore_collidable=True
+                        )
+                        if ex and "paint" in ex.tags:
+                            continue
+                        self.current_level.add_sprite(P.clone().set_position(cx, cy))
+            self._ui.set_click_feedback(px, py, click_ok)
             self._steps += 1
             self._sync()
             if self._goal <= self._painted():

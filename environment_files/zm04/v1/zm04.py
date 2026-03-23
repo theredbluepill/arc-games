@@ -26,8 +26,11 @@ class Zm04UI(RenderableUserDisplay):
             return frame
         h, w = frame.shape
         frame[1, 2] = Z0 if self._s == 0 else Z1
-        for i in range(min(self._c, 15)):
-            frame[h - 2, 1 + i] = 11
+        for i in range(min(self._n, 15)):
+            cx = 1 + i
+            if cx >= w:
+                break
+            frame[h - 2, cx] = 14 if i < self._c else 8
         return frame
 
 

@@ -10,11 +10,24 @@ CAM = 16
 
 
 class Ph04UI(RenderableUserDisplay):
-    def __init__(self, steps: int) -> None:
+    def __init__(
+        self, steps: int, target: list[int] | None = None, mod_r: int = 3
+    ) -> None:
         self._s = steps
+        self._t = list(target) if target is not None else [0] * N
+        self._r = mod_r
 
-    def update(self, steps: int) -> None:
+    def update(
+        self,
+        steps: int,
+        target: list[int] | None = None,
+        mod_r: int | None = None,
+    ) -> None:
         self._s = steps
+        if target is not None:
+            self._t = list(target)
+        if mod_r is not None:
+            self._r = int(mod_r)
 
     def render_interface(self, frame):
         import numpy as np
@@ -22,8 +35,14 @@ class Ph04UI(RenderableUserDisplay):
         if not isinstance(frame, np.ndarray):
             return frame
         h, w = frame.shape
+        cap = min(max(self._r, 1), 8)
+        for i in range(cap):
+            frame[h - 6, 1 + i] = 13
         for i in range(min(self._s, 20)):
             frame[h - 2, 1 + i] = 10
+        for i in range(N):
+            v = self._t[i] if i < len(self._t) else 0
+            frame[h - 4, 1 + i] = min(15, 5 + int(v))
         return frame
 
 
@@ -84,7 +103,7 @@ class Ph04(ARCBaseGame):
             self.current_level.remove_sprite(s)
         for i, v in enumerate(self._row):
             self.current_level.add_sprite(cell(v, i, 8))
-        self._ui.update(self._left)
+        self._ui.update(self._left, self._target, self._R)
 
     def _win(self) -> bool:
         return self._row == self._target

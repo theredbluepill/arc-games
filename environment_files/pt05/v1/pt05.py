@@ -62,11 +62,19 @@ def pix(c: int) -> Sprite:
 
 
 class Pt05UI(RenderableUserDisplay):
-    def __init__(self, level_index: int = 0, num_levels: int = 1, ticks: int = 1) -> None:
+    def __init__(
+        self,
+        level_index: int = 0,
+        num_levels: int = 1,
+        ticks: int = 1,
+        target: list[list[int]] | None = None,
+    ) -> None:
         self._level_index = level_index
         self._num_levels = num_levels
         self._ticks = ticks
         self._state = None
+        self._target = target or [[3] * 7 for _ in range(7)]
+        self._click: tuple[int, int] | None = None
 
     def update(
         self,
@@ -75,6 +83,7 @@ class Pt05UI(RenderableUserDisplay):
         num_levels: int | None = None,
         ticks: int | None = None,
         state=None,
+        target: list[list[int]] | None = None,
     ) -> None:
         if level_index is not None:
             self._level_index = level_index
@@ -84,6 +93,11 @@ class Pt05UI(RenderableUserDisplay):
             self._ticks = ticks
         if state is not None:
             self._state = state
+        if target is not None:
+            self._target = target
+
+    def set_click(self, fx: int, fy: int) -> None:
+        self._click = (fx, fy)
 
     def render_interface(self, frame):
         import numpy as np
@@ -97,6 +111,20 @@ class Pt05UI(RenderableUserDisplay):
         go = self._state == GameState.GAME_OVER
         win = self._state == GameState.WIN
         _r_bar(frame, h, w, go, win)
+        # Target key: 7×7 row colors (matches board x,y 1..7) — right margin
+        for yi in range(7):
+            for xi in range(7):
+                c = int(self._target[yi][xi])
+                px, py = w - 8 + xi, 2 + yi
+                if 0 <= px < w and 0 <= py < h:
+                    frame[py, px] = c
+        if self._click:
+            cx, cy = self._click
+            for dx, dy in ((0, 0), (-1, 0), (1, 0), (0, -1), (0, 1)):
+                x, y = cx + dx, cy + dy
+                if 0 <= x < w and 0 <= y < h:
+                    frame[y, x] = 12
+            self._click = None
         return frame
 
 
@@ -272,9 +300,18 @@ class Pt05(ARCBaseGame):
             Camera(0, 0, CAM, CAM, BG, PAD, [self._ui]),
             False,
             1,
-            [1, 2, 3, 4, 6],
+            [6],
         )
 
+    def _grid_to_frame_pixel(self, gx: int, gy: int) -> tuple[int, int]:
+        cam = self.camera
+        cw, ch = cam.width, cam.height
+        scale = min(int(64 / cw), int(64 / ch))
+        x_pad = int((64 - (cw * scale)) / 2)
+        y_pad = int((64 - (ch * scale)) / 2)
+        px = gx * scale + scale // 2 + x_pad
+        py = gy * scale + scale // 2 + y_pad
+        return px, py
 
     def _sync_ui(self) -> None:
         self._ui.update(
@@ -282,6 +319,7 @@ class Pt05(ARCBaseGame):
             num_levels=len(levels),
             ticks=1,
             state=self._state,
+            target=self._target,
         )
 
     def on_set_level(self, level: Level) -> None:
@@ -292,6 +330,7 @@ class Pt05(ARCBaseGame):
         self._headers: dict[int, Sprite] = {}
         for sp in self.current_level.get_sprites_by_tag("header"):
             self._headers[sp.y] = sp
+        self._sync_ui()
 
     def _row_vals(self, y: int) -> list[int]:
         return [int(self._by_pos[(x, y)].pixels[0, 0]) for x in range(1, W)]
@@ -318,6 +357,7 @@ class Pt05(ARCBaseGame):
             )
             if c:
                 gx, gy = c
+                self._ui.set_click(*self._grid_to_frame_pixel(gx, gy))
                 if gx == HEADER_X and gy in self._headers:
                     self._cycle_row(gy)
                     if self._win():

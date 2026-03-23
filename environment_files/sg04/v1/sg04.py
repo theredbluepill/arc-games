@@ -8,11 +8,16 @@ BG, PAD = 5, 4
 
 
 class Sg04UI(RenderableUserDisplay):
-    def __init__(self, a: int, b: int, ta: int, tb: int) -> None:
+    def __init__(self, a: int, b: int, ta: int, tb: int, next_arm: int = 0) -> None:
         self._a, self._b, self._ta, self._tb = a, b, ta, tb
+        self._next = next_arm
 
-    def update(self, a: int, b: int, ta: int, tb: int) -> None:
+    def update(
+        self, a: int, b: int, ta: int, tb: int, next_arm: int | None = None
+    ) -> None:
         self._a, self._b, self._ta, self._tb = a, b, ta, tb
+        if next_arm is not None:
+            self._next = next_arm
 
     def render_interface(self, frame):
         import numpy as np
@@ -20,6 +25,7 @@ class Sg04UI(RenderableUserDisplay):
         if not isinstance(frame, np.ndarray):
             return frame
         h, w = frame.shape
+        frame[h - 3, 0] = 14 if self._next == 0 else 11
         for i in range(min(self._ta, 8)):
             frame[h - 2, 1 + i] = 14 if i < self._a else 4
         for i in range(min(self._tb, 8)):
@@ -48,7 +54,7 @@ levels = [
 
 class Sg04(ARCBaseGame):
     def __init__(self) -> None:
-        self._hud = Sg04UI(0, 0, 1, 1)
+        self._hud = Sg04UI(0, 0, 1, 1, 0)
         super().__init__(
             "sg04",
             levels,
@@ -64,7 +70,7 @@ class Sg04(ARCBaseGame):
         self._a = self._b = 0
         self._arm = 0
         self._left = int(level.get_data("max_steps") or 40)
-        self._hud.update(self._a, self._b, self._ta, self._tb)
+        self._hud.update(self._a, self._b, self._ta, self._tb, self._arm)
 
     def step(self) -> None:
         if self.action.id == GameAction.ACTION5:
@@ -78,7 +84,7 @@ class Sg04(ARCBaseGame):
             elif self._arm == 1 and self._b < self._tb:
                 self._b += 1
             self._arm = 1 - self._arm
-            self._hud.update(self._a, self._b, self._ta, self._tb)
+            self._hud.update(self._a, self._b, self._ta, self._tb, self._arm)
             if self._a >= self._ta and self._b >= self._tb:
                 self.next_level()
             self.complete_action()

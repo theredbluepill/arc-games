@@ -10,6 +10,8 @@ adjacency for mirror edits; **ml03** also **consumes** mirrors that reflected th
 
 from __future__ import annotations
 
+import numpy as np
+
 from arcengine import ARCBaseGame, Camera, GameAction, GameState, Level, RenderableUserDisplay, Sprite
 
 BG, PAD = 5, 4
@@ -51,6 +53,8 @@ DY = (0, 1, 0, -1)
 # dir 0=E,1=S,2=W,3=N — / mirror
 REF_SLASH = {0: 3, 3: 0, 1: 2, 2: 1}
 REF_BSL = {0: 1, 1: 0, 2: 3, 3: 2}
+# 1×1 mirrors: three states need distinct hues (empty / slash / backslash).
+MIR_PIX = (4, 6, 7)
 
 
 class Ml04UI(RenderableUserDisplay):
@@ -173,6 +177,13 @@ class Ml04(ARCBaseGame):
         self._dir = int(ed) % 4 if ed is not None else 0
         self._bx = self._by = -1
         self._clear_bolt()
+        self._paint_mirrors()
+
+    def _paint_mirrors(self) -> None:
+        for (x, y), t in self._mir.items():
+            sp = self.current_level.get_sprite_at(x, y, ignore_collidable=True)
+            if sp and "mirror" in sp.tags:
+                sp.pixels = np.array([[MIR_PIX[t % 3]]], dtype=np.int8)
 
     def _clear_bolt(self) -> None:
         if self._bolt:
@@ -233,6 +244,7 @@ class Ml04(ARCBaseGame):
                 gx, gy = int(c[0]), int(c[1])
                 if (gx, gy) in self._mir:
                     self._mir[(gx, gy)] = (self._mir[(gx, gy)] + 1) % 3
+                    self._paint_mirrors()
             self._sync_ui()
             self.complete_action()
             return

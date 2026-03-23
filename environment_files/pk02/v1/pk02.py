@@ -13,9 +13,17 @@ MARK = Sprite(pixels=[[2]], name="m", visible=True, collidable=False, tags=["edg
 class Pk02UI(RenderableUserDisplay):
     def __init__(self, pend: bool, done: int, tot: int) -> None:
         self._p, self._d, self._t = pend, done, tot
+        self._click: tuple[int, int] | None = None
+        self._reject_frames = 0
 
     def update(self, pend: bool, done: int, tot: int) -> None:
         self._p, self._d, self._t = pend, done, tot
+
+    def set_click(self, fx: int, fy: int) -> None:
+        self._click = (fx, fy)
+
+    def flash_reject(self, frames: int = 6) -> None:
+        self._reject_frames = frames
 
     def render_interface(self, frame):
         import numpy as np
@@ -26,6 +34,20 @@ class Pk02UI(RenderableUserDisplay):
         frame[h - 2, 2] = 11 if self._p else 5
         for i in range(min(self._d, 12)):
             frame[h - 2, 4 + i] = 14
+        if self._reject_frames > 0:
+            for dx in range(2):
+                for dy in range(2):
+                    px, py = w - 2 + dx, dy
+                    if 0 <= px < w and 0 <= py < h:
+                        frame[py, px] = 8
+            self._reject_frames -= 1
+        if self._click:
+            cx, cy = self._click
+            for dx, dy in ((0, 0), (-1, 0), (1, 0), (0, -1), (0, 1)):
+                px, py = cx + dx, cy + dy
+                if 0 <= px < w and 0 <= py < h:
+                    frame[py, px] = 10
+            self._click = None
         return frame
 
 
@@ -108,8 +130,18 @@ class Pk02(ARCBaseGame):
             Camera(0, 0, 16, 16, BG, PAD, [self._ui]),
             False,
             1,
-            [1, 2, 3, 4, 5, 6],
+            [6],
         )
+
+    def _grid_to_frame_pixel(self, gx: int, gy: int) -> tuple[int, int]:
+        cam = self.camera
+        cw, ch = cam.width, cam.height
+        scale = min(int(64 / cw), int(64 / ch))
+        x_pad = int((64 - (cw * scale)) / 2)
+        y_pad = int((64 - (ch * scale)) / 2)
+        px = gx * scale + scale // 2 + x_pad
+        py = gy * scale + scale // 2 + y_pad
+        return px, py
 
     def on_set_level(self, level: Level) -> None:
         raw = level.get_data("edges") or []
@@ -123,9 +155,6 @@ class Pk02(ARCBaseGame):
         self._ui.update(False, 0, self._tot)
 
     def step(self) -> None:
-        if self.action.id == GameAction.ACTION5:
-            self.complete_action()
-            return
         if self.action.id != GameAction.ACTION6:
             self.complete_action()
             return
@@ -133,9 +162,11 @@ class Pk02(ARCBaseGame):
             self.action.data.get("x", 0), self.action.data.get("y", 0)
         )
         if not hit:
+            self._ui.flash_reject()
             self.complete_action()
             return
         gx, gy = int(hit[0]), int(hit[1])
+        self._ui.set_click(*self._grid_to_frame_pixel(gx, gy))
         if self._pend is None:
             self._pend = (gx, gy)
             self._ui.update(True, self._tot - len(self._left), self._tot)
@@ -145,6 +176,7 @@ class Pk02(ARCBaseGame):
         self._pend = None
         e = frozenset({(ax, ay), (gx, gy)})
         if abs(ax - gx) + abs(ay - gy) != 1 or e not in self._left:
+            self._ui.flash_reject()
             self._ui.update(False, self._tot - len(self._left), self._tot)
             self.complete_action()
             return

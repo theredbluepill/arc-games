@@ -35,6 +35,10 @@ class U(RenderableUserDisplay):
         self._num_levels = num_levels
         self._level_index = 0
         self._state = None
+        self._reject_frames = 0
+
+    def bump_reject(self) -> None:
+        self._reject_frames = 10
 
     def update(self, *, level_index: int | None = None, state=None) -> None:
         if level_index is not None:
@@ -51,6 +55,10 @@ class U(RenderableUserDisplay):
             return f
         h, w = f.shape
         _r_dots(f, h, w, self._level_index, self._num_levels, 0)
+        if self._reject_frames > 0:
+            for x in range(max(0, w - 6), w):
+                f[min(h - 1, 3), x] = 8
+            self._reject_frames -= 1
         go = self._state == GameState.GAME_OVER
         win = self._state == GameState.WIN
         _r_bar(f, h, w, go, win)
@@ -170,6 +178,8 @@ class Hn04(ARCBaseGame):
                 if top > self._hand:
                     st.append(self._hand)
                     self._hand = None
+                else:
+                    self._ui.bump_reject()
         self._layout()
         if self._st[3] == [4, 3, 2, 1]:
             self.next_level()

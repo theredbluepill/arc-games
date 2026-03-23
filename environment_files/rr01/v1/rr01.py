@@ -49,6 +49,13 @@ class Rr01UI(RenderableUserDisplay):
         self._num_levels = num_levels
         self._ticks = ticks
         self._state = None
+        self._click_pos: tuple[int, int] | None = None
+        self._click_frames = 0
+        self._heading_dir = 0
+
+    def set_click(self, x: int, y: int) -> None:
+        self._click_pos = (x, y)
+        self._click_frames = 8
 
     def update(
         self,
@@ -57,6 +64,7 @@ class Rr01UI(RenderableUserDisplay):
         num_levels: int | None = None,
         ticks: int | None = None,
         state=None,
+        heading_dir: int | None = None,
     ) -> None:
         if level_index is not None:
             self._level_index = level_index
@@ -66,6 +74,8 @@ class Rr01UI(RenderableUserDisplay):
             self._ticks = ticks
         if state is not None:
             self._state = state
+        if heading_dir is not None:
+            self._heading_dir = int(heading_dir) % 4
 
     def render_interface(self, frame):
         import numpy as np
@@ -77,6 +87,27 @@ class Rr01UI(RenderableUserDisplay):
         h, w = frame.shape
         _r_dots(frame, h, w, self._level_index, self._num_levels, 0)
         _r_ticks(frame, h, w, self._ticks)
+        hr = h - 2
+        if hr >= 0:
+            for i in range(4):
+                cx = 1 + i * 2
+                if cx < w:
+                    frame[hr, cx] = 14 if i == self._heading_dir else 3
+        if self._click_pos and self._click_frames > 0:
+            cx, cy = self._click_pos
+            hit = 11
+            for px, py in (
+                (cx, cy),
+                (cx - 1, cy),
+                (cx + 1, cy),
+                (cx, cy - 1),
+                (cx, cy + 1),
+            ):
+                if 0 <= px < w and 0 <= py < h:
+                    frame[py, px] = hit
+            self._click_frames -= 1
+        else:
+            self._click_pos = None
         go = self._state == GameState.GAME_OVER
         win = self._state == GameState.WIN
         _r_bar(frame, h, w, go, win)
@@ -153,6 +184,7 @@ class Rr01(ARCBaseGame):
             num_levels=len(levels),
             ticks=1,
             state=self._state,
+            heading_dir=self._dir,
         )
 
     def on_set_level(self, level: Level) -> None:
@@ -182,9 +214,9 @@ class Rr01(ARCBaseGame):
 
     def step(self) -> None:
         if self.action.id == GameAction.ACTION6:
-            c = self.camera.display_to_grid(
-                self.action.data.get("x", 0), self.action.data.get("y", 0)
-            )
+            px, py = int(self.action.data.get("x", 0)), int(self.action.data.get("y", 0))
+            self._ui.set_click(px, py)
+            c = self.camera.display_to_grid(px, py)
             if c:
                 self._toggle_ramp(int(c[0]), int(c[1]))
             self._sync_ui()

@@ -12,10 +12,18 @@ class Dm04UI(RenderableUserDisplay):
     def __init__(self, n: int, need: int) -> None:
         self._n = n
         self._need = need
+        self._click: tuple[int, int] | None = None
+        self._reject_frames = 0
 
     def update(self, n: int, need: int) -> None:
         self._n = n
         self._need = need
+
+    def set_click(self, fx: int, fy: int) -> None:
+        self._click = (fx, fy)
+
+    def flash_reject(self, frames: int = 6) -> None:
+        self._reject_frames = frames
 
     def render_interface(self, frame):
         import numpy as np
@@ -26,6 +34,20 @@ class Dm04UI(RenderableUserDisplay):
         for i in range(min(self._n, 10)):
             frame[h - 2, 2 + i] = 14
         frame[h - 2, 20] = 11 if self._need > 0 else 14
+        if self._reject_frames > 0:
+            for dx in range(2):
+                for dy in range(2):
+                    px, py = w - 2 + dx, dy
+                    if 0 <= px < w and 0 <= py < h:
+                        frame[py, px] = 8
+            self._reject_frames -= 1
+        if self._click:
+            cx, cy = self._click
+            for dx, dy in ((0, 0), (-1, 0), (1, 0), (0, -1), (0, 1)):
+                px, py = cx + dx, cy + dy
+                if 0 <= px < w and 0 <= py < h:
+                    frame[py, px] = 11
+            self._click = None
         return frame
 
 
@@ -90,6 +112,16 @@ class Dm04(ARCBaseGame):
         self._tri = len(self._must) // 3
         self._ui.update(0, self._tri)
 
+    def _grid_to_frame_pixel(self, gx: int, gy: int) -> tuple[int, int]:
+        cam = self.camera
+        cw, ch = cam.width, cam.height
+        scale = min(int(64 / cw), int(64 / ch))
+        x_pad = int((64 - (cw * scale)) / 2)
+        y_pad = int((64 - (ch * scale)) / 2)
+        px = gx * scale + scale // 2 + x_pad
+        py = gy * scale + scale // 2 + y_pad
+        return px, py
+
     def step(self) -> None:
         if self.action.id != GameAction.ACTION6:
             self.complete_action()
@@ -98,15 +130,19 @@ class Dm04(ARCBaseGame):
             self.action.data.get("x", 0), self.action.data.get("y", 0)
         )
         if not hit:
+            self._ui.flash_reject()
             self.complete_action()
             return
         gx, gy = int(hit[0]), int(hit[1])
+        self._ui.set_click(*self._grid_to_frame_pixel(gx, gy))
         if (gx, gy) not in self._must or (gx, gy) in self._covered:
             self._pending = []
+            self._ui.flash_reject()
             self._ui.update(len(self._covered) // 3, self._tri - len(self._covered) // 3)
             self.complete_action()
             return
         if (gx, gy) in self._pending:
+            self._ui.flash_reject()
             self.complete_action()
             return
         self._pending.append((gx, gy))
@@ -116,6 +152,7 @@ class Dm04(ARCBaseGame):
         trip = self._pending
         self._pending = []
         if not is_l_tromino(trip):
+            self._ui.flash_reject()
             self._ui.update(len(self._covered) // 3, self._tri - len(self._covered) // 3)
             self.complete_action()
             return

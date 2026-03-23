@@ -89,6 +89,8 @@ def _line_frame(
 
 
 class Cs01UI(RenderableUserDisplay):
+    CLICK_ANIM_FRAMES = 16
+
     def __init__(self, sel: int, cap: int, level_index: int = 0, num_levels: int = 7) -> None:
         self._sel = sel
         self._cap = cap
@@ -96,6 +98,8 @@ class Cs01UI(RenderableUserDisplay):
         self._num_levels = num_levels
         self._state = None
         self._edges: list[tuple[tuple[int, int], tuple[int, int]]] = []
+        self._click_g: tuple[int, int, bool] | None = None
+        self._click_frames = 0
 
     def update(
         self,
@@ -118,6 +122,15 @@ class Cs01UI(RenderableUserDisplay):
         if edges is not None:
             self._edges = edges
 
+    def set_click_ping(self, gx: int, gy: int, on_vertex: bool) -> None:
+        self._click_g = (gx, gy, on_vertex)
+        self._click_frames = Cs01UI.CLICK_ANIM_FRAMES
+
+    @staticmethod
+    def _plot_px(frame, fh: int, fw: int, px: int, py: int, c: int) -> None:
+        if 0 <= px < fw and 0 <= py < fh:
+            frame[py, px] = c
+
     def render_interface(self, frame):
         import numpy as np
 
@@ -132,6 +145,18 @@ class Cs01UI(RenderableUserDisplay):
         for i in range(min(self._sel, 12)):
             frame[h - 2, 2 + i] = 14
         frame[h - 2, 30] = 11 if self._cap <= 0 or self._sel <= self._cap else 8
+        if self._click_g and self._click_frames > 0:
+            gx, gy, on_v = self._click_g
+            cx, cy = _vertex_center_frame(gx, gy, fh=h, fw=w)
+            col = 12 if on_v else 8
+            for r in (1, 2):
+                for dy in range(-r, r + 1):
+                    for dx in range(-r, r + 1):
+                        if abs(dx) + abs(dy) == r:
+                            self._plot_px(frame, h, w, cx + dx, cy + dy, col)
+            self._click_frames -= 1
+        else:
+            self._click_g = None
         go = self._state == GameState.GAME_OVER
         win = self._state == GameState.WIN
         _r_bar(frame, h, w, go, win)
@@ -256,8 +281,12 @@ class Cs01(ARCBaseGame):
         gx, gy = int(hit[0]), int(hit[1])
         p = (gx, gy)
         if p not in self._vertices:
+            self._ui.set_click_ping(gx, gy, False)
+            self._sync_ui()
             self.complete_action()
             return
+
+        self._ui.set_click_ping(gx, gy, True)
 
         if p in self._selected:
             self._selected.remove(p)

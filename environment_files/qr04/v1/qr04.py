@@ -22,9 +22,17 @@ BASE = [2, 6, 9, 11]
 class Qr04UI(RenderableUserDisplay):
     def __init__(self, steps: int) -> None:
         self._steps = steps
+        self._reject_frames = 0
+        self._click: tuple[int, int] | None = None
 
     def update(self, steps: int) -> None:
         self._steps = steps
+
+    def set_click(self, fx: int, fy: int) -> None:
+        self._click = (fx, fy)
+
+    def flash_reject(self, frames: int = 8) -> None:
+        self._reject_frames = frames
 
     def render_interface(self, frame):
         import numpy as np
@@ -34,6 +42,20 @@ class Qr04UI(RenderableUserDisplay):
         h, w = frame.shape
         for i in range(min(self._steps, 15)):
             frame[h - 2, 1 + i] = 10
+        if self._reject_frames > 0:
+            for dx in range(3):
+                for dy in range(2):
+                    px, py = w - 3 + dx, dy
+                    if 0 <= px < w and 0 <= py < h:
+                        frame[py, px] = 8
+            self._reject_frames -= 1
+        if self._click:
+            cx, cy = self._click
+            for dx, dy in ((0, 0), (-1, 0), (1, 0), (0, -1), (0, 1)):
+                px, py = cx + dx, cy + dy
+                if 0 <= px < w and 0 <= py < h:
+                    frame[py, px] = 11
+            self._click = None
         return frame
 
 
@@ -101,8 +123,18 @@ class Qr04(ARCBaseGame):
             Camera(0, 0, CAM, CAM, BACKGROUND_COLOR, PADDING_COLOR, [self._ui]),
             False,
             1,
-            [1, 2, 3, 4, 6],
+            [6],
         )
+
+    def _grid_to_frame_pixel(self, gx: int, gy: int) -> tuple[int, int]:
+        cam = self.camera
+        cw, ch = cam.width, cam.height
+        scale = min(int(64 / cw), int(64 / ch))
+        x_pad = int((64 - (cw * scale)) / 2)
+        y_pad = int((64 - (ch * scale)) / 2)
+        px = gx * scale + scale // 2 + x_pad
+        py = gy * scale + scale // 2 + y_pad
+        return px, py
 
     def on_set_level(self, level: Level) -> None:
         self._g = [row[:] for row in self.current_level.get_data("init")]
@@ -133,10 +165,6 @@ class Qr04(ARCBaseGame):
         return True
 
     def step(self) -> None:
-        if self.action.id.value in (1, 2, 3, 4):
-            self.complete_action()
-            return
-
         if self.action.id != GameAction.ACTION6:
             self.complete_action()
             return
@@ -150,10 +178,13 @@ class Qr04(ARCBaseGame):
         py = self.action.data.get("y", 0)
         coords = self.camera.display_to_grid(px, py)
         if not coords:
+            self._ui.flash_reject()
             self.complete_action()
             return
         gx, gy = coords
+        self._ui.set_click(*self._grid_to_frame_pixel(gx, gy))
         if gx + 2 >= GW or gy + 2 >= GH:
+            self._ui.flash_reject()
             self.complete_action()
             return
         for dy in (0, 1, 2):
@@ -162,6 +193,7 @@ class Qr04(ARCBaseGame):
                     gx + dx, gy + dy, ignore_collidable=True
                 )
                 if sp and "wall" in sp.tags:
+                    self._ui.flash_reject()
                     self.complete_action()
                     return
 

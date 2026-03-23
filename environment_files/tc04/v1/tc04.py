@@ -9,7 +9,21 @@ G = 10
 CAM = 16
 PKG = 11
 SNK = 14
-ARW = 10
+# Distinct colors per direction (avoid 11 — same as package tile).
+ARW_E, ARW_S, ARW_W, ARW_N = 10, 15, 12, 13
+
+
+def _arrow_pixel(d: tuple[int, int]) -> int:
+    dx, dy = d
+    if (dx, dy) == (1, 0):
+        return ARW_E
+    if (dx, dy) == (0, 1):
+        return ARW_S
+    if (dx, dy) == (-1, 0):
+        return ARW_W
+    if (dx, dy) == (0, -1):
+        return ARW_N
+    return ARW_E
 
 
 def rot(dx: int, dy: int) -> tuple[int, int]:
@@ -44,7 +58,7 @@ def mk(
     for (x, y), (dx, dy) in arrows.items():
         sl.append(
             Sprite(
-                pixels=[[ARW]],
+                pixels=[[_arrow_pixel((dx, dy))]],
                 name="a",
                 visible=True,
                 collidable=False,
@@ -150,11 +164,11 @@ class Tc04(ARCBaseGame):
                 self.current_level.remove_sprite(s)
                 self.current_level.add_sprite(
                     Sprite(
-                        pixels=[[ARW]],
+                        pixels=[[_arrow_pixel((ndx, ndy))]],
                         name="a",
                         visible=True,
                         collidable=False,
-                        tags=["arrow"],
+                        tags=["arrow", f"d{ndx},{ndy}"],
                     ).clone().set_position(gx, gy)
                 )
                 break

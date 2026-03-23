@@ -2,6 +2,8 @@
 
 from __future__ import annotations
 
+import numpy as np
+
 from arcengine import ARCBaseGame, Camera, GameAction, Level, RenderableUserDisplay, Sprite
 
 BG, PAD = 5, 4
@@ -77,6 +79,13 @@ class Bn04(ARCBaseGame):
 
     def _flash(self, cells: set[tuple[int, int]]) -> None:
         self._rev |= cells & self._tgt
+        self._paint_revealed()
+
+    def _paint_revealed(self) -> None:
+        for x, y in self._rev:
+            sp = self.current_level.get_sprite_at(x, y, ignore_collidable=True)
+            if sp and "hid" in sp.tags:
+                sp.pixels = np.array([[TGT]], dtype=np.int8)
 
     def step(self) -> None:
         if self.action.id == GameAction.ACTION5:

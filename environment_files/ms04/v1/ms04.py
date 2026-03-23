@@ -39,6 +39,7 @@ def _r_bar(frame, h, w, game_over, win):
 
 G = 8
 CAM = 16
+FLAG_COLOR = 13  # maroon — distinct from clue grays and background
 
 
 class Ms04UI(RenderableUserDisplay):
@@ -156,7 +157,27 @@ class Ms04(ARCBaseGame):
             self.action.data.get("x", 0), self.action.data.get("y", 0)
         )
         if c:
-            self._flags.add((int(c[0]), int(c[1])))
+            gx, gy = int(c[0]), int(c[1])
+            self._flags.add((gx, gy))
+            sp = self.current_level.get_sprite_at(gx, gy, ignore_collidable=True)
+            if sp and "clue" in sp.tags:
+                sp.pixels = [[FLAG_COLOR]]
+            elif (gx, gy) in self._mines:
+                existing = self.current_level.get_sprite_at(
+                    gx, gy, ignore_collidable=True
+                )
+                if not existing or "flag_mark" not in existing.tags:
+                    self.current_level.add_sprite(
+                        Sprite(
+                            pixels=[[FLAG_COLOR]],
+                            name="f",
+                            visible=True,
+                            collidable=False,
+                            tags=["flag_mark"],
+                        )
+                        .clone()
+                        .set_position(gx, gy)
+                    )
             if self._flags >= self._mines:
                 self.next_level()
         self._sync_ui()

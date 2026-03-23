@@ -27,16 +27,29 @@ def _r_bar(frame, h, w, game_over, win):
 
 
 class U(RenderableUserDisplay):
+    CLICK_ANIM_FRAMES = 16
+
     def __init__(self, num_levels: int) -> None:
         self._num_levels = num_levels
         self._level_index = 0
         self._state = None
+        self._click_pos: tuple[int, int] | None = None
+        self._click_frames = 0
 
     def update(self, *, level_index: int | None = None, state=None) -> None:
         if level_index is not None:
             self._level_index = level_index
         if state is not None:
             self._state = state
+
+    def set_click(self, fx: int, fy: int) -> None:
+        self._click_pos = (fx, fy)
+        self._click_frames = U.CLICK_ANIM_FRAMES
+
+    @staticmethod
+    def _plot_px(frame, fh: int, fw: int, px: int, py: int, c: int) -> None:
+        if 0 <= px < fw and 0 <= py < fh:
+            frame[py, px] = c
 
     def render_interface(self, f):
         import numpy as np
@@ -47,6 +60,16 @@ class U(RenderableUserDisplay):
             return f
         h, w = f.shape
         _r_dots(f, h, w, self._level_index, self._num_levels, 0)
+        if self._click_pos and self._click_frames > 0:
+            cx, cy = self._click_pos
+            for r in (1, 2):
+                for dy in range(-r, r + 1):
+                    for dx in range(-r, r + 1):
+                        if abs(dx) + abs(dy) == r:
+                            self._plot_px(f, h, w, cx + dx, cy + dy, 12)
+            self._click_frames -= 1
+        else:
+            self._click_pos = None
         go = self._state == GameState.GAME_OVER
         win = self._state == GameState.WIN
         _r_bar(f, h, w, go, win)
@@ -78,6 +101,15 @@ class Pj01(ARCBaseGame):
     def __init__(self):
         self._ui = U(len(levels))
         super().__init__("pj01", levels, Camera(0,0,16,16,BG,PAD,[self._ui]), False, 1, [1,2,3,4,6])
+
+    def _grid_to_frame_pixel(self, gx: int, gy: int) -> tuple[int, int]:
+        cam = self.camera
+        cw, ch = cam.width, cam.height
+        scale = min(int(64 / cw), int(64 / ch))
+        x_pad = int((64 - (cw * scale)) / 2)
+        y_pad = int((64 - (ch * scale)) / 2)
+        return gx * scale + scale // 2 + x_pad, gy * scale + scale // 2 + y_pad
+
     def on_set_level(self, level: Level):
         self._p = self.current_level.get_sprites_by_tag("player")[0]
         self._ui.update(level_index=self.level_index, state=self._state)
@@ -93,6 +125,7 @@ class Pj01(ARCBaseGame):
             h = self.camera.display_to_grid(px, py)
             if h:
                 gx, gy = int(h[0]), int(h[1])
+                self._ui.set_click(*self._grid_to_frame_pixel(gx, gy))
                 cell = self.current_level.get_sprite_at(gx,gy,ignore_collidable=True)
                 if not cell:
                     m = spr()["m"].clone().set_position(gx,gy)
@@ -106,6 +139,8 @@ class Pj01(ARCBaseGame):
                         cell.tags.remove("bs")
                         cell.tags.append("fs")
                     _mirror_paint(cell)
+            else:
+                self._ui.set_click(max(0, min(63, px)), max(0, min(63, py)))
             self._ui.update(level_index=self.level_index, state=self._state)
             self.complete_action(); return
         dx=dy=0

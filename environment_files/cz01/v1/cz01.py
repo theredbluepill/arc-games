@@ -83,14 +83,23 @@ def mk(init: list[list[int]], targ: list[list[int]], max_steps: int, diff: int) 
     )
 
 
+def _z() -> list[int]:
+    return [0] * GW
+
+
+def _o() -> list[int]:
+    return [1] * GW
+
+
+# Targets must be reachable by row XOR: each row equals init[row] or bitwise complement.
 levels = [
-    mk([[0] * GW for _ in range(ROWS)], [[1, 0, 0, 0, 0, 0, 0, 0], [0] * GW, [0] * GW, [0] * GW], 40, 1),
-    mk([[0] * GW for _ in range(ROWS)], [[1, 1, 0, 0, 0, 0, 0, 0], [0, 0, 1, 1, 0, 0, 0, 0], [0] * GW, [0] * GW], 50, 2),
-    mk([[1, 0, 1, 0, 1, 0, 1, 0] for _ in range(ROWS)], [[0] * GW for _ in range(ROWS)], 60, 3),
-    mk([[0] * GW for _ in range(ROWS)], [[1 if x % 2 == 0 else 0 for x in range(GW)] for _ in range(ROWS)], 70, 4),
-    mk([[0] * GW for _ in range(ROWS)], [[(x + y) % 2 for x in range(GW)] for y in range(ROWS)], 80, 5),
-    mk([[0] * GW for _ in range(ROWS)], [[1, 1, 1, 0, 0, 0, 0, 0], [0, 0, 0, 1, 1, 1, 0, 0], [0] * GW, [0] * GW], 90, 6),
-    mk([[1] * GW, [0] * GW, [1] * GW, [0] * GW], [[0] * GW for _ in range(ROWS)], 100, 7),
+    mk([_z() for _ in range(ROWS)], [_o(), _z(), _z(), _z()], 28, 1),
+    mk([_z() for _ in range(ROWS)], [_o(), _o(), _z(), _z()], 32, 2),
+    mk([_z(), _z(), _o(), _o()], [_z() for _ in range(ROWS)], 36, 3),
+    mk([_z() for _ in range(ROWS)], [_o() for _ in range(ROWS)], 44, 4),
+    mk([_o(), _z(), _o(), _z()], [_z() for _ in range(ROWS)], 40, 5),
+    mk([_o(), _o(), _z(), _z()], [_z() for _ in range(ROWS)], 36, 6),
+    mk([_o(), _z(), _o(), _z()], [_z() for _ in range(ROWS)], 32, 7),
 ]
 
 

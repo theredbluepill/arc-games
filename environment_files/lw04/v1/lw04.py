@@ -46,22 +46,29 @@ def _r_bar(frame, h, w, game_over, win):
 
 
 class Lw04UI(RenderableUserDisplay):
-    def __init__(self, ln: int, crn: int, kcap: int, num_levels: int) -> None:
-        self._ln, self._crn, self._kcap = ln, crn, kcap
+    def __init__(self, ln: int, crn: int, kcap: int, lcap: int, num_levels: int) -> None:
+        self._ln, self._crn, self._kcap, self._lcap = ln, crn, kcap, lcap
         self._num_levels = num_levels
         self._level_index = 0
         self._gs: GameState | None = None
+        self._click_pos: tuple[int, int] | None = None
+        self._click_frames = 0
+
+    def set_click_display(self, px: int, py: int) -> None:
+        self._click_pos = (px, py)
+        self._click_frames = 8
 
     def update(
         self,
         ln: int,
         crn: int,
         kcap: int,
+        lcap: int,
         *,
         level_index: int | None = None,
         gs: GameState | None = None,
     ) -> None:
-        self._ln, self._crn, self._kcap = ln, crn, kcap
+        self._ln, self._crn, self._kcap, self._lcap = ln, crn, kcap, lcap
         if level_index is not None:
             self._level_index = level_index
         if gs is not None:
@@ -74,6 +81,10 @@ class Lw04UI(RenderableUserDisplay):
             return frame
         h, w = frame.shape
         _r_dots(frame, h, w, self._level_index, self._num_levels, 0)
+        for i in range(min(self._lcap, 14)):
+            cx = 1 + i
+            if cx < w:
+                frame[h - 4, cx] = 14 if i < self._ln else 4
         for i in range(min(self._ln, 12)):
             frame[h - 2, 1 + i] = 10
         for i in range(min(self._crn, 6)):
@@ -83,6 +94,21 @@ class Lw04UI(RenderableUserDisplay):
         go = self._gs == GameState.GAME_OVER
         win = self._gs == GameState.WIN
         _r_bar(frame, h, w, go, win)
+        if self._click_pos and self._click_frames > 0:
+            cx, cy = self._click_pos
+            hit = 11
+            for px, py in (
+                (cx, cy),
+                (cx - 1, cy),
+                (cx + 1, cy),
+                (cx, cy - 1),
+                (cx, cy + 1),
+            ):
+                if 0 <= px < w and 0 <= py < h:
+                    frame[py, px] = hit
+            self._click_frames -= 1
+        else:
+            self._click_pos = None
         return frame
 
 
@@ -179,7 +205,7 @@ _NUM_LEVELS = len(levels)
 
 class Lw04(ARCBaseGame):
     def __init__(self) -> None:
-        self._ui = Lw04UI(0, 0, 1, _NUM_LEVELS)
+        self._ui = Lw04UI(0, 0, 1, 12, _NUM_LEVELS)
         super().__init__(
             "lw04",
             levels,
@@ -200,6 +226,7 @@ class Lw04(ARCBaseGame):
             0,
             0,
             self._kcap,
+            self._max_len,
             level_index=self.level_index,
             gs=self._state,
         )
@@ -221,15 +248,18 @@ class Lw04(ARCBaseGame):
             len(self._path),
             corners(self._path),
             self._kcap,
+            self._max_len,
             level_index=self.level_index,
             gs=self._state,
         )
 
     def step(self) -> None:
         if self.action.id == GameAction.ACTION6:
-            hit = self.camera.display_to_grid(
-                self.action.data.get("x", 0), self.action.data.get("y", 0)
+            px, py = int(self.action.data.get("x", 0)), int(
+                self.action.data.get("y", 0)
             )
+            self._ui.set_click_display(px, py)
+            hit = self.camera.display_to_grid(px, py)
             if not hit:
                 self.complete_action()
                 return
@@ -268,6 +298,7 @@ class Lw04(ARCBaseGame):
                         len(self._path),
                         corners(self._path),
                         self._kcap,
+                        self._max_len,
                         level_index=self.level_index,
                         gs=self._state,
                     )

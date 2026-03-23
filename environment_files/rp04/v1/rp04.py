@@ -4,6 +4,8 @@ from __future__ import annotations
 
 from collections import deque
 
+import numpy as np
+
 from arcengine import ARCBaseGame, Camera, GameAction, Level, RenderableUserDisplay, Sprite
 
 BG, PAD = 5, 4
@@ -96,6 +98,13 @@ class Rp04(ARCBaseGame):
         self._src = (s.x, s.y)
         self._lit = set()
         self._sync()
+        self._paint_relays()
+
+    def _paint_relays(self) -> None:
+        for p in self._relay_all:
+            sp = self.current_level.get_sprite_at(p[0], p[1], ignore_collidable=True)
+            if sp and "relay" in sp.tags:
+                sp.pixels = np.array([[12 if p in self._relay_on else 3]], dtype=np.int8)
 
     def _sync(self) -> None:
         n = len(self._lit & self._lamps)
@@ -156,6 +165,7 @@ class Rp04(ARCBaseGame):
                         self._relay_on.discard(p)
                     else:
                         self._relay_on.add(p)
+                    self._paint_relays()
             self._sync()
             self.complete_action()
             return

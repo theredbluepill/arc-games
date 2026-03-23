@@ -50,6 +50,10 @@ class Cv01UI(RenderableUserDisplay):
         self._num_levels = num_levels
         self._ticks = ticks
         self._state = None
+        self._conflict_frames = 0
+
+    def bump_conflict(self) -> None:
+        self._conflict_frames = 8
 
     def update(
         self,
@@ -78,6 +82,10 @@ class Cv01UI(RenderableUserDisplay):
         h, w = frame.shape
         _r_dots(frame, h, w, self._level_index, self._num_levels, 0)
         _r_ticks(frame, h, w, self._ticks)
+        if self._conflict_frames > 0:
+            for x in range(min(w, 8)):
+                frame[max(0, h - 2), x] = 8
+            self._conflict_frames -= 1
         go = self._state == GameState.GAME_OVER
         win = self._state == GameState.WIN
         _r_bar(frame, h, w, go, win)
@@ -174,6 +182,8 @@ class Cv01(ARCBaseGame):
             sp = self.current_level.get_sprite_at(gx, gy, ignore_collidable=True)
             if sp and "cell" in sp.tags:
                 sp.pixels = np.array([[self._color_at(gx, gy)]], dtype=np.int8)
+        if not self._ok():
+            self._ui.bump_conflict()
         if self._ok():
             self.next_level()
         self._sync_ui()

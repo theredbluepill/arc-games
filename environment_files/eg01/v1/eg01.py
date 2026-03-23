@@ -20,10 +20,14 @@ GHOST = [5, 4, 3, 7]
 
 
 class Eg01UI(RenderableUserDisplay):
+    CLICK_ANIM_FRAMES = 16
+
     def __init__(self, ham: int, max_d: int) -> None:
         self._ham = ham
         self._max_d = max_d
         self._target: list[list[int]] = [[0] * GW for _ in range(GH)]
+        self._click_pos: tuple[int, int] | None = None
+        self._click_frames = 0
 
     def update(
         self,
@@ -35,6 +39,15 @@ class Eg01UI(RenderableUserDisplay):
         self._max_d = max_d
         if target is not None:
             self._target = [row[:] for row in target]
+
+    def set_click(self, fx: int, fy: int) -> None:
+        self._click_pos = (fx, fy)
+        self._click_frames = Eg01UI.CLICK_ANIM_FRAMES
+
+    @staticmethod
+    def _plot_px(frame, fh: int, fw: int, px: int, py: int, c: int) -> None:
+        if 0 <= px < fw and 0 <= py < fh:
+            frame[py, px] = c
 
     def render_interface(self, frame):
         import numpy as np
@@ -55,6 +68,16 @@ class Eg01UI(RenderableUserDisplay):
                     frame[py, px] = c
         for i in range(min(self._max_d, 12)):
             frame[h - 2, 16 + i] = 11
+        if self._click_pos and self._click_frames > 0:
+            cx, cy = self._click_pos
+            for r in (1, 2):
+                for dy in range(-r, r + 1):
+                    for dx in range(-r, r + 1):
+                        if abs(dx) + abs(dy) == r:
+                            self._plot_px(frame, h, w, cx + dx, cy + dy, 12)
+            self._click_frames -= 1
+        else:
+            self._click_pos = None
         return frame
 
 
@@ -142,6 +165,14 @@ class Eg01(ARCBaseGame):
                     d += 1
         return d
 
+    def _grid_to_frame_pixel(self, gx: int, gy: int) -> tuple[int, int]:
+        cam = self.camera
+        cw, ch = cam.width, cam.height
+        scale = min(int(64 / cw), int(64 / ch))
+        x_pad = int((64 - (cw * scale)) / 2)
+        y_pad = int((64 - (ch * scale)) / 2)
+        return gx * scale + scale // 2 + x_pad, gy * scale + scale // 2 + y_pad
+
     def step(self) -> None:
         if self.action.id.value in (1, 2, 3, 4):
             self.complete_action()
@@ -162,6 +193,7 @@ class Eg01(ARCBaseGame):
             self.complete_action()
             return
 
+        self._ui.set_click(*self._grid_to_frame_pixel(gx, gy))
         self._g[gy][gx] = (self._g[gy][gx] + 1) % 4
         self._paint()
         self._sync_ui()

@@ -24,11 +24,26 @@ BASE = cell_sprite(0)
 
 
 class Pt04UI(RenderableUserDisplay):
-    def __init__(self, sel: tuple[int, int] | None) -> None:
+    def __init__(
+        self,
+        sel: tuple[int, int] | None,
+        target: list[list[int]],
+    ) -> None:
         self._sel = sel
+        self._target = target
+        self._click: tuple[int, int] | None = None
 
-    def update(self, sel: tuple[int, int] | None) -> None:
+    def update(self, sel: tuple[int, int] | None, target: list[list[int]]) -> None:
         self._sel = sel
+        self._target = target
+
+    def set_click(self, fx: int, fy: int) -> None:
+        self._click = (fx, fy)
+
+    @staticmethod
+    def _plot(frame, h: int, w: int, px: int, py: int, c: int) -> None:
+        if 0 <= px < w and 0 <= py < h:
+            frame[py, px] = c
 
     def render_interface(self, frame):
         import numpy as np
@@ -36,6 +51,10 @@ class Pt04UI(RenderableUserDisplay):
         if not isinstance(frame, np.ndarray):
             return frame
         h, w = frame.shape
+        # Target key (8×8): bottom-left, 1 px per cell — goal inferable without docs
+        for yy in range(GH):
+            for xx in range(GW):
+                self._plot(frame, h, w, 1 + xx, h - 9 + yy, int(self._target[yy][xx]))
         if self._sel:
             sx, sy = self._sel
             scale = min(64 // CAM, 64 // CAM)
@@ -46,6 +65,11 @@ class Pt04UI(RenderableUserDisplay):
                 x, y = px + dx, py + dy
                 if 0 <= x < w and 0 <= y < h:
                     frame[y, x] = 0
+        if self._click:
+            cx, cy = self._click
+            for dx, dy in ((0, 0), (-1, 0), (1, 0), (0, -1), (0, 1)):
+                self._plot(frame, h, w, cx + dx, cy + dy, 12)
+            self._click = None
         return frame
 
 
@@ -108,7 +132,7 @@ levels = [
 
 class Pt04(ARCBaseGame):
     def __init__(self) -> None:
-        self._ui = Pt04UI(None)
+        self._ui = Pt04UI(None, [[0] * GW for _ in range(GH)])
         self._sel: tuple[int, int] | None = None
         super().__init__(
             "pt04",
@@ -116,13 +140,23 @@ class Pt04(ARCBaseGame):
             Camera(0, 0, CAM, CAM, BG, PAD, [self._ui]),
             False,
             1,
-            [1, 2, 3, 4, 6],
+            [6],
         )
+
+    def _grid_to_frame_pixel(self, gx: int, gy: int) -> tuple[int, int]:
+        cam = self.camera
+        cw, ch = cam.width, cam.height
+        scale = min(int(64 / cw), int(64 / ch))
+        x_pad = int((64 - (cw * scale)) / 2)
+        y_pad = int((64 - (ch * scale)) / 2)
+        px = gx * scale + scale // 2 + x_pad
+        py = gy * scale + scale // 2 + y_pad
+        return px, py
 
     def on_set_level(self, level: Level) -> None:
         self._target = level.get_data("target")
         self._sel = None
-        self._ui.update(None)
+        self._ui.update(None, self._target)
         self._sprite_at: dict[tuple[int, int], Sprite] = {}
         for sp in self.current_level.get_sprites_by_tag("cell"):
             self._sprite_at[(sp.x, sp.y)] = sp
@@ -151,12 +185,13 @@ class Pt04(ARCBaseGame):
                 self.complete_action()
                 return
             gx, gy = coords
+            self._ui.set_click(*self._grid_to_frame_pixel(gx, gy))
             if not (0 <= gx < GW and 0 <= gy < GH):
                 self.complete_action()
                 return
             if self._sel is None:
                 self._sel = (gx, gy)
-                self._ui.update(self._sel)
+                self._ui.update(self._sel, self._target)
             else:
                 ax, ay = self._sel
                 if (ax, ay) != (gx, gy):
@@ -164,7 +199,7 @@ class Pt04(ARCBaseGame):
                     self._set_color(ax, ay, cb)
                     self._set_color(gx, gy, ca)
                 self._sel = None
-                self._ui.update(None)
+                self._ui.update(None, self._target)
                 if self._win():
                     self.next_level()
             self.complete_action()

@@ -12,11 +12,11 @@ OFF = 4
 
 
 class Ih01UI(RenderableUserDisplay):
-    def __init__(self, ok: int, need: int) -> None:
-        self._ok, self._need = ok, need
+    def __init__(self, ok: int, need: int, minw: int) -> None:
+        self._ok, self._need, self._minw = ok, need, minw
 
-    def update(self, ok: int, need: int) -> None:
-        self._ok, self._need = ok, need
+    def update(self, ok: int, need: int, minw: int) -> None:
+        self._ok, self._need, self._minw = ok, need, minw
 
     def render_interface(self, frame):
         import numpy as np
@@ -24,8 +24,15 @@ class Ih01UI(RenderableUserDisplay):
         if not isinstance(frame, np.ndarray):
             return frame
         h, w = frame.shape
-        for i in range(min(self._need, 10)):
-            frame[h - 2, 1 + i] = 14 if i < self._ok else 8
+        bar = min(14, w - 2)
+        filled = min(bar, self._ok * bar // max(1, self._need))
+        for i in range(bar):
+            cx = 1 + i
+            if cx >= w:
+                break
+            frame[h - 2, cx] = 14 if i < filled else 8
+        mw = min(15, max(0, self._minw))
+        frame[h - 1, 2] = mw
         return frame
 
 
@@ -70,7 +77,7 @@ levels = [
 
 class Ih01(ARCBaseGame):
     def __init__(self) -> None:
-        self._ui = Ih01UI(0, 1)
+        self._ui = Ih01UI(0, 1, 4)
         super().__init__(
             "ih01",
             levels,
@@ -91,7 +98,7 @@ class Ih01(ARCBaseGame):
 
     def _sync(self) -> None:
         ok = sum(1 for y in range(G) for x in range(G) if self._h[y][x] >= self._minw)
-        self._ui.update(ok, G * G)
+        self._ui.update(ok, G * G, self._minw)
 
     def _tick(self) -> None:
         for y in range(G):

@@ -46,8 +46,15 @@ def _r_bar(frame, h, w, game_over, win):
 
 
 class Ct01UI(RenderableUserDisplay):
-    def __init__(self, ok: bool, level_index: int = 0, num_levels: int = 7) -> None:
-        self._ok = ok
+    def __init__(
+        self,
+        independent_ok: bool,
+        dominates_ok: bool,
+        level_index: int = 0,
+        num_levels: int = 7,
+    ) -> None:
+        self._independent_ok = independent_ok
+        self._dominates_ok = dominates_ok
         self._level_index = level_index
         self._num_levels = num_levels
         self._state = None
@@ -58,13 +65,15 @@ class Ct01UI(RenderableUserDisplay):
 
     def update(
         self,
-        ok: bool,
+        independent_ok: bool,
+        dominates_ok: bool,
         *,
         level_index: int | None = None,
         num_levels: int | None = None,
         state=None,
     ) -> None:
-        self._ok = ok
+        self._independent_ok = independent_ok
+        self._dominates_ok = dominates_ok
         if level_index is not None:
             self._level_index = level_index
         if num_levels is not None:
@@ -82,7 +91,10 @@ class Ct01UI(RenderableUserDisplay):
         if self._reject_frames > 0:
             _rp(frame, h, w, 31, h - 2, 12)
             self._reject_frames -= 1
-        frame[h - 2, 28] = 14 if self._ok else 8
+        row_y = h - 2
+        if row_y >= 0:
+            _rp(frame, h, w, 24, row_y, 14 if self._independent_ok else 8)
+            _rp(frame, h, w, 28, row_y, 14 if self._dominates_ok else 8)
         go = self._state == GameState.GAME_OVER
         win = self._state == GameState.WIN
         _r_bar(frame, h, w, go, win)
@@ -147,7 +159,7 @@ levels = [
 
 class Ct01(ARCBaseGame):
     def __init__(self) -> None:
-        self._ui = Ct01UI(False, 0, len(levels))
+        self._ui = Ct01UI(True, False, 0, len(levels))
         super().__init__(
             "ct01",
             levels,
@@ -201,7 +213,8 @@ class Ct01(ARCBaseGame):
 
     def _sync_ui(self) -> None:
         self._ui.update(
-            self._independent() and self._dominates(),
+            self._independent(),
+            self._dominates(),
             level_index=self.level_index,
             num_levels=len(levels),
             state=self._state,

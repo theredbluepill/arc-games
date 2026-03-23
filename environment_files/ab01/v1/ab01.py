@@ -46,6 +46,7 @@ def _r_bar(frame, h, w, game_over, win):
 class Ab01UI(RenderableUserDisplay):
     def __init__(self, s: int, p: int, r: int, li: int = 0, nl: int = 7) -> None:
         self._s, self._p, self._r = s, p, r
+        self._grain_total = 0
         self._li, self._nl = li, nl
         self._state = None
 
@@ -55,11 +56,14 @@ class Ab01UI(RenderableUserDisplay):
         p: int,
         r: int,
         *,
+        grain_total: int | None = None,
         level_index: int | None = None,
         num_levels: int | None = None,
         state=None,
     ) -> None:
         self._s, self._p, self._r = s, p, r
+        if grain_total is not None:
+            self._grain_total = grain_total
         if level_index is not None:
             self._li = level_index
         if num_levels is not None:
@@ -76,8 +80,22 @@ class Ab01UI(RenderableUserDisplay):
         _r_dots(frame, h, w, self._li, self._nl, 0)
         for i in range(min(self._s, 18)):
             frame[h - 2, 1 + i] = 11
-        frame[h - 1, 2] = (self._p % 10) + 5
-        frame[h - 1, 4] = (self._r % 10) + 5
+        pp = max(1, self._p)
+        cur = self._grain_total % pp
+        tgt = self._r % pp
+        for i in range(min(pp, 14)):
+            cx = 1 + i
+            if cx >= w:
+                break
+            if i == cur and i == tgt:
+                c = 14
+            elif i == cur:
+                c = 11
+            elif i == tgt:
+                c = 10
+            else:
+                c = 5
+            frame[h - 4, cx] = c
         go = self._state == GameState.GAME_OVER
         win = self._state == GameState.WIN
         _r_bar(frame, h, w, go, win)
@@ -137,15 +155,16 @@ class Ab01(ARCBaseGame):
         self._R = int(level.get_data("mod_r") or 0)
         self._g = [[0 for _ in range(GW)] for _ in range(GH)]
         self._left = int(level.get_data("max_steps") or 200)
+        self._ref()
         self._ui.update(
             self._left,
             self._P,
             self._R,
+            grain_total=self._sum(),
             level_index=self.level_index,
             num_levels=len(levels),
             state=self._state,
         )
-        self._ref()
 
     def _wall(self, x: int, y: int) -> bool:
         sp = self.current_level.get_sprite_at(x, y, ignore_collidable=True)
@@ -230,6 +249,7 @@ class Ab01(ARCBaseGame):
             self._left,
             self._P,
             self._R,
+            grain_total=self._sum(),
             level_index=self.level_index,
             num_levels=len(levels),
             state=self._state,

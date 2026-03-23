@@ -13,7 +13,7 @@ sprites = {
         pixels=[[11]], name="a", visible=True, collidable=False, tags=["a"]
     ),
     "b": Sprite(
-        pixels=[[11]], name="b", visible=True, collidable=False, tags=["b"]
+        pixels=[[14]], name="b", visible=True, collidable=False, tags=["b"]
     ),
     "path": Sprite(
         pixels=[[10]], name="path", visible=True, collidable=False, tags=["path_px"]
@@ -27,6 +27,12 @@ sprites = {
 class Fl04UI(RenderableUserDisplay):
     def __init__(self, ln: int, cap: int) -> None:
         self._ln, self._cap = ln, cap
+        self._click_pos: tuple[int, int] | None = None
+        self._click_frames = 0
+
+    def set_click_display(self, px: int, py: int) -> None:
+        self._click_pos = (px, py)
+        self._click_frames = 8
 
     def update(self, ln: int, cap: int) -> None:
         self._ln, self._cap = ln, cap
@@ -41,6 +47,21 @@ class Fl04UI(RenderableUserDisplay):
             frame[h - 2, 1 + i] = 10
         for i in range(min(self._cap, 15)):
             frame[h - 1, 1 + i] = 14 if i < self._ln else 4
+        if self._click_pos and self._click_frames > 0:
+            cx, cy = self._click_pos
+            hit = 11
+            for px, py in (
+                (cx, cy),
+                (cx - 1, cy),
+                (cx + 1, cy),
+                (cx, cy - 1),
+                (cx, cy + 1),
+            ):
+                if 0 <= px < w and 0 <= py < h:
+                    frame[py, px] = hit
+            self._click_frames -= 1
+        else:
+            self._click_pos = None
         return frame
 
 
@@ -164,9 +185,11 @@ class Fl04(ARCBaseGame):
 
     def step(self) -> None:
         if self.action.id == GameAction.ACTION6:
-            hit = self.camera.display_to_grid(
-                self.action.data.get("x", 0), self.action.data.get("y", 0)
+            px, py = int(self.action.data.get("x", 0)), int(
+                self.action.data.get("y", 0)
             )
+            self._ui.set_click_display(px, py)
+            hit = self.camera.display_to_grid(px, py)
             if not hit:
                 self.complete_action()
                 return

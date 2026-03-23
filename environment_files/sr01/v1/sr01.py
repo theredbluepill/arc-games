@@ -33,6 +33,10 @@ class U(RenderableUserDisplay):
         self._state = None
         self._ar = self._ag = self._ab = 0
         self._tr = self._tg = self._tb = 0
+        self._aura_pulse = 0
+
+    def pulse_aura(self) -> None:
+        self._aura_pulse = 10
 
     def update(
         self,
@@ -63,6 +67,9 @@ class U(RenderableUserDisplay):
         # Target triple + match locks (R,G,B): discoverable without repo text.
         base_x = 24
         row_y = h - 2
+        if row_y >= 0 and self._aura_pulse > 0:
+            _rp(f, h, w, 18, row_y, 11)
+            self._aura_pulse -= 1
         if row_y >= 0:
             for i, (cur, tgt, hi, lo) in enumerate(
                 (
@@ -134,6 +141,7 @@ class Sr01(ARCBaseGame):
             if not h or not h.is_collidable:
                 self._p.set_position(nx,ny)
         hit = self.current_level.get_sprite_at(self._p.x,self._p.y,ignore_collidable=True)
+        aura_before = (self._ar, self._ag, self._ab)
         if hit and "wash" in hit.tags:
             self._ar, self._ag, self._ab = 0, 0, 0
         elif hit and "zone" in hit.tags:
@@ -143,6 +151,8 @@ class Sr01(ARCBaseGame):
                 self._ag ^= 1
             if "b" in hit.tags:
                 self._ab ^= 1
+        if (self._ar, self._ag, self._ab) != aura_before:
+            self._ui.pulse_aura()
         if ((self._ar ^ self._tr) | (self._ag ^ self._tg) | (self._ab ^ self._tb)) == 0 and self._door and self._door in self.current_level._sprites:
             self.current_level.remove_sprite(self._door)
             self._door = None

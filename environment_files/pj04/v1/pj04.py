@@ -2,6 +2,8 @@
 
 from __future__ import annotations
 
+import numpy as np
+
 from arcengine import ARCBaseGame, Camera, GameAction, Level, RenderableUserDisplay, Sprite
 
 BG, PAD = 5, 4
@@ -11,6 +13,7 @@ DX = (1, 0, -1, 0)
 DY = (0, 1, 0, -1)
 REF_SLASH = {0: 3, 3: 0, 1: 2, 2: 1}
 REF_BSL = {0: 1, 1: 0, 2: 3, 3: 2}
+MIR_PIX = (4, 6, 7)
 
 
 class Pj04UI(RenderableUserDisplay):
@@ -95,6 +98,13 @@ class Pj04(ARCBaseGame):
         self._cd = 0
         self._clear()
         self._hud.update(self._cd)
+        self._paint_mirrors()
+
+    def _paint_mirrors(self) -> None:
+        for (x, y), t in self._mir.items():
+            sp = self.current_level.get_sprite_at(x, y, ignore_collidable=True)
+            if sp and "mirror" in sp.tags:
+                sp.pixels = np.array([[MIR_PIX[t % 3]]], dtype=np.int8)
 
     def _clear(self) -> None:
         if self._bolt:
@@ -162,6 +172,7 @@ class Pj04(ARCBaseGame):
                 gx, gy = int(c[0]), int(c[1])
                 if (gx, gy) in self._mir:
                     self._mir[(gx, gy)] = (self._mir[(gx, gy)] + 1) % 3
+                    self._paint_mirrors()
             self.complete_action()
             return
         self.complete_action()

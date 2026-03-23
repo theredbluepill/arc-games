@@ -49,6 +49,7 @@ class Fe02UI(RenderableUserDisplay):
         self._num_levels = 7
         self._leading = 0
         self._gs: GameState | None = None
+        self._ratify_pulse = 0
 
     def sync(
         self,
@@ -63,6 +64,7 @@ class Fe02UI(RenderableUserDisplay):
         num_levels: int | None = None,
         leading: int | None = None,
         gs: GameState | None = None,
+        ratify_pulse: bool = False,
     ) -> None:
         self._a, self._b, self._c = a, b, c
         self._rat = rat
@@ -77,6 +79,8 @@ class Fe02UI(RenderableUserDisplay):
             self._leading = leading
         if gs is not None:
             self._gs = gs
+        if ratify_pulse:
+            self._ratify_pulse = 6
 
     def render_interface(self, frame):
         import numpy as np
@@ -85,6 +89,9 @@ class Fe02UI(RenderableUserDisplay):
             return frame
         h, w = frame.shape
         _r_dots(frame, h, w, self._level_index, self._num_levels, 0)
+        if self._ratify_pulse > 0:
+            _rp(frame, h, w, w - 1, 1, 14)
+            self._ratify_pulse -= 1
         go = self._gs == GameState.GAME_OVER
         win = self._gs == GameState.WIN
         if not (go or win):
@@ -130,7 +137,7 @@ class Fe02(ARCBaseGame):
             [1, 2, 3, 4, 5],
         )
 
-    def _push_hud(self, leading: int) -> None:
+    def _push_hud(self, leading: int, *, ratify_pulse: bool = False) -> None:
         self._hud.sync(
             self._a,
             self._b,
@@ -142,6 +149,7 @@ class Fe02(ARCBaseGame):
             num_levels=_NUM_LEVELS,
             leading=leading,
             gs=self._state,
+            ratify_pulse=ratify_pulse,
         )
 
     def on_set_level(self, level: Level) -> None:
@@ -170,7 +178,7 @@ class Fe02(ARCBaseGame):
             self._c += dc
             self._votes = [0, 0, 0, 0]
             self._rat += 1
-            self._push_hud(j)
+            self._push_hud(j, ratify_pulse=True)
             if self._a <= 0 or self._b <= 0 or self._c <= 0 or self._a > 9 or self._b > 9 or self._c > 9:
                 self.lose()
             elif self._rat >= self._need:

@@ -4,6 +4,8 @@ from __future__ import annotations
 
 from collections import deque
 
+import numpy as np
+
 from arcengine import (
     ARCBaseGame,
     Camera,
@@ -20,6 +22,8 @@ CAM = 16
 DX = (0, 1, 0, -1)
 DY = (-1, 0, 1, 0)
 OPP = (2, 3, 0, 1)
+# Single-cell wires: hue encodes outgoing dir (0=E,1=S,2=W,3=N) so rotation is visible.
+WIRE_BY_DIR = (8, 9, 10, 11)
 
 
 def _rp(frame, h, w, x, y, c):
@@ -157,6 +161,13 @@ class Ck04(ARCBaseGame):
             level_index=self.level_index,
             gs=self._state,
         )
+        self._paint_wires()
+
+    def _paint_wires(self) -> None:
+        for (x, y), d in self._w.items():
+            sp = self.current_level.get_sprite_at(x, y, ignore_collidable=True)
+            if sp and "wire" in sp.tags:
+                sp.pixels = np.array([[WIRE_BY_DIR[d]]], dtype=np.int8)
 
     def _nei(self, x: int, y: int) -> list[tuple[int, int]]:
         out: list[tuple[int, int]] = []
@@ -207,6 +218,7 @@ class Ck04(ARCBaseGame):
         gx, gy = int(c[0]), int(c[1])
         if (gx, gy) in self._w:
             self._w[(gx, gy)] = (self._w[(gx, gy)] + 1) % 4
+            self._paint_wires()
             ok = self._reach()
             self._ui.update(
                 ok,

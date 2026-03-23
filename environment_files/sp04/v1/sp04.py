@@ -12,11 +12,17 @@ SINK_C = 10
 
 
 class Sp04UI(RenderableUserDisplay):
-    def __init__(self, s: int) -> None:
-        self._s = s
+    """Step budget plus current vs target grain total (same bar language as sp01)."""
 
-    def update(self, s: int) -> None:
-        self._s = s
+    def __init__(self, steps: int) -> None:
+        self._steps = steps
+        self._current_sum = 0
+        self._target_sum = 0
+
+    def update(self, steps: int, current_sum: int = 0, target_sum: int = 0) -> None:
+        self._steps = steps
+        self._current_sum = current_sum
+        self._target_sum = target_sum
 
     def render_interface(self, frame):
         import numpy as np
@@ -24,8 +30,24 @@ class Sp04UI(RenderableUserDisplay):
         if not isinstance(frame, np.ndarray):
             return frame
         h, w = frame.shape
-        for i in range(min(self._s, 20)):
+        for i in range(min(self._steps, 20)):
             frame[h - 2, 1 + i] = 11
+        bar_x0 = 2
+        bar_w = min(28, max(8, w - 4))
+        tgt = max(1, self._target_sum)
+        filled = min(bar_w, self._current_sum * bar_w // tgt)
+        goal_x = bar_x0 + min(bar_w - 1, self._target_sum * bar_w // tgt)
+        for i in range(bar_w):
+            px = bar_x0 + i
+            if px >= w:
+                break
+            if i < filled:
+                c = 8 if self._current_sum > self._target_sum else 14
+            else:
+                c = 5
+            frame[h - 3, px] = c
+        if bar_x0 <= goal_x < w:
+            frame[h - 3, goal_x] = 0
         return frame
 
 
@@ -106,6 +128,22 @@ class Sp04(ARCBaseGame):
         self._g = [[0 for _ in range(GW)] for _ in range(GH)]
         self._steps_left = int(level.get_data("max_steps") or 200)
         self._refresh()
+        self._sync_ui()
+
+    def _grain_sum(self) -> int:
+        return sum(
+            self._g[y][x]
+            for y in range(GH)
+            for x in range(GW)
+            if not self._wall(x, y) and not self._sink(x, y)
+        )
+
+    def _sync_ui(self) -> None:
+        self._ui.update(
+            self._steps_left,
+            self._grain_sum(),
+            self._target_sum,
+        )
 
     def _wall(self, x: int, y: int) -> bool:
         sp = self.current_level.get_sprite_at(x, y, ignore_collidable=True)
@@ -194,7 +232,7 @@ class Sp04(ARCBaseGame):
         self._topple()
         self._refresh()
         self._steps_left -= 1
-        self._ui.update(self._steps_left)
+        self._sync_ui()
         if self._win():
             self.next_level()
         elif self._steps_left <= 0:

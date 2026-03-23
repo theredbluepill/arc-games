@@ -1,9 +1,9 @@
 {
   "game_id": "pt05-v1",
   "title": "Slide Row",
-  "description": "Click the yellow header cell (x=0) of a row to rotate that row’s colors left; match the target strip.",
+  "description": "Click the yellow header cell (x=0) of a row to rotate that row’s colors left; match the board to the HUD target key.",
   "default_fps": 20,
-  "baseline_actions": [1, 2, 3, 4, 6],
+  "baseline_actions": [6],
   "tags": ["static", "click", "pattern"],
   "local_dir": "environment_files/pt05/v1",
   "date_created": "2026-03-20",

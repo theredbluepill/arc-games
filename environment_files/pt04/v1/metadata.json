@@ -1,9 +1,9 @@
 {
   "game_id": "pt04-v1",
   "title": "Tile Swap",
-  "description": "ACTION6 selects a cell then a second cell to swap 1×1 colors; match the target pattern.",
+  "description": "ACTION6 selects a cell then a second cell to swap 1×1 colors; match the board to the HUD target key.",
   "default_fps": 20,
-  "baseline_actions": [1, 2, 3, 4, 6],
+  "baseline_actions": [6],
   "tags": ["static", "click", "pattern"],
   "local_dir": "environment_files/pt04/v1",
   "date_created": "2026-03-20",

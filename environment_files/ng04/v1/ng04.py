@@ -43,11 +43,19 @@ COLS = (8, 9, 11, 14)
 
 
 class Ng04UI(RenderableUserDisplay):
-    def __init__(self, level_index: int = 0, num_levels: int = 1, ticks: int = 1) -> None:
+    def __init__(
+        self,
+        level_index: int = 0,
+        num_levels: int = 1,
+        ticks: int = 1,
+        layer: int = 0,
+    ) -> None:
         self._level_index = level_index
         self._num_levels = num_levels
         self._ticks = ticks
+        self._layer = layer
         self._state = None
+        self._flash_ttl = 0
 
     def update(
         self,
@@ -55,6 +63,8 @@ class Ng04UI(RenderableUserDisplay):
         level_index: int | None = None,
         num_levels: int | None = None,
         ticks: int | None = None,
+        layer: int | None = None,
+        layer_flash_ttl: int | None = None,
         state=None,
     ) -> None:
         if level_index is not None:
@@ -63,6 +73,10 @@ class Ng04UI(RenderableUserDisplay):
             self._num_levels = num_levels
         if ticks is not None:
             self._ticks = ticks
+        if layer is not None:
+            self._layer = layer
+        if layer_flash_ttl is not None:
+            self._flash_ttl = max(0, int(layer_flash_ttl))
         if state is not None:
             self._state = state
 
@@ -74,6 +88,12 @@ class Ng04UI(RenderableUserDisplay):
         if not isinstance(frame, np.ndarray):
             return frame
         h, w = frame.shape
+        if self._flash_ttl > 0:
+            frame[h - 2, 0] = frame[h - 2, 1] = 11
+            self._flash_ttl -= 1
+        else:
+            frame[h - 2, 0] = 14 if self._layer == 0 else 3
+            frame[h - 2, 1] = 14 if self._layer == 1 else 3
         _r_dots(frame, h, w, self._level_index, self._num_levels, 0)
         _r_ticks(frame, h, w, self._ticks)
         go = self._state == GameState.GAME_OVER
@@ -134,11 +154,13 @@ class Ng04(ARCBaseGame):
         )
 
 
-    def _sync_ui(self) -> None:
+    def _sync_ui(self, *, layer_flash_ttl: int | None = None) -> None:
         self._ui.update(
             level_index=self.level_index,
             num_levels=len(levels),
             ticks=1,
+            layer=self._layer,
+            layer_flash_ttl=layer_flash_ttl,
             state=self._state,
         )
 
@@ -149,6 +171,7 @@ class Ng04(ARCBaseGame):
         self._tbg = [list(r) for r in level.get_data("target_bg")]
         self._layer = 0
         self._ref()
+        self._sync_ui(layer_flash_ttl=0)
 
     def _ref(self) -> None:
         for s in list(self.current_level.get_sprites_by_tag("cell")):
@@ -181,6 +204,9 @@ class Ng04(ARCBaseGame):
             else:
                 self._layer = 1 - self._layer
                 self._ref()
+                self._sync_ui(layer_flash_ttl=12)
+                self.complete_action()
+                return
             self._sync_ui()
             self.complete_action()
             return

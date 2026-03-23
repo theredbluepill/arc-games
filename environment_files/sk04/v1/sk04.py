@@ -51,6 +51,7 @@ class Sk04UI(RenderableUserDisplay):
         self._num_levels = num_levels
         self._ticks = ticks
         self._state = None
+        self._reject_ttl = 0
 
     def update(
         self,
@@ -58,6 +59,7 @@ class Sk04UI(RenderableUserDisplay):
         level_index: int | None = None,
         num_levels: int | None = None,
         ticks: int | None = None,
+        reject_flash_ttl: int | None = None,
         state=None,
     ) -> None:
         if level_index is not None:
@@ -66,6 +68,8 @@ class Sk04UI(RenderableUserDisplay):
             self._num_levels = num_levels
         if ticks is not None:
             self._ticks = ticks
+        if reject_flash_ttl is not None:
+            self._reject_ttl = max(0, int(reject_flash_ttl))
         if state is not None:
             self._state = state
 
@@ -79,6 +83,10 @@ class Sk04UI(RenderableUserDisplay):
         h, w = frame.shape
         _r_dots(frame, h, w, self._level_index, self._num_levels, 0)
         _r_ticks(frame, h, w, self._ticks)
+        frame[h - 3, w - 1] = 10
+        if self._reject_ttl > 0:
+            frame[h - 3, 0] = 11
+            self._reject_ttl -= 1
         go = self._state == GameState.GAME_OVER
         win = self._state == GameState.WIN
         _r_bar(frame, h, w, go, win)
@@ -127,7 +135,7 @@ class Sk04(ARCBaseGame):
             Camera(0, 0, CAM, CAM, BG, PAD, [self._ui]),
             False,
             1,
-            [6],
+            [1, 2, 3, 4, 6],
         )
 
 
@@ -143,6 +151,11 @@ class Sk04(ARCBaseGame):
         self._player = self.current_level.get_sprites_by_tag("player")[0]
 
     def step(self) -> None:
+        if self.action.id.value in (1, 2, 3, 4):
+            self._ui.update(reject_flash_ttl=10)
+            self._sync_ui()
+            self.complete_action()
+            return
         if self.action.id != GameAction.ACTION6:
             self._sync_ui()
             self.complete_action()

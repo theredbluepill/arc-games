@@ -14,11 +14,17 @@ MOLE = 14
 
 
 class Wm04UI(RenderableUserDisplay):
-    def __init__(self, pen: int) -> None:
+    def __init__(self, pen: int, hit: int = 0, need: int = 5) -> None:
         self._p = pen
+        self._hit = hit
+        self._need = need
 
-    def update(self, pen: int) -> None:
+    def update(self, pen: int, hit: int | None = None, need: int | None = None) -> None:
         self._p = pen
+        if hit is not None:
+            self._hit = hit
+        if need is not None:
+            self._need = need
 
     def render_interface(self, frame):
         import numpy as np
@@ -26,6 +32,9 @@ class Wm04UI(RenderableUserDisplay):
         if not isinstance(frame, np.ndarray):
             return frame
         h, w = frame.shape
+        cap = min(max(self._need, 1), 12)
+        for i in range(cap):
+            frame[h - 4, 1 + i] = 14 if i < self._hit else 4
         for i in range(min(self._p, 8)):
             frame[h - 2, 1 + i] = 8
         return frame
@@ -40,7 +49,7 @@ levels = [mk(i) for i in range(1, 8)]
 
 class Wm04(ARCBaseGame):
     def __init__(self) -> None:
-        self._hud = Wm04UI(0)
+        self._hud = Wm04UI(0, 0, 5)
         self._rng = random.Random(0)
         super().__init__(
             "wm04",
@@ -60,6 +69,7 @@ class Wm04(ARCBaseGame):
         self._pen = 0
         self._up = 0
         self._spawn()
+        self._hud.update(self._pen, self._hit, self._need)
 
     def _spawn(self) -> None:
         for s in list(self.current_level.get_sprites_by_tag("mole")):
@@ -94,7 +104,7 @@ class Wm04(ARCBaseGame):
                     for _ in range(self._pen):
                         self._rng.random()
                     self._spawn()
-            self._hud.update(self._pen)
+            self._hud.update(self._pen, self._hit, self._need)
             self.complete_action()
             return
         self.complete_action()

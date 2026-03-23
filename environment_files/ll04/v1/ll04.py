@@ -9,6 +9,7 @@ G = 12
 CAM = 16
 LIVE = 14
 WALL = 3
+GOAL_HINT = 2
 
 
 class Ll04UI(RenderableUserDisplay):
@@ -86,6 +87,18 @@ class Ll04(ARCBaseGame):
         self._need = int(level.get_data("need_generations") or 1)
         self._tog = int(level.get_data("max_toggles") or 100)
         self._gen = 0
+        for s in list(self.current_level.get_sprites_by_tag("goal_hint")):
+            self.current_level.remove_sprite(s)
+        for x, y in self._target:
+            self.current_level.add_sprite(
+                Sprite(
+                    pixels=[[GOAL_HINT]],
+                    name="gh",
+                    visible=True,
+                    collidable=False,
+                    tags=["goal_hint"],
+                ).clone().set_position(x, y)
+            )
         self._sync()
 
     def _wall(self, x: int, y: int) -> bool:

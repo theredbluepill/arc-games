@@ -35,14 +35,15 @@ class Lo05UI(RenderableUserDisplay):
 
     def __init__(self, remaining: int) -> None:
         self._remaining = remaining
-        self._click_pos: tuple[int, int] | None = None
+        self._click_centers: list[tuple[int, int]] = []
         self._click_frames = 0
 
     def update(self, remaining: int) -> None:
         self._remaining = remaining
 
-    def set_click(self, frame_x: int, frame_y: int) -> None:
-        self._click_pos = (frame_x, frame_y)
+    def set_click_kernel(self, frame_centers: list[tuple[int, int]]) -> None:
+        """Frame-space centers for clicked cell + knight neighbors (matches gameplay)."""
+        self._click_centers = list(frame_centers)
         self._click_frames = Lo05UI.CLICK_ANIM_FRAMES
 
     @staticmethod
@@ -61,17 +62,6 @@ class Lo05UI(RenderableUserDisplay):
                 if max(abs(dx), abs(dy)) == r:
                     cls._plot_px(frame, h, w, cx + dx, cy + dy, color)
 
-    @classmethod
-    def _draw_plus(
-        cls, frame, h: int, w: int, cx: int, cy: int, arm: int, color: int
-    ) -> None:
-        cls._plot_px(frame, h, w, cx, cy, color)
-        for a in range(1, arm + 1):
-            cls._plot_px(frame, h, w, cx - a, cy, color)
-            cls._plot_px(frame, h, w, cx + a, cy, color)
-            cls._plot_px(frame, h, w, cx, cy - a, color)
-            cls._plot_px(frame, h, w, cx, cy + a, color)
-
     def render_interface(self, frame):
         import numpy as np
 
@@ -81,18 +71,19 @@ class Lo05UI(RenderableUserDisplay):
         for i in range(min(self._remaining, 15)):
             self._plot_px(frame, h, w, 1 + i * 2, 1, 8)
 
-        if self._click_pos and self._click_frames > 0:
-            cx, cy = self._click_pos
+        if self._click_centers and self._click_frames > 0:
+            cx, cy = self._click_centers[0]
             phase = Lo05UI.CLICK_ANIM_FRAMES - self._click_frames
             if phase < 6:
                 ring_r = phase + 1 if phase < 3 else 6 - phase
                 if ring_r > 0:
                     col = 11 if ring_r >= 2 else 10
                     self._chebyshev_ring(frame, h, w, cx, cy, ring_r, col)
-            self._draw_plus(frame, h, w, cx, cy, 2, 12)
+            for px, py in self._click_centers:
+                self._plot_px(frame, h, w, px, py, 12)
             self._click_frames -= 1
         else:
-            self._click_pos = None
+            self._click_centers = []
 
         return frame
 
@@ -204,17 +195,26 @@ class Lo05(ARCBaseGame):
         x = self.action.data.get("x", 0)
         y = self.action.data.get("y", 0)
         coords = self.camera.display_to_grid(x, y)
+        grid_w, grid_h = self.current_level.grid_size
         if coords is None:
             cx = max(0, min(63, int(x)))
             cy = max(0, min(63, int(y)))
-            self._ui.set_click(cx, cy)
+            self._ui.set_click_kernel([(cx, cy)])
             self.complete_action()
             return
 
         gx, gy = coords
-        self._ui.set_click(*self._grid_to_frame_pixel(gx, gy))
+        to_toggle = [(gx, gy)]
+        for dx, dy in _KNIGHT:
+            to_toggle.append((gx + dx, gy + dy))
+        centers = [
+            self._grid_to_frame_pixel(tx, ty)
+            for tx, ty in to_toggle
+            if 0 <= tx < grid_w and 0 <= ty < grid_h
+        ]
+        if centers:
+            self._ui.set_click_kernel(centers)
 
-        grid_w, grid_h = self.current_level.grid_size
         if not (0 <= gx < grid_w and 0 <= gy < grid_h):
             self.complete_action()
             return
@@ -223,9 +223,6 @@ class Lo05(ARCBaseGame):
             self.complete_action()
             return
 
-        to_toggle = [(gx, gy)]
-        for dx, dy in _KNIGHT:
-            to_toggle.append((gx + dx, gy + dy))
 
         for tx, ty in to_toggle:
             if not (0 <= tx < grid_w and 0 <= ty < grid_h):

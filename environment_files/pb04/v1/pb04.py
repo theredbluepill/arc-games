@@ -46,10 +46,18 @@ K = Sprite(pixels=[[14]], name="k", visible=True, collidable=False, tags=["pad"]
 
 
 class Pb04UI(RenderableUserDisplay):
-    def __init__(self, level_index: int = 0, num_levels: int = 1, ticks: int = 1) -> None:
+    def __init__(
+        self,
+        level_index: int = 0,
+        num_levels: int = 1,
+        ticks: int = 1,
+        dx: int = 0,
+        dy: int = 0,
+    ) -> None:
         self._level_index = level_index
         self._num_levels = num_levels
         self._ticks = ticks
+        self._dx, self._dy = dx, dy
         self._state = None
 
     def update(
@@ -58,6 +66,8 @@ class Pb04UI(RenderableUserDisplay):
         level_index: int | None = None,
         num_levels: int | None = None,
         ticks: int | None = None,
+        dx: int | None = None,
+        dy: int | None = None,
         state=None,
     ) -> None:
         if level_index is not None:
@@ -66,6 +76,10 @@ class Pb04UI(RenderableUserDisplay):
             self._num_levels = num_levels
         if ticks is not None:
             self._ticks = ticks
+        if dx is not None:
+            self._dx = dx
+        if dy is not None:
+            self._dy = dy
         if state is not None:
             self._state = state
 
@@ -77,6 +91,13 @@ class Pb04UI(RenderableUserDisplay):
         if not isinstance(frame, np.ndarray):
             return frame
         h, w = frame.shape
+        bg = 5
+        hi = 11
+        if w > 4:
+            frame[h - 2, w - 4] = hi if self._dx < 0 else bg
+            frame[h - 2, w - 3] = hi if self._dx > 0 else bg
+            frame[h - 2, w - 2] = hi if self._dy < 0 else bg
+            frame[h - 2, w - 1] = hi if self._dy > 0 else bg
         _r_dots(frame, h, w, self._level_index, self._num_levels, 0)
         _r_ticks(frame, h, w, self._ticks)
         go = self._state == GameState.GAME_OVER
@@ -127,6 +148,8 @@ class Pb04(ARCBaseGame):
             level_index=self.level_index,
             num_levels=len(levels),
             ticks=1,
+            dx=self._dx,
+            dy=self._dy,
             state=self._state,
         )
 
@@ -135,6 +158,7 @@ class Pb04(ARCBaseGame):
         self._wx, self._wy = int(w[0]), int(w[1])
         dr = level.get_data("dir")
         self._dx, self._dy = int(dr[0]), int(dr[1])
+        self._sync_ui()
 
     def step(self) -> None:
         if self.action.id != GameAction.ACTION5:

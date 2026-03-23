@@ -13,6 +13,16 @@ SAFE = (8, 9)
 class Rs04UI(RenderableUserDisplay):
     def __init__(self, a: int, b: int) -> None:
         self._a, self._b = a, b
+        self._click_pos: tuple[int, int] | None = None
+        self._click_frames = 0
+        self._miss_frames = 0
+
+    def set_click(self, x: int, y: int) -> None:
+        self._click_pos = (x, y)
+        self._click_frames = 8
+
+    def pulse_miss(self) -> None:
+        self._miss_frames = 8
 
     def update(self, a: int, b: int) -> None:
         self._a, self._b = a, b
@@ -25,6 +35,25 @@ class Rs04UI(RenderableUserDisplay):
         h, w = frame.shape
         frame[h - 2, 2] = SAFE[0] if self._a else SAFE[1]
         frame[h - 2, 4] = SAFE[1] if self._b else SAFE[0]
+        if self._miss_frames > 0:
+            for x in range(min(w, 16)):
+                frame[max(0, h - 4), x] = 12
+            self._miss_frames -= 1
+        if self._click_pos and self._click_frames > 0:
+            cx, cy = self._click_pos
+            hit = 11
+            for px, py in (
+                (cx, cy),
+                (cx - 1, cy),
+                (cx + 1, cy),
+                (cx, cy - 1),
+                (cx, cy + 1),
+            ):
+                if 0 <= px < w and 0 <= py < h:
+                    frame[py, px] = hit
+            self._click_frames -= 1
+        else:
+            self._click_pos = None
         return frame
 
 
@@ -88,9 +117,9 @@ class Rs04(ARCBaseGame):
             self.complete_action()
             return
         if self.action.id == GameAction.ACTION6:
-            c = self.camera.display_to_grid(
-                self.action.data.get("x", 0), self.action.data.get("y", 0)
-            )
+            px, py = int(self.action.data.get("x", 0)), int(self.action.data.get("y", 0))
+            self._hud.set_click(px, py)
+            c = self.camera.display_to_grid(px, py)
             if c:
                 gx, gy = int(c[0]), int(c[1])
                 sp = self.current_level.get_sprite_at(gx, gy, ignore_collidable=True)
@@ -98,6 +127,8 @@ class Rs04(ARCBaseGame):
                     col = sp.pixels[0][0]
                     if int(col) == self._safe():
                         self.current_level.remove_sprite(sp)
+                    else:
+                        self._hud.pulse_miss()
             left = list(self.current_level.get_sprites_by_tag("target"))
             if not left:
                 self.next_level()

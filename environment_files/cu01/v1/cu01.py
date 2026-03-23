@@ -47,6 +47,8 @@ class Cu01UI(RenderableUserDisplay):
         self._num_levels = num_levels
         self._ticks = ticks
         self._state = None
+        self._tool_mode = 0
+        self._reject_frames = 0
 
     def update(
         self,
@@ -55,6 +57,8 @@ class Cu01UI(RenderableUserDisplay):
         num_levels: int | None = None,
         ticks: int | None = None,
         state=None,
+        tool_mode: int | None = None,
+        reject_pulse: bool = False,
     ) -> None:
         if level_index is not None:
             self._level_index = level_index
@@ -64,6 +68,10 @@ class Cu01UI(RenderableUserDisplay):
             self._ticks = ticks
         if state is not None:
             self._state = state
+        if tool_mode is not None:
+            self._tool_mode = int(tool_mode) % 2
+        if reject_pulse:
+            self._reject_frames = 8
 
     def render_interface(self, frame):
         import numpy as np
@@ -75,6 +83,12 @@ class Cu01UI(RenderableUserDisplay):
         h, w = frame.shape
         _r_dots(frame, h, w, self._level_index, self._num_levels, 0)
         _r_ticks(frame, h, w, self._ticks)
+        if w > 2 and h > 3:
+            frame[1, w - 2] = 11 if self._tool_mode == 0 else 6
+        if self._reject_frames > 0:
+            for x in range(max(0, w - 5), w):
+                frame[min(h - 1, 2), x] = 8
+            self._reject_frames -= 1
         go = self._state == GameState.GAME_OVER
         win = self._state == GameState.WIN
         _r_bar(frame, h, w, go, win)
@@ -166,6 +180,7 @@ class Cu01(ARCBaseGame):
             num_levels=len(levels),
             ticks=rem,
             state=self._state,
+            tool_mode=self._mode,
         )
 
     def on_set_level(self, level: Level) -> None:
@@ -213,6 +228,8 @@ class Cu01(ARCBaseGame):
                     self._covered.add(b)
                     self._paint_covered(*a)
                     self._paint_covered(*b)
+                else:
+                    self._ui.update(reject_pulse=True)
                 self._picks = []
         else:
             if len(self._picks) == 3:
@@ -221,6 +238,8 @@ class Cu01(ARCBaseGame):
                     for p in pts:
                         self._covered.add(p)
                         self._paint_covered(*p)
+                else:
+                    self._ui.update(reject_pulse=True)
                 self._picks = []
         if self._covered >= self._yellow:
             self.next_level()

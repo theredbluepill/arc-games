@@ -2,6 +2,8 @@
 
 from __future__ import annotations
 
+import numpy as np
+
 from arcengine import ARCBaseGame, Camera, GameAction, GameState, Level, RenderableUserDisplay, Sprite
 
 BG, PAD = 5, 4
@@ -46,6 +48,12 @@ class Cw01UI(RenderableUserDisplay):
         self._num_levels = num_levels
         self._ticks = ticks
         self._state = None
+        self._click_pos: tuple[int, int] | None = None
+        self._click_frames = 0
+
+    def set_click(self, x: int, y: int) -> None:
+        self._click_pos = (x, y)
+        self._click_frames = 8
 
     def update(
         self,
@@ -74,10 +82,33 @@ class Cw01UI(RenderableUserDisplay):
         h, w = frame.shape
         _r_dots(frame, h, w, self._level_index, self._num_levels, 0)
         _r_ticks(frame, h, w, self._ticks)
+        if self._click_pos and self._click_frames > 0:
+            cx, cy = self._click_pos
+            hit = 11
+            for px, py in (
+                (cx, cy),
+                (cx - 1, cy),
+                (cx + 1, cy),
+                (cx, cy - 1),
+                (cx, cy + 1),
+            ):
+                if 0 <= px < w and 0 <= py < h:
+                    frame[py, px] = hit
+            self._click_frames -= 1
+        else:
+            self._click_pos = None
         go = self._state == GameState.GAME_OVER
         win = self._state == GameState.WIN
         _r_bar(frame, h, w, go, win)
         return frame
+
+
+def _literal_color(v: int, neg: bool, val: list[bool]) -> int:
+    t = val[int(v) % 2]
+    lit_true = (not t) if neg else t
+    if neg:
+        return 8 if lit_true else 3
+    return 9 if lit_true else 10
 
 
 def lit(x, y, var: int, neg: bool):
@@ -114,7 +145,7 @@ levels = [
         2,
     ),
     mk([[(2, 2, 0, False), (5, 2, 0, True)], [(3, 2, 1, False), (6, 2, 1, True)]], 3),
-    mk([[(1, 1, 0, False)], [(3, 1, 0, True)], [(5, 1, 1, False)]], 4),
+    mk([[(2, 1, 0, False), (4, 1, 1, True)], [(2, 3, 1, False), (4, 3, 0, True)]], 4),
     mk([[(2, 1, 0, False), (4, 1, 1, True), (6, 1, 0, True)]], 5),
     mk([[(1, 1, 0, False), (4, 1, 1, False)], [(2, 1, 0, True), (5, 1, 1, True)]], 6),
     mk([[(2, 1, 0, False), (5, 1, 1, True)], [(3, 1, 1, False), (6, 1, 0, True)], [(4, 1, 0, True), (7, 1, 1, False)]], 7),
@@ -145,6 +176,20 @@ class Cw01(ARCBaseGame):
     def on_set_level(self, level: Level) -> None:
         self._val = [False, False]
         self._clauses = level.get_data("clauses")
+        self._refresh_literals()
+
+    def _refresh_literals(self) -> None:
+        for sp in self.current_level.get_sprites_by_tag("lit"):
+            vi = None
+            neg = "neg" in sp.tags
+            for t in sp.tags:
+                if t.startswith("v") and t[1:].isdigit():
+                    vi = int(t[1:])
+                    break
+            if vi is None:
+                continue
+            c = _literal_color(vi, neg, self._val)
+            sp.pixels = np.array([[c]], dtype=np.int8)
 
     def _sat(self) -> bool:
         for cl in self._clauses:
@@ -164,9 +209,9 @@ class Cw01(ARCBaseGame):
             self._sync_ui()
             self.complete_action()
             return
-        c = self.camera.display_to_grid(
-            self.action.data.get("x", 0), self.action.data.get("y", 0)
-        )
+        px, py = int(self.action.data.get("x", 0)), int(self.action.data.get("y", 0))
+        self._ui.set_click(px, py)
+        c = self.camera.display_to_grid(px, py)
         if c:
             sp = self.current_level.get_sprite_at(
                 int(c[0]), int(c[1]), ignore_collidable=True
@@ -177,6 +222,7 @@ class Cw01(ARCBaseGame):
                         vi = int(t[1:]) % 2
                         self._val[vi] = not self._val[vi]
                         break
+        self._refresh_literals()
         if self._sat():
             self.next_level()
         self._sync_ui()

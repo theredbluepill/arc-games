@@ -52,6 +52,12 @@ class Cx01UI(RenderableUserDisplay):
         self._num_levels = num_levels
         self._ticks = ticks
         self._state = None
+        self._click_pos: tuple[int, int] | None = None
+        self._click_frames = 0
+
+    def set_click(self, x: int, y: int) -> None:
+        self._click_pos = (x, y)
+        self._click_frames = 8
 
     def update(
         self,
@@ -80,6 +86,21 @@ class Cx01UI(RenderableUserDisplay):
         h, w = frame.shape
         _r_dots(frame, h, w, self._level_index, self._num_levels, 0)
         _r_ticks(frame, h, w, self._ticks)
+        if self._click_pos and self._click_frames > 0:
+            cx, cy = self._click_pos
+            hit = 11
+            for px, py in (
+                (cx, cy),
+                (cx - 1, cy),
+                (cx + 1, cy),
+                (cx, cy - 1),
+                (cx, cy + 1),
+            ):
+                if 0 <= px < w and 0 <= py < h:
+                    frame[py, px] = hit
+            self._click_frames -= 1
+        else:
+            self._click_pos = None
         go = self._state == GameState.GAME_OVER
         win = self._state == GameState.WIN
         _r_bar(frame, h, w, go, win)
@@ -207,9 +228,9 @@ class Cx01(ARCBaseGame):
             self._sync_ui()
             self.complete_action()
             return
-        c = self.camera.display_to_grid(
-            self.action.data.get("x", 0), self.action.data.get("y", 0)
-        )
+        px, py = int(self.action.data.get("x", 0)), int(self.action.data.get("y", 0))
+        self._ui.set_click(px, py)
+        c = self.camera.display_to_grid(px, py)
         if c:
             gx, gy = int(c[0]), int(c[1])
             if (gx, gy) in self._gate_set:
