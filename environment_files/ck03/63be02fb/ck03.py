@@ -1,4 +1,4 @@
-"""Circuit stitch with T-junctions: same as ck01, but cells tagged `junction` forbid a **right turn** relative to the incoming wire direction (straight and left turns only). ACTION6 toggles wire; ACTION5 tests path."""
+"""Circuit stitch with T-junctions: **ACTION6** toggles wire; **ACTION5** tests path. Cells tagged `junction` forbid a **right turn** relative to the incoming wire direction (straight and left turns only)."""
 
 from __future__ import annotations
 

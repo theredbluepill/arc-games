@@ -70,7 +70,7 @@ SECTION_12_MARKDOWN = dedent(
 
     ## 2. Why use ARC-Interactive?
 
-    - **250+** games in **[GAMES.md](https://github.com/theredbluepill/arc-interactive/blob/main/GAMES.md)** alongside the [official ARC-AGI-3 list](https://docs.arcprize.org/available-games).
+    - **200+** games in **[GAMES.md](https://github.com/theredbluepill/arc-interactive/blob/main/GAMES.md)** alongside the [official ARC-AGI-3 list](https://docs.arcprize.org/available-games).
     - Patterns in **[AGENTS.md](https://github.com/theredbluepill/arc-interactive/blob/main/AGENTS.md)** and skills under **[`.opencode/skills/`](https://github.com/theredbluepill/arc-interactive/tree/main/.opencode/skills)** (mirrored [`skills/`](https://github.com/theredbluepill/arc-interactive/tree/main/skills/)).
     - Contribute via **[CONTRIBUTING.md](https://github.com/theredbluepill/arc-interactive/blob/main/CONTRIBUTING.md#creating-a-new-game)**.
     """

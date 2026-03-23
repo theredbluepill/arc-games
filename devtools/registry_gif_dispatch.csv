@@ -50,7 +50,6 @@ sf01,sf01,yes,no,• 1–4: Move stencil • 5: Paint
 ll01,wl_ll,no,yes,• 1–4: No-op • 5: Step CA • 6: Toggle cell
 wl01,wl_ll,no,yes,• 1–4: Move • 6: Place/remove my wall
 dd01,generic,no,no,• 1–4: Move • 5: Pickup / deliver / ping
-ck01,generic,no,yes,• 1–4: No-op • 5: Test wire • 6: Toggle wire
 ph01,generic,no,yes,• 1–4: No-op • 5: Blur step • 6: Increment phase
 bn01,generic,no,yes,• 1–4: Move • 5: Beacon • 6: Flag
 dl01,generic,no,no,• 1-4: Enqueue move • 5: Clear queue

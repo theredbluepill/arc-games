@@ -49,7 +49,7 @@ A collection of community game environments for the ARC-AGI-3 benchmark.
 <!-- readme-stats:begin -->
 
 <p align="center">
-  <a href="GAMES.md"><img src="https://img.shields.io/badge/250-INTERACTIVE_GAME-58A6FF?style=for-the-badge" alt="250 interactive games in registry" /></a>
+  <a href="GAMES.md"><img src="https://img.shields.io/badge/249-INTERACTIVE_GAME-58A6FF?style=for-the-badge" alt="249 interactive games in registry" /></a>
   &nbsp;
   <a href="CONTRIBUTING.md#creating-a-new-game"><img src="https://img.shields.io/badge/Contributing-Add_an_interactive_game-238636?style=for-the-badge" alt="Contributing: add an interactive game" /></a>
 </p>
@@ -65,7 +65,7 @@ These games are designed to be easy for humans to solve, but very hard for moder
 
 ## Why use ARC-Interactive?
 
-- **250+** ARC games in [`GAMES.md`](GAMES.md) next to the [official ARC-AGI-3 list](https://docs.arcprize.org/available-games).
+- **200+** ARC games in [`GAMES.md`](GAMES.md) next to the [official ARC-AGI-3 list](https://docs.arcprize.org/available-games).
 - Create or modify games quickly using patterns in [`AGENTS.md`](AGENTS.md) and the skills under [`.opencode/skills/`](.opencode/skills/) (mirrored at [`skills/`](skills/)): [create-arc-game](.opencode/skills/create-arc-game/SKILL.md), [play-arc-game](.opencode/skills/play-arc-game/SKILL.md).
 
 ## Quickstart

@@ -6,13 +6,13 @@ This supplements the machine-readable dispatch map in [`registry_gif_dispatch.cs
 
 The skill checklist lives in [`.agents/skills/generate-arc-game-gif/SKILL.md`](../.agents/skills/generate-arc-game-gif/SKILL.md) (level progression, **real** fail legibility in `render_interface`, non-static HUD, ACTION6 click feedback in 64×64 space, no recorder-only FX).
 
-## Aggregate counts (250 stems)
+## Aggregate counts (249 stems)
 
 From `registry_gif_dispatch.csv` (see `dispatch_bucket` column):
 
 | Bucket | Count | Notes |
 |--------|------:|-------|
-| `generic` | 173 | BFS + `inject_wall_fails` (wall/OOB bumps), optional showcase fallback |
+| `generic` | 169 | BFS + `inject_wall_fails` (wall/OOB bumps), optional showcase fallback |
 | `rk_jw` | 12 | `registry_rk_jw_gif` planners |
 | `pk_ec` | 12 | `registry_pk_ec_gif.PK_EC_RECORDERS` |
 | `mechanic_showcase` | 6 | `nw01`, `bd01`, `gr01`, `dt01`, `wk01`, `rf01` |
@@ -21,9 +21,9 @@ From `registry_gif_dispatch.csv` (see `dispatch_bucket` column):
 | `portal_pair` | 3 | `tp01`–`tp03` |
 | `ice_slide` | 3 | `ic01`–`ic03` |
 | `visit_all` | 3 | `va01`–`va03` |
-| Remaining single-stem buckets | 31 | e.g. `pb03`, `mo01`, `lw01`, `ml01`, `tw01`, `fc01`, `gc01`, … |
+| Remaining single-stem buckets | 34 | e.g. `pb03`, `mo01`, `lw01`, `ml01`, `tw01`, `fc01`, `gc01`, … |
 
-**`generic` + click/ACTION6 hint** (from `actions_uses_click_or_action6` in CSV): **94** stems. These are the highest-risk for “registry GIF ≠ skill-complete” unless the HUD shows designed failures and the generic recorder happens to surface them.
+**`generic` + click/ACTION6 hint** (from `actions_uses_click_or_action6` in CSV): **90** stems. These are the highest-risk for “registry GIF ≠ skill-complete” unless the HUD shows designed failures and the generic recorder happens to surface them.
 
 ## Sample stems vs skill checklist
 
@@ -39,12 +39,12 @@ Abbreviations: **L** = level progression readable on frame, **F** = distinct fai
 | `sq01` | generic | Y | Y | Y | Y | Sequence + lives + **`_grid_to_frame_pixel`** for clicks ([`sq01.py`](../environment_files/sq01/63be02fb/sq01.py)); skill reference family. |
 | `mm01` | generic | Y | Y | Y | Y | Skill cites mm01 for ACTION6 UX; timer / match feedback in UI. |
 | `bn01` | generic | Y | partial | Y | n/a | Beacon/flag counts in `Bn01UI`; wrong-flag lose is a **rule** fail—generic BFS will not deliberately trigger it. |
-| `ck01` | generic | partial | partial | weak | no | `Ck01UI` is a **single** corner pixel (green vs red) for last test result ([`ck01.py`](../environment_files/ck01/63be02fb/ck01.py)); no click ping; limited “story” on frame for multi-level + two fail types. |
+| `ck02` | generic | partial | partial | partial | no | `Ck02UI`: level dots + **single** corner pixel (green vs red) for last test result ([`ck02.py`](../environment_files/ck02/63be02fb/ck02.py)); no click ping; junction-rule fails still need deliberate capture. |
 | `gp01` | `gp01` | Y | partial | Y | Y | Dedicated recorder in `registry_ex_gp_lo_gif`; UI tuned for paint/hints. |
 
 ## Takeaways
 
-1. **Structural HUD**: Sampled games define `RenderableUserDisplay` subclasses with real `render_interface` / `update` usage; weakest sampled HUD surface is **`ck01`** (minimal strip).
+1. **Structural HUD**: Sampled games define `RenderableUserDisplay` subclasses with real `render_interface` / `update` usage; among this sample, **`ck02`** still leans on a minimal test indicator (plus level dots).
 2. **Skill vs `generic` recorder**: Even strong UIs (`wm01`, `sq01`, `mm01`) rely on **game logic during capture** for true fail clips; **`inject_wall_fails`** alone does not satisfy the skill’s “1–2 failed cases” requirement.
 3. **Next steps for strict compliance**: For high-value `generic` + click stems, extend **`registry_gif_lib`** / **`registry_gif_overrides.json`** (per skill)—after confirming the UI exposes lose/budget/test states clearly.
 
