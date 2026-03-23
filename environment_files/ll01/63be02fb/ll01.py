@@ -1,4 +1,7 @@
-"""Generations lock: toggle cells with ACTION6; ACTION5 runs one Conway generation. After exactly N advances, the live set must match the target."""
+"""Generations lock: toggle cells with ACTION6; ACTION5 runs one Conway generation. After exactly N advances, the live set must match the target.
+
+Goal cues (HUD / overlay): light-gray rectangle + light-magenta pin per remaining 2×2 target block (see bottom legend); hidden once that block is fully live.
+"""
 
 from __future__ import annotations
 
@@ -16,18 +19,67 @@ PADDING_COLOR = 4
 CAM_W = CAM_H = 32
 LIVE_C = 14
 WALL_C = 3
+# Goal hints (subtle): dim frame + anchor pin per authored 2×2 target block
+HINT_FRAME_C = 2
+HINT_ANCHOR_C = 7
 
 
 class Ll01UI(RenderableUserDisplay):
-    def __init__(self, gen: int, need: int, toggles: int) -> None:
+    def __init__(
+        self,
+        gen: int,
+        need: int,
+        toggles: int,
+        anchors: list[tuple[int, int]],
+        alive: set[tuple[int, int]],
+    ) -> None:
         self._gen = gen
         self._need = need
         self._toggles = toggles
+        self._anchors = anchors
+        self._alive = alive
 
-    def update(self, gen: int, need: int, toggles: int) -> None:
+    def update(
+        self,
+        gen: int,
+        need: int,
+        toggles: int,
+        anchors: list[tuple[int, int]],
+        alive: set[tuple[int, int]],
+    ) -> None:
         self._gen = gen
         self._need = need
         self._toggles = toggles
+        self._anchors = anchors
+        self._alive = alive
+
+    @staticmethod
+    def _plot(frame, h: int, w: int, fx: int, fy: int, c: int) -> None:
+        if 0 <= fx < w and 0 <= fy < h:
+            frame[fy, fx] = c
+
+    def _draw_goal_hints(self, frame, h: int, w: int) -> None:
+        scale = min(64 // CAM_W, 64 // CAM_H)
+        pad_x = (w - CAM_W * scale) // 2
+        pad_y = (h - CAM_H * scale) // 2
+
+        for ax, ay in self._anchors:
+            block = {(ax, ay), (ax + 1, ay), (ax, ay + 1), (ax + 1, ay + 1)}
+            if block <= self._alive:
+                continue
+            x0 = pad_x + ax * scale
+            y0 = pad_y + ay * scale
+            x1 = x0 + 2 * scale - 1
+            y1 = y0 + 2 * scale - 1
+            for fx in range(x0, x1 + 1):
+                self._plot(frame, h, w, fx, y0, HINT_FRAME_C)
+                self._plot(frame, h, w, fx, y1, HINT_FRAME_C)
+            for fy in range(y0, y1 + 1):
+                self._plot(frame, h, w, x0, fy, HINT_FRAME_C)
+                self._plot(frame, h, w, x1, fy, HINT_FRAME_C)
+            pin_x = x0 + scale // 2
+            pin_y = y0 + scale // 2
+            self._plot(frame, h, w, pin_x, pin_y, HINT_ANCHOR_C)
 
     def render_interface(self, frame):
         import numpy as np
@@ -35,10 +87,15 @@ class Ll01UI(RenderableUserDisplay):
         if not isinstance(frame, np.ndarray):
             return frame
         h, w = frame.shape
+        self._draw_goal_hints(frame, h, w)
         for i in range(min(self._need, 12)):
             frame[h - 2, 1 + i * 2] = 11 if i < self._gen else 2
         for i in range(min(self._toggles, 20)):
             frame[h - 1, 1 + i] = 9
+        # Tiny legend: magenta pin · dim frame (only if any hint may show)
+        if self._anchors:
+            frame[h - 3, 1] = HINT_ANCHOR_C
+            frame[h - 3, 2] = HINT_FRAME_C
         return frame
 
 
@@ -66,6 +123,7 @@ def mk(
     need_gens: int,
     max_toggles: int,
     diff: int,
+    target_anchors: list[tuple[int, int]],
 ) -> Level:
     sl: list[Sprite] = []
     for wx, wy in walls:
@@ -76,6 +134,7 @@ def mk(
         data={
             "difficulty": diff,
             "target_cells": [list(p) for p in target],
+            "target_anchors": [list(p) for p in target_anchors],
             "need_generations": need_gens,
             "max_toggles": max_toggles,
         },
@@ -96,20 +155,61 @@ def _pit_walls_around_block(ax: int, ay: int) -> list[tuple[int, int]]:
     return out
 
 
+def _merge_walls(*chunks: list[tuple[int, int]]) -> list[tuple[int, int]]:
+    s: set[tuple[int, int]] = set()
+    for ch in chunks:
+        s.update(ch)
+    return sorted(s)
+
+
 # Stable 2×2 blocks; after each generation the pattern is unchanged if it matches the block.
+# Difficulty ramps: more generations, tighter toggle budgets, busier topology, extra targets.
 levels = [
-    # Level 1: walled pit is the only 2×2 non-wall region (same target as before).
-    mk(_pit_walls_around_block(15, 15), _block(15, 15), 2, 60, 1),
-    mk([(x, 14) for x in range(10, 22)], _block(18, 10), 1, 100, 2),
-    mk([], _block(8, 8) + _block(20, 20), 3, 180, 3),
-    mk([(16, y) for y in range(32) if 10 < y < 20], _block(22, 12), 2, 220, 4),
-    mk([], _block(5, 5) + _block(25, 25), 4, 300, 5),
+    # Level 1: single pit (tutorial).
+    mk(_pit_walls_around_block(15, 15), _block(15, 15), 2, 52, 1, [(15, 15)]),
+    # Level 2: barrier + clutter below; must commit to more CA steps.
+    mk(
+        [(x, 14) for x in range(10, 22)]
+        + [(12, y) for y in range(16, 22)]
+        + [(19, y) for y in range(16, 21)],
+        _block(18, 10),
+        3,
+        78,
+        2,
+        [(18, 10)],
+    ),
+    # Level 3: two close blocks (one-cell gutter); more generations.
+    mk([], _block(6, 6) + _block(10, 6), 4, 112, 3, [(6, 6), (10, 6)]),
+    # Level 4: tall splitter wall; target in a side pocket.
+    mk([(16, y) for y in range(32) if 8 <= y <= 22], _block(22, 12), 4, 138, 4, [(22, 12)]),
+    # Level 5: diagonal pair + mid-field wall to damp accidental traffic.
+    mk(
+        [(x, 16) for x in range(12, 20)],
+        _block(5, 5) + _block(25, 25),
+        5,
+        175,
+        5,
+        [(5, 5), (25, 25)],
+    ),
+    # Level 6: three isolated pits — twelve exact cells, long run of steps, lean toggle budget.
+    mk(
+        _merge_walls(
+            _pit_walls_around_block(4, 4),
+            _pit_walls_around_block(15, 15),
+            _pit_walls_around_block(26, 26),
+        ),
+        _block(4, 4) + _block(15, 15) + _block(26, 26),
+        6,
+        42,
+        6,
+        [(4, 4), (15, 15), (26, 26)],
+    ),
 ]
 
 
 class Ll01(ARCBaseGame):
     def __init__(self) -> None:
-        self._ui = Ll01UI(0, 1, 0)
+        self._ui = Ll01UI(0, 1, 0, [], set())
         super().__init__(
             "ll01",
             levels,
@@ -122,6 +222,8 @@ class Ll01(ARCBaseGame):
     def on_set_level(self, level: Level) -> None:
         raw = self.current_level.get_data("target_cells") or []
         self._target = {tuple(int(t) for t in p) for p in raw}
+        ar = self.current_level.get_data("target_anchors") or []
+        self._anchors = [tuple(int(t) for t in p) for p in ar]
         self._need = int(self.current_level.get_data("need_generations") or 1)
         self._tog_left = int(self.current_level.get_data("max_toggles") or 100)
         self._gen_count = 0
@@ -131,7 +233,13 @@ class Ll01(ARCBaseGame):
         return {(s.x, s.y) for s in self.current_level.get_sprites_by_tag("live")}
 
     def _sync_ui(self) -> None:
-        self._ui.update(self._gen_count, self._need, self._tog_left)
+        self._ui.update(
+            self._gen_count,
+            self._need,
+            self._tog_left,
+            self._anchors,
+            self._alive(),
+        )
 
     def _neighbors(self, x: int, y: int) -> int:
         c = 0

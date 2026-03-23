@@ -1,0 +1,251 @@
+stem,dispatch_bucket,has_registry_override,actions_uses_click_or_action6,actions_column
+ez01,generic,no,no,• 1-4: Movement
+ez02,generic,no,no,• 1-4: Movement
+ez03,generic,no,no,• 1-4: Movement
+ez04,generic,no,no,• 1-4: Movement
+ul01,generic,no,no,• 1-4: Movement
+tt01,generic,no,no,• 1-4: Movement
+wm01,generic,no,yes,• 6: Click
+sv01,generic,no,no,• 1-4: Movement • 5: Idle (wait)
+pt01,generic,no,yes,• 6: Click/Rotate
+sy01,generic,no,yes,• 6: Click (place/remove block)
+sk01,push_solver,no,no,• 1-4: Movement
+tb01,generic,no,yes,• 1-4: Movement • 6: Toggle bridge on water (click)
+ff01,generic,no,yes,• 1-4: No-op • 6: Click
+mm01,generic,no,yes,• 6: Click tile
+ms01,generic,no,no,• 1-4: Movement
+sq01,generic,no,yes,• 6: Click block
+rs01,generic,no,no,• 1-4: Movement
+pb01,push_solver,no,no,• 1-4: Movement
+fs01,switch_door,no,no,• 1-4: Movement
+tp01,portal_pair,no,no,• 1-4: Movement
+ic01,ice_slide,no,no,• 1-4: Movement
+va01,visit_all,no,no,• 1-4: Movement
+pb02,push_solver,no,no,• 1-4: Movement
+pb03,pb03,yes,no,• 1-4: Movement
+fs02,switch_door,yes,no,• 1-4: Movement
+fs03,switch_door,no,no,• 1-4: Movement
+tp02,portal_pair,no,no,• 1-4: Movement
+tp03,portal_pair,no,no,• 1-4: Movement
+ic02,ice_slide,no,no,• 1-4: Movement
+ic03,ice_slide,no,no,• 1-4: Movement
+va02,visit_all,no,no,• 1-4: Movement
+va03,visit_all,no,no,• 1-4: Movement
+nw01,mechanic_showcase,no,no,• 1-4: Movement
+bd01,mechanic_showcase,yes,no,• 1-4: Movement
+gr01,mechanic_showcase,yes,no,• 1-4: Movement
+dt01,mechanic_showcase,no,no,• 1-4: Movement
+wk01,mechanic_showcase,yes,no,• 1-4: Movement
+rf01,mechanic_showcase,no,no,• 1-4: Movement
+mo01,mo01,no,no,• 1-4: Movement
+zq01,zq01,no,no,• 1-4: Movement
+hm01,hm01,no,no,• 1-4: Movement
+ex01,ex01,no,no,• 1-4: Movement • 5: Hold / charge exit
+gp01,gp01,no,yes,• 1-4: No-op • 6: Click
+lo01,lo01,no,yes,• 1-4: No-op • 6: Click
+lw01,lw01,no,yes,• 1–2: Prev/next color • 3–4: No-op • 5: Undo segment • 6: Extend path (click)
+rp01,rp01,no,yes,• 1–4: No-op • 5: Fire pulse • 6: Toggle relay
+ml01,ml01,yes,yes,• 1–4: No-op • 5: Fire • 6: Mirror (click) • 7: Undo last 5/6
+sf01,sf01,yes,no,• 1–4: Move stencil • 5: Paint
+ll01,generic,no,yes,• 1–4: No-op • 5: Step CA • 6: Toggle cell
+wl01,generic,no,yes,• 1–4: Move • 6: Place/remove my wall
+dd01,generic,no,no,• 1–4: Move • 5: Pickup / deliver / ping
+ck01,generic,no,yes,• 1–4: No-op • 5: Test wire • 6: Toggle wire
+ph01,generic,no,yes,• 1–4: No-op • 5: Blur step • 6: Increment phase
+bn01,generic,no,yes,• 1–4: Move • 5: Beacon • 6: Flag
+dl01,generic,no,no,• 1-4: Enqueue move • 5: Clear queue
+fw01,generic,no,yes,• 1-4: Move • 6: Splash
+gp02,generic,no,yes,• 1-4: No-op • 6: Click erase
+hd01,generic,no,no,• 1-4: Move • 5: Charge on station
+kn01,generic,no,no,• 1-4: Knight move • 5: Toggle bank
+lo02,generic,no,yes,• 1-4: No-op • 6: Click
+mc01,generic,no,no,• 1-4: Joint move • 5: Swap lead
+ng01,generic,no,yes,• 1-4: Cursor • 6: Click cycle cell
+ob01,generic,no,no,• 1-4: Move active • 5: Cycle active
+pu01,generic,no,yes,• 1-4: No-op • 6: Toggle pipe
+qr01,generic,no,yes,• 1-4: No-op • 6: Rotate 2×2
+rs02,generic,no,no,• 1-4: Move
+sk02,push_solver,no,no,• 1-4: Move
+sp01,generic,no,yes,• 1-4: No-op • 6: Add grain
+sq02,generic,no,yes,• 6: Click block
+sv02,generic,no,no,• 1-4: Move • 5: Idle
+tb02,generic,no,yes,• 1-4: Move • 6: Toggle bridge
+tc01,generic,no,no,• 1-4: Move
+tt02,generic,no,no,• 1-4: Move
+zm01,generic,no,yes,• 1-4: Move • 5: Switch color • 6: Expand
+as01,generic,no,no,• 1-4: Move • 5: Pickup/drop
+bp01,generic,no,no,• 1-4: Move • 5: Charge pickup/drop
+bn02,generic,no,yes,• 1-4: Move • 5: Beacon • 6: Flag
+ck02,generic,no,yes,• 1-4: No-op • 5: Test wire • 6: Toggle wire
+cr01,generic,no,yes,• 1-4: Move • 6: Place plank
+dm01,generic,no,yes,• 6: Toggle domino
+ex02,generic,no,no,• 1-4: Move • 5: Hold
+fl01,generic,no,yes,• 1-4: Cursor • 6: Click extend/cut
+ff02,generic,no,yes,• 1-4: No-op • 6: Click erase region
+gp03,generic,no,yes,• 1-4: No-op • 6: Cycle paint
+lw02,generic,no,yes,• 1–2: Color • 3–4: No-op • 5: Undo • 6: Extend
+ml02,generic,no,yes,• 1-4: Move • 5: Fire • 6: Mirror
+mm02,generic,no,yes,• 6: Click tile
+ms02,generic,no,yes,• 1-4: Move • 6: Flag
+mx01,generic,no,no,• 1-4: Move • 5: Melt
+nw02,generic,no,no,• 1-4: Move
+ph02,generic,no,yes,• 1-4: No-op • 5: Step • 6: Inc
+pt02,generic,no,yes,• 6: Click band
+rp02,generic,no,yes,• 1–4: No-op • 5: Fire • 6: Toggle relay
+rz01,generic,no,no,• 1-4: Move
+sg01,generic,no,no,• 1-4: No-op • 5: Commit
+sk03,generic,no,no,• 1-4: Move
+st01,generic,no,no,• 1-4: Move • 5: Whistle
+sy02,generic,no,yes,• 6: Place/remove block
+tb03,generic,no,yes,• 1-4: Move • 6: Toggle bridge
+tg01,generic,no,no,• 1-4: Move
+tt03,generic,no,no,• 1-4: Move
+ul02,generic,no,no,• 1-4: Move
+wm02,generic,no,yes,• 6: Click
+zq02,generic,no,no,• 1-4: Move
+ju01,generic,no,no,• 1-4: Move
+co01,generic,no,no,• 1-4: Move
+em01,generic,no,no,• 1-4: Move
+nu01,generic,no,no,• 1-4: Move
+gl01,generic,no,no,• 1-4: Move
+or01,generic,no,no,• 1-4: Move
+ex03,generic,no,no,• 1-4: Move • 5: Hold
+zq03,generic,no,no,• 1-4: Move
+nw03,generic,no,no,• 1-4: Move
+rs03,generic,no,no,• 1-4: Move
+sv03,generic,no,no,• 1-4: Move • 5: Idle
+sq03,generic,no,yes,• 6: Click block
+dr01,generic,no,no,• 1-4: Move • 5: Drill
+vi01,generic,no,no,• 1-4: Move
+wa01,generic,no,no,• 1-4: Move
+fi01,generic,no,no,• 1-4: Move • 5: Place break
+ul03,generic,no,no,• 1-4: Move
+wm03,generic,no,yes,• 6: Click
+ms03,generic,no,yes,• 1-4: Move • 6: Flag
+lo03,generic,no,yes,• 1-4: No-op • 6: Click
+pt03,generic,no,yes,• 6: Click band
+sy03,generic,no,yes,• 6: Place/remove
+mm03,generic,no,yes,• 6: Click
+ff03,generic,no,yes,• 1-4: No-op • 6: Click
+lw03,generic,no,yes,• 1–2 • 5 undo • 6: Extend
+rp03,generic,no,yes,• 1–4: No-op • 5: Fire • 6: Toggle
+ml03,generic,no,yes,• 1-4: Move • 5: Fire • 6: Mirror
+ck03,generic,no,yes,• 1-4: No-op • 5: Test • 6: Toggle
+ph03,ph03,yes,yes,• 1-4: No-op • 5: Step • 6: Inc
+bn03,bn03,yes,yes,• 1-4: Move • 5: Beacon • 6: Flag
+bi01,bi01,yes,no,• 1-4: Diagonal slide
+rk01,rk_jw,yes,no,• 1-4: Rook slide
+sn01,rk_jw,yes,no,• 1-4: Move
+tr01,rk_jw,yes,no,• 1-4: Move
+vp01,rk_jw,yes,no,• 1-4: Move
+bt01,rk_jw,yes,no,• 1-4: Move
+dg01,rk_jw,yes,no,• 1-4: Move • 5: Dig
+mb01,rk_jw,yes,no,• 1-4: Move
+op01,rk_jw,yes,no,• 1-4: Move
+kb01,rk_jw,yes,no,• 1-4: Move
+eb01,rk_jw,yes,no,• 1-4: Move
+fg01,rk_jw,yes,no,• 1-4: Move
+jw01,rk_jw,yes,yes,• 1-4: Move • 6: Click trigger
+pd01,pd01,yes,yes,• 1-4: No-op • 6: Cycle pipe
+rh01,generic,yes,no,• 1-4: Move
+av01,generic,yes,no,• 1-4: Move
+pw01,generic,yes,no,• 1-4: Move
+es01,generic,yes,no,• 1-4: Move
+wg01,generic,yes,no,• 1-4: Move
+hs01,generic,yes,no,• 1-4: Move
+tm01,generic,yes,no,• 1-4: Move
+cy01,generic,yes,no,• 1-4: Move
+in01,generic,yes,no,• 1-4: Move
+rc01,generic,yes,no,• 1-4: Move • 5: Recall
+bl01,generic,yes,no,• 1-4: Move • 5: Arm phase
+sw01,generic,yes,no,• 1-4: Move • 5: Swap
+tw01,tw01,yes,no,• 1-4: Move
+pm01,pm01,yes,no,• 1-4: Move
+hz01,hz01,yes,no,• 1-4: Move
+cq01,cq01,yes,no,• 1-4: Move
+lf01,lf01,yes,no,• 1-4: Move
+sb01,sb01,yes,no,• 1-4: Move
+wp01,generic,yes,no,• 1-4: Move
+dv01,dv01,yes,no,• 1-4: Move • 5: Toggle
+ox01,ox01,yes,no,• 1-4: Move
+sl01,sl01,yes,no,• 1-4: Swap with up/down/left/right neighbor
+ci01,generic,yes,no,• 1-4: Move
+rv01,generic,yes,no,• 1-4: Move
+pk01,pk_ec,yes,yes,• 5: Mode • 6: Click
+kv01,pk_ec,yes,no,• 1-3: Cycle R • 5: Check
+wr01,pk_ec,yes,no,• 1-4: Move • 5: Brace
+dp01,pk_ec,yes,no,• 1-4: Move • 5: Toggle plane
+df01,pk_ec,yes,yes,• 1-4: Move • 6: Vent
+rn01,pk_ec,yes,yes,• 1-4: Move • 6: Click anchors
+sc01,pk_ec,yes,no,• 1-4: Move • 5: Mask
+au01,pk_ec,yes,no,• 1-4: Move
+cf01,pk_ec,yes,no,• 1-4: Move
+ep01,pk_ec,yes,no,• 1-4: Move
+tf01,pk_ec,yes,no,• 1-4: Move
+ec01,pk_ec,yes,no,• 1-4: Move
+tk01,generic,yes,no,• 1-4: Move • 5: Tug
+hn01,generic,yes,no,• 1-3: Peg • 5: Pick/drop
+fb01,generic,yes,no,• 1-4: Move
+lp01,generic,yes,no,• 1-4: Move
+rb01,generic,yes,no,• 1-4: Move
+at01,generic,yes,no,• 1-4: Move • 5: Scent
+wb01,generic,yes,no,• 1-4: Move
+lk01,generic,yes,no,• 1-4: Tumble / move
+dn01,generic,yes,no,• 1-4: Move
+qt01,generic,yes,no,• 1-4: Move
+vt01,generic,yes,no,• 1-4: Move
+fc01,fc01,yes,no,• 1-4: Move
+pj01,generic,yes,yes,• 1-4: Move • 6: Mirror
+gc01,gc01,yes,no,• 1-4: Move
+sr01,generic,yes,no,• 1-4: Move
+cs01,generic,yes,yes,• 1-4: No-op • 6: Toggle vertex
+ct01,generic,yes,yes,• 1-4: No-op • 6: Toggle
+cz01,generic,no,yes,• 1–4: Pick row • 6: Flip row
+eg01,generic,no,yes,• 1-4: No-op • 6: Cycle cell
+ff04,generic,no,yes,• 1-4: No-op • 6: Add cell
+gp04,generic,no,yes,• 1-4: No-op • 6: Toggle paint
+lo04,generic,no,yes,• 1-4: No-op • 6: Click
+lo05,generic,no,yes,• 1-4: No-op • 6: Click
+qr04,generic,no,yes,• 1-4: No-op • 6: Click
+sq04,sq04,yes,yes,• 6: Click block
+sq05,sq05,yes,yes,• 6: Click block
+pt04,generic,no,yes,• 1–4: No-op • 6: Select / swap
+pt05,generic,no,yes,• 1–4: No-op • 6: Header
+sy04,generic,yes,yes,• 6: Toggle mirror
+dm04,generic,no,yes,• 6: Pick 3 cells
+pk02,generic,no,yes,• 5: No-op • 6: Edge
+fl04,generic,no,yes,• 1–4: Move • 6: Path
+lw04,generic,no,yes,• 1–4: Move • 6: Path
+sf04,generic,yes,yes,• 5: Rotate • 6: Paint
+sp04,generic,yes,yes,• 1–4: No-op • 6: Add grain
+ll04,generic,no,yes,• 5: Gen • 6: Toggle
+ab01,generic,yes,yes,• 1–4: No-op • 6: Add grain
+df04,generic,yes,yes,• 5: Tick • 6: Vent
+ih01,generic,yes,yes,• 5: Tick • 6: Toggle heater
+tc04,generic,yes,yes,• 5: Step • 6: Rotate
+zm04,generic,yes,yes,• 5: Strain • 6: Block
+pu04,generic,no,yes,• 1–4: No-op • 6: Cycle
+pd04,generic,no,yes,• 6: Toggle
+ck04,generic,no,yes,• 6: Rotate
+rp04,generic,no,yes,• 5: Pulse • 6: Toggle
+ph04,generic,no,no,• 5: Step
+ml04,generic,no,yes,• 5: Fire • 6: Mirror
+pj04,generic,no,yes,• 5: Bolt • 6: Mirror
+wm04,generic,no,yes,• 6: Click
+sg04,generic,no,yes,• 5–6: Timing
+ng04,generic,no,yes,• 6: Edit
+bn04,generic,no,yes,• 5: Axis • 6: Flag
+sk04,generic,no,yes,• 6: Pull crate
+pb04,generic,no,no,• 5: Winch pull
+rr01,generic,no,yes,• 5: Tick • 6: Ramp
+hn04,generic,no,no,• 1–4: Peg • 5: Pick/drop
+kv04,generic,no,no,• 1–4: Cycle • 5: Check
+rs04,generic,no,yes,• 5: Phase • 6: Clear
+ms04,generic,no,yes,• 6: Flag
+cw01,generic,no,yes,• 6: Toggle literal
+cx01,generic,no,yes,• 6: Toggle gate
+cu01,generic,no,yes,• 5: Tool • 6: Place
+cv01,generic,no,yes,• 6: Cycle
+mm04,mm04,yes,yes,• 5: Peek • 6: Flip
+mm05,mm05,yes,yes,• 6: Flip
+fe02,fe02,yes,no,• 1–4: Vote • 5: Ratify

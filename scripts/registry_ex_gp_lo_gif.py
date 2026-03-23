@@ -402,3 +402,10 @@ def record_lo01_registry_gif(
     if verbose:
         print(f"  {game_id}: lights-out GIF, {len(images)} frames")
     return res_box[0], images
+
+
+REGISTRY_RECORDERS = {
+    "ex01": record_ex01_registry_gif,
+    "gp01": record_gp01_registry_gif,
+    "lo01": record_lo01_registry_gif,
+}

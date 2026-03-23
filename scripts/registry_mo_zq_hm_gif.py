@@ -427,3 +427,10 @@ def record_hm01_registry_gif(
     if verbose:
         print(f"  {game_id}: Hamiltonian GIF, {len(images)} frames")
     return res, images
+
+
+REGISTRY_RECORDERS = {
+    "mo01": record_mo01_registry_gif,
+    "zq01": record_zq01_registry_gif,
+    "hm01": record_hm01_registry_gif,
+}

@@ -184,3 +184,10 @@ def record_fe02_registry_gif(
 
     _cap_gif_frames(images, max_gif)
     return res_box[0], images
+
+
+REGISTRY_RECORDERS = {
+    "mm04": record_mm04_registry_gif,
+    "mm05": record_mm05_registry_gif,
+    "fe02": record_fe02_registry_gif,
+}

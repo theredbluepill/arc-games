@@ -149,7 +149,55 @@ def _mk_sealed_row(
     return mk((32, 32), sw, hazards, ch, player, goal, wall_budget, max_steps, diff)
 
 
+def _mk_sealed_row_extra(
+    x_lo: int,
+    x_hi: int,
+    hazards: list[tuple[int, int]],
+    player: tuple[int, int],
+    goal: tuple[int, int],
+    wall_budget: int,
+    max_steps: int,
+    diff: int,
+    extra_walls: list[tuple[int, int]],
+) -> Level:
+    """Single chasm band plus extra static walls (corridors, jogs) outside the band."""
+    sw, ch = _sealed_chasm_column(x_lo, x_hi)
+    return mk((32, 32), sw + list(extra_walls), hazards, ch, player, goal, wall_budget, max_steps, diff)
+
+
+def _mk_double_sealed_row(
+    band1: tuple[int, int],
+    band2: tuple[int, int],
+    hazards: list[tuple[int, int]],
+    player: tuple[int, int],
+    goal: tuple[int, int],
+    wall_budget: int,
+    max_steps: int,
+    diff: int,
+    extra_walls: list[tuple[int, int]] | None = None,
+) -> Level:
+    """Two disjoint vertical chasm barriers; only row y=15 is bridgeable in each band."""
+    sw1, ch1 = _sealed_chasm_column(band1[0], band1[1])
+    sw2, ch2 = _sealed_chasm_column(band2[0], band2[1])
+    walls: set[tuple[int, int]] = set(sw1) | set(sw2)
+    chasms: list[tuple[int, int]] = sorted(set(ch1) | set(ch2))
+    if extra_walls:
+        walls |= set(extra_walls)
+    return mk(
+        (32, 32),
+        sorted(walls),
+        hazards,
+        chasms,
+        player,
+        goal,
+        wall_budget,
+        max_steps,
+        diff,
+    )
+
+
 # Levels require bridging chasms (no land path); hazards are optional extra threats.
+# Later levels add corridor walls (jogs) and a double barrier so routing + bridging tighten.
 levels = [
     mk(
         (32, 32),
@@ -162,10 +210,74 @@ levels = [
         220,
         1,
     ),
-    _mk_sealed_row(9, 18, [], (3, 15), (28, 15), 10, 280, 2),
-    _mk_sealed_row(10, 18, [(24, 8)], (2, 15), (29, 15), 11, 360, 3),
-    _mk_sealed_row(10, 17, [], (4, 15), (28, 15), 8, 380, 4),
-    _mk_sealed_row(5, 26, [(8, 10)], (2, 15), (29, 15), 24, 520, 5),
+    _mk_sealed_row_extra(
+        9,
+        18,
+        [],
+        (3, 15),
+        (28, 15),
+        11,
+        310,
+        2,
+        # Block straight shot on y=15 — jog above/below before and after the chasm band.
+        [(6, 15), (7, 15), (22, 15), (23, 15)],
+    ),
+    _mk_sealed_row_extra(
+        10,
+        18,
+        [(24, 8)],
+        (2, 15),
+        (29, 15),
+        13,
+        400,
+        3,
+        [
+            (5, 15),
+            (6, 15),
+            (24, 15),
+            (25, 15),
+            (12, 14),
+            (13, 14),
+            (16, 16),
+            (17, 16),
+        ],
+    ),
+    _mk_double_sealed_row(
+        (8, 13),
+        (19, 24),
+        [],
+        (2, 15),
+        (29, 15),
+        18,
+        450,
+        4,
+        # Pinch the free lane between the two barriers (still walkable on y=15).
+        [(14, 14), (14, 16), (18, 14), (18, 16)],
+    ),
+    _mk_sealed_row_extra(
+        5,
+        26,
+        [(8, 10), (22, 22), (15, 8)],
+        (2, 15),
+        (29, 15),
+        28,
+        600,
+        5,
+        [
+            (4, 15),
+            (5, 15),
+            (6, 15),
+            (27, 15),
+            (28, 15),
+            (11, 14),
+            (12, 14),
+            (20, 16),
+            (21, 16),
+            (14, 13),
+            (15, 13),
+            (16, 13),
+        ],
+    ),
 ]
 
 

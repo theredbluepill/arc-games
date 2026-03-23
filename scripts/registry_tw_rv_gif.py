@@ -853,3 +853,15 @@ def record_sb01_registry_gif(
         game_id, root, overrides=overrides, verbose=verbose, seed=seed, build_plans=_sb01_plans
     )
 
+
+REGISTRY_RECORDERS = {
+    "tw01": record_tw01_registry_gif,
+    "cq01": record_cq01_registry_gif,
+    "dv01": record_dv01_registry_gif,
+    "ox01": record_ox01_registry_gif,
+    "sl01": record_sl01_registry_gif,
+    "lf01": record_lf01_registry_gif,
+    "pm01": record_pm01_registry_gif,
+    "hz01": record_hz01_registry_gif,
+    "sb01": record_sb01_registry_gif,
+}

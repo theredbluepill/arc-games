@@ -28,6 +28,18 @@ All capture flows go through **`scripts/render_arc_game_gif.py`**:
 
 Implementation detail: registry mode calls `registry_gif_lib.record_registry_gif` and reads **`scripts/registry_gif_overrides.json`**. Some families use **`registry_*_gif.py`** helpers imported by `registry_gif_lib`. Do **not** add new **`scripts/render_<stem>_gif.py`** entrypoints.
 
+## Registry scripts versus post-render UI
+
+`render_arc_game_gif.py`, `registry_gif_lib.py`, merged **`registry_*_gif.py`** modules (via **`registry_gif_recorders.py`**), **`registry_mechanic_gif.py`**, and related helpers **do not** draw captions, ripples, failure tints, or extra HUD on top of captures. They:
+
+- **Step** the environment (`reset` / `step`) and read **`observation.frame`** (typically the first layer, same pattern as `_frame_layer0` in `render_arc_game_gif.py`).
+- Use **`gif_common.append_frame_repeats`** only to **duplicate** the same raster for pacing, and **`registry_gif_lib._cap_gif_frames`** to **subsample** when enforcing a max frame count — neither introduces new pixels.
+- Use **PIL** in **`scripts/gif_common.py`** solely for **palette index → RGB** (`frame_to_rgb`) and **GIF encoding** (`save_gif`), not compositing or `ImageDraw`.
+
+Some stems call **`load_stem_game_py(..., "*_registry_*")`** to load alternate helpers for the same stem; output is still a **normal engine-rendered** 64×64 frame (camera + **`RenderableUserDisplay`**). **`scripts/registry_gif_dispatch_report.py`** emits dispatch metadata only. **`scripts/registry_gif_overrides.json`** adjusts timing and caps, not graphics.
+
+For **ACTION6**, scripts may set display-pixel coordinates in `action.data` (e.g. **`gif_common.grid_cell_center_display`**). Any visible click ping or cursor state must still be implemented in the game’s **`RenderableUserDisplay`** / **`step()`**.
+
 ## Is this game’s `RenderableUserDisplay` GIF-ready?
 
 Audit the game’s **`RenderableUserDisplay`** (and `step()` driving `update`). The final frame is always **64×64**.

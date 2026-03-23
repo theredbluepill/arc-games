@@ -1207,3 +1207,5 @@ PK_EC_RECORDERS: dict[str, Callable[..., tuple[Any, list]]] = {
     "tf01": record_tf01_registry_gif,
     "ec01": record_ec01_registry_gif,
 }
+
+REGISTRY_RECORDERS = PK_EC_RECORDERS

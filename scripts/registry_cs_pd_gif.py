@@ -263,3 +263,10 @@ def record_pd01_registry_gif(
     if verbose:
         print(f"  {game_id}: pd01 registry GIF, {len(images)} frames")
     return res, images
+
+
+REGISTRY_RECORDERS = {
+    "pd01": record_pd01_registry_gif,
+    "sq04": record_sq04_registry_gif,
+    "sq05": record_sq05_registry_gif,
+}

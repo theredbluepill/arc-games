@@ -1762,6 +1762,36 @@ def _cap_gif_frames(images: list, max_frames: int = 500) -> None:
     images[:] = images[::stride]
 
 
+def registry_gif_dispatch_bucket(game_id: str) -> str:
+    """
+    Which branch ``record_registry_gif`` takes for ``game_id`` (audit / CSV reports).
+
+    Keep in lockstep with the ``if`` chain in ``record_registry_gif``. Stems in
+    ``registry_gif_recorders`` use ``external_dispatch_bucket``; add new ones there.
+    """
+    from registry_gif_recorders import external_dispatch_bucket
+    from registry_mechanic_gif import MECHANIC_SHOWCASE_STEMS
+
+    if game_id in MECHANIC_SHOWCASE_STEMS:
+        return "mechanic_showcase"
+    if game_id == "pb03":
+        return "pb03"
+    if game_id in PUSH_SOLVER_STEMS:
+        return "push_solver"
+    if game_id in SWITCH_DOOR_MODE:
+        return "switch_door"
+    if game_id in PORTAL_PAIR_STEMS:
+        return "portal_pair"
+    if game_id in ICE_SLIDE_STEMS:
+        return "ice_slide"
+    if game_id in VISIT_ALL_BLOCK_TAGS:
+        return "visit_all"
+    ext = external_dispatch_bucket(game_id)
+    if ext is not None:
+        return ext
+    return "generic"
+
+
 def record_registry_gif(
     game_id: str,
     root: Path,
@@ -1805,198 +1835,11 @@ def record_registry_gif(
         return _record_visit_all_gif(
             game_id, root, overrides=o, verbose=verbose, seed=seed
         )
-    if game_id == "mo01":
-        from registry_mo_zq_hm_gif import record_mo01_registry_gif
+    from registry_gif_recorders import lookup_external_recorder
 
-        return record_mo01_registry_gif(
-            game_id, root, overrides=o, verbose=verbose, seed=seed
-        )
-    if game_id == "zq01":
-        from registry_mo_zq_hm_gif import record_zq01_registry_gif
-
-        return record_zq01_registry_gif(
-            game_id, root, overrides=o, verbose=verbose, seed=seed
-        )
-    if game_id == "hm01":
-        from registry_mo_zq_hm_gif import record_hm01_registry_gif
-
-        return record_hm01_registry_gif(
-            game_id, root, overrides=o, verbose=verbose, seed=seed
-        )
-    if game_id == "ex01":
-        from registry_ex_gp_lo_gif import record_ex01_registry_gif
-
-        return record_ex01_registry_gif(
-            game_id, root, overrides=o, verbose=verbose, seed=seed
-        )
-    if game_id == "gp01":
-        from registry_ex_gp_lo_gif import record_gp01_registry_gif
-
-        return record_gp01_registry_gif(
-            game_id, root, overrides=o, verbose=verbose, seed=seed
-        )
-    if game_id == "lo01":
-        from registry_ex_gp_lo_gif import record_lo01_registry_gif
-
-        return record_lo01_registry_gif(
-            game_id, root, overrides=o, verbose=verbose, seed=seed
-        )
-    if game_id == "lw01":
-        from registry_lw_rp_ml_sf_gif import record_lw01_registry_gif
-
-        return record_lw01_registry_gif(
-            game_id, root, overrides=o, verbose=verbose, seed=seed
-        )
-    if game_id == "rp01":
-        from registry_lw_rp_ml_sf_gif import record_rp01_registry_gif
-
-        return record_rp01_registry_gif(
-            game_id, root, overrides=o, verbose=verbose, seed=seed
-        )
-    if game_id == "ml01":
-        from registry_lw_rp_ml_sf_gif import record_ml01_registry_gif
-
-        return record_ml01_registry_gif(
-            game_id, root, overrides=o, verbose=verbose, seed=seed
-        )
-    if game_id == "sf01":
-        from registry_lw_rp_ml_sf_gif import record_sf01_registry_gif
-
-        return record_sf01_registry_gif(
-            game_id, root, overrides=o, verbose=verbose, seed=seed
-        )
-    if game_id == "mm04":
-        from registry_mm_fe_gif import record_mm04_registry_gif
-
-        return record_mm04_registry_gif(
-            game_id, root, overrides=o, verbose=verbose, seed=seed
-        )
-    if game_id == "mm05":
-        from registry_mm_fe_gif import record_mm05_registry_gif
-
-        return record_mm05_registry_gif(
-            game_id, root, overrides=o, verbose=verbose, seed=seed
-        )
-    if game_id == "fe02":
-        from registry_mm_fe_gif import record_fe02_registry_gif
-
-        return record_fe02_registry_gif(
-            game_id, root, overrides=o, verbose=verbose, seed=seed
-        )
-    if game_id == "ph03":
-        from registry_ph_bn_bi_gif import record_ph03_registry_gif
-
-        return record_ph03_registry_gif(
-            game_id, root, overrides=o, verbose=verbose, seed=seed
-        )
-    if game_id == "bn03":
-        from registry_ph_bn_bi_gif import record_bn03_registry_gif
-
-        return record_bn03_registry_gif(
-            game_id, root, overrides=o, verbose=verbose, seed=seed
-        )
-    if game_id == "bi01":
-        from registry_ph_bn_bi_gif import record_bi01_registry_gif
-
-        return record_bi01_registry_gif(
-            game_id, root, overrides=o, verbose=verbose, seed=seed
-        )
-    if game_id == "pd01":
-        from registry_cs_pd_gif import record_pd01_registry_gif
-
-        return record_pd01_registry_gif(
-            game_id, root, overrides=o, verbose=verbose, seed=seed
-        )
-    if game_id == "sq04":
-        from registry_cs_pd_gif import record_sq04_registry_gif
-
-        return record_sq04_registry_gif(
-            game_id, root, overrides=o, verbose=verbose, seed=seed
-        )
-    if game_id == "sq05":
-        from registry_cs_pd_gif import record_sq05_registry_gif
-
-        return record_sq05_registry_gif(
-            game_id, root, overrides=o, verbose=verbose, seed=seed
-        )
-    if game_id == "tw01":
-        from registry_tw_rv_gif import record_tw01_registry_gif
-
-        return record_tw01_registry_gif(
-            game_id, root, overrides=o, verbose=verbose, seed=seed
-        )
-    if game_id == "cq01":
-        from registry_tw_rv_gif import record_cq01_registry_gif
-
-        return record_cq01_registry_gif(
-            game_id, root, overrides=o, verbose=verbose, seed=seed
-        )
-    if game_id == "dv01":
-        from registry_tw_rv_gif import record_dv01_registry_gif
-
-        return record_dv01_registry_gif(
-            game_id, root, overrides=o, verbose=verbose, seed=seed
-        )
-    if game_id == "ox01":
-        from registry_tw_rv_gif import record_ox01_registry_gif
-
-        return record_ox01_registry_gif(
-            game_id, root, overrides=o, verbose=verbose, seed=seed
-        )
-    if game_id == "sl01":
-        from registry_tw_rv_gif import record_sl01_registry_gif
-
-        return record_sl01_registry_gif(
-            game_id, root, overrides=o, verbose=verbose, seed=seed
-        )
-    if game_id == "lf01":
-        from registry_tw_rv_gif import record_lf01_registry_gif
-
-        return record_lf01_registry_gif(
-            game_id, root, overrides=o, verbose=verbose, seed=seed
-        )
-    if game_id == "pm01":
-        from registry_tw_rv_gif import record_pm01_registry_gif
-
-        return record_pm01_registry_gif(
-            game_id, root, overrides=o, verbose=verbose, seed=seed
-        )
-    if game_id == "hz01":
-        from registry_tw_rv_gif import record_hz01_registry_gif
-
-        return record_hz01_registry_gif(
-            game_id, root, overrides=o, verbose=verbose, seed=seed
-        )
-    if game_id == "sb01":
-        from registry_tw_rv_gif import record_sb01_registry_gif
-
-        return record_sb01_registry_gif(
-            game_id, root, overrides=o, verbose=verbose, seed=seed
-        )
-    if game_id == "fc01":
-        from registry_tk_sr_gif import record_fc01_registry_gif
-
-        return record_fc01_registry_gif(
-            game_id, root, overrides=o, verbose=verbose, seed=seed
-        )
-    if game_id in RK_JW_REGISTRY_STEMS:
-        from registry_rk_jw_gif import record_rk_jw_registry_gif
-
-        return record_rk_jw_registry_gif(
-            game_id, root, overrides=o, verbose=verbose, seed=seed
-        )
-    from registry_pk_ec_gif import PK_EC_RECORDERS
-
-    if game_id in PK_EC_RECORDERS:
-        return PK_EC_RECORDERS[game_id](
-            game_id, root, overrides=o, verbose=verbose, seed=seed
-        )
-    if game_id == "gc01":
-        from registry_tk_sr_gif import record_gc01_registry_gif
-
-        return record_gc01_registry_gif(
-            game_id, root, overrides=o, verbose=verbose, seed=seed
-        )
+    ext = lookup_external_recorder(game_id)
+    if ext is not None:
+        return ext(game_id, root, overrides=o, verbose=verbose, seed=seed)
     target_levels = int(o.get("target_levels", 0))  # 0 = min(3, n_levels)
     max_total_steps = int(o.get("max_total_steps", 1400))
     max_idle = int(o.get("max_idle_between", 28))

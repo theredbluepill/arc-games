@@ -6,6 +6,7 @@ from arcengine import (
     ARCBaseGame,
     Camera,
     GameAction,
+    GameState,
     Level,
     RenderableUserDisplay,
     Sprite,
@@ -18,14 +19,74 @@ WALL_C = 3
 STATION_C = 10
 
 
-class Hd01UI(RenderableUserDisplay):
-    def __init__(self, heat: int, immune: int) -> None:
-        self._heat = heat
-        self._immune = immune
+def _rp(frame, h, w, x, y, c):
+    if 0 <= x < w and 0 <= y < h:
+        frame[y, x] = c
 
-    def update(self, heat: int, immune: int) -> None:
+
+def _r_dots(frame, h, w, li, n, y0=0):
+    for i in range(min(n, 14)):
+        cx = 1 + i * 2
+        if cx >= w:
+            break
+        c = 14 if i < li else (11 if i == li else 3)
+        _rp(frame, h, w, cx, y0, c)
+
+
+def _r_bar(frame, h, w, game_over, win):
+    if not (game_over or win):
+        return
+    r = h - 3
+    if r < 0:
+        return
+    c = 14 if win else 8
+    for x in range(min(w, 16)):
+        _rp(frame, h, w, x, r, c)
+
+
+class Hd01UI(RenderableUserDisplay):
+    def __init__(
+        self,
+        heat: int,
+        immune: int,
+        *,
+        level_index: int = 0,
+        num_levels: int = 5,
+        steps_mod: int = 0,
+        interval: int = 8,
+        gs: GameState | None = None,
+    ) -> None:
         self._heat = heat
         self._immune = immune
+        self._level_index = level_index
+        self._num_levels = num_levels
+        self._steps_mod = steps_mod
+        self._interval = max(1, interval)
+        self._gs = gs
+
+    def update(
+        self,
+        heat: int,
+        immune: int,
+        *,
+        level_index: int | None = None,
+        num_levels: int | None = None,
+        steps_mod: int | None = None,
+        interval: int | None = None,
+        gs: GameState | None = None,
+    ) -> None:
+        self._heat = heat
+        self._immune = immune
+        if level_index is not None:
+            self._level_index = level_index
+        if num_levels is not None:
+            self._num_levels = num_levels
+        if steps_mod is not None:
+            self._steps_mod = steps_mod
+        if interval is not None:
+            self._interval = max(1, interval)
+        if gs is not None:
+            self._gs = gs
 
     def render_interface(self, frame):
         import numpy as np
@@ -33,9 +94,18 @@ class Hd01UI(RenderableUserDisplay):
         if not isinstance(frame, np.ndarray):
             return frame
         h, w = frame.shape
-        for i in range(min(self._heat, 16)):
-            frame[1 + i, 1] = 8
+        _r_dots(frame, h, w, self._level_index, self._num_levels, 0)
+        for i in range(min(self._heat + 1, 14)):
+            frame[2 + i, 1] = 8
         frame[h - 2, w - 3] = 14 if self._immune > 0 else 3
+        rem = (self._interval - (self._steps_mod % self._interval)) % self._interval
+        if rem == 0:
+            rem = self._interval
+        for i in range(min(rem, 8)):
+            _rp(frame, h, w, 2 + i, h - 2, 10)
+        go = self._gs == GameState.GAME_OVER
+        win = self._gs == GameState.WIN
+        _r_bar(frame, h, w, go, win)
         return frame
 
 
@@ -105,7 +175,7 @@ levels = [
 
 class Hd01(ARCBaseGame):
     def __init__(self) -> None:
-        self._ui = Hd01UI(0, 0)
+        self._ui = Hd01UI(0, 0, num_levels=len(levels))
         super().__init__(
             "hd01",
             levels,
@@ -121,7 +191,15 @@ class Hd01(ARCBaseGame):
         self._steps = 0
         self._immune = 0
         self._interval = int(self.current_level.get_data("heat_interval") or 8)
-        self._ui.update(self._heat_row, self._immune)
+        self._ui.update(
+            self._heat_row,
+            self._immune,
+            level_index=self.level_index,
+            num_levels=len(self.levels),
+            steps_mod=self._steps,
+            interval=self._interval,
+            gs=self._state,
+        )
 
     def _in_heat(self) -> bool:
         return self._immune <= 0 and self._player.y <= self._heat_row
@@ -162,6 +240,15 @@ class Hd01(ARCBaseGame):
 
         if self._in_heat():
             self.lose()
+            self._ui.update(
+                self._heat_row,
+                self._immune,
+                level_index=self.level_index,
+                num_levels=len(self.levels),
+                steps_mod=self._steps,
+                interval=self._interval,
+                gs=self._state,
+            )
             self.complete_action()
             return
 
@@ -169,5 +256,13 @@ class Hd01(ARCBaseGame):
         if self._player.x == gl.x and self._player.y == gl.y:
             self.next_level()
 
-        self._ui.update(self._heat_row, self._immune)
+        self._ui.update(
+            self._heat_row,
+            self._immune,
+            level_index=self.level_index,
+            num_levels=len(self.levels),
+            steps_mod=self._steps,
+            interval=self._interval,
+            gs=self._state,
+        )
         self.complete_action()

@@ -627,3 +627,10 @@ def record_bi01_registry_gif(
         moves = sum(len(p) for p in plans)
         print(f"  {game_id}: bi01 registry GIF, {L} levels, {moves} moves, {len(images)} frames")
     return res, images
+
+
+REGISTRY_RECORDERS = {
+    "ph03": record_ph03_registry_gif,
+    "bn03": record_bn03_registry_gif,
+    "bi01": record_bi01_registry_gif,
+}

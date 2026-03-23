@@ -380,3 +380,11 @@ def record_sf01_registry_gif(
     if verbose:
         print(f"  {game_id}: stencil GIF, {len(images)} frames")
     return res_box[0], images
+
+
+REGISTRY_RECORDERS = {
+    "lw01": record_lw01_registry_gif,
+    "rp01": record_rp01_registry_gif,
+    "ml01": record_ml01_registry_gif,
+    "sf01": record_sf01_registry_gif,
+}

@@ -14,6 +14,7 @@ from gif_common import (
     offline_arcade,
 )
 from registry_gif_lib import (
+    RK_JW_REGISTRY_STEMS,
     _cap_gif_frames,
     _frame_layer0,
     _StepAbort,
@@ -912,3 +913,6 @@ def record_rk_jw_registry_gif(
         )
 
     return res, images
+
+
+REGISTRY_RECORDERS = {s: record_rk_jw_registry_gif for s in RK_JW_REGISTRY_STEMS}
