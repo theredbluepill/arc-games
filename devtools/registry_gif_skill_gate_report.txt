@@ -1,0 +1,16 @@
+ll01	frames=144	fallback=False	levels_completed=2	state=GameState.GAME_OVER
+wl01	frames=302	fallback=False	levels_completed=2	state=GameState.GAME_OVER
+rs02	frames=44	fallback=False	levels_completed=1	state=GameState.GAME_OVER
+bn01	frames=64	fallback=True	levels_completed=0	state=GameState.NOT_FINISHED
+gp02	frames=504	fallback=False	levels_completed=0	state=GameState.NOT_FINISHED
+ab01	frames=38	fallback=False	levels_completed=7	state=GameState.WIN
+sk02	frames=208	fallback=False	levels_completed=0	state=GameState.GAME_OVER
+rp02	frames=57	fallback=False	levels_completed=1	state=GameState.NOT_FINISHED
+ph03	frames=252	fallback=False	levels_completed=4	state=GameState.NOT_FINISHED
+bn03	frames=112	fallback=False	levels_completed=3	state=GameState.NOT_FINISHED
+bi01	frames=106	fallback=False	levels_completed=5	state=GameState.WIN
+bt01	frames=161	fallback=False	levels_completed=5	state=GameState.WIN
+pk01	frames=325	fallback=False	levels_completed=5	state=GameState.WIN
+fe02	frames=126	fallback=False	levels_completed=3	state=GameState.NOT_FINISHED
+sq04	frames=305	fallback=False	levels_completed=5	state=GameState.NOT_FINISHED
+mm04	frames=86	fallback=False	levels_completed=1	state=GameState.NOT_FINISHED

@@ -39,8 +39,8 @@ MD_PATH = REPORT_DIR / "official_stem_overlap.md"
 
 # Tried in order; first existing file wins (keep copies in sync).
 _CREATE_ARC_GAME_SKILL_PATHS: tuple[Path, ...] = (
-    ROOT / ".opencode" / "skills" / "create-arc-game" / "SKILL.md",
     ROOT / "skills" / "create-arc-game" / "SKILL.md",
+    ROOT / ".opencode" / "skills" / "create-arc-game" / "SKILL.md",
     ROOT / ".agents" / "skills" / "create-arc-game" / "SKILL.md",
 )
 

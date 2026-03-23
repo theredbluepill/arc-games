@@ -304,16 +304,26 @@ def _bn_parse(
     return walls, player, budget, radius, steps, gw, gh
 
 
-def _bn_revealed(beacons: tuple[tuple[int, int], ...], r: int, gw: int, gh: int) -> set[tuple[int, int]]:
+def _bn_revealed(
+    beacons: tuple[tuple[int, int], ...],
+    r: int,
+    gw: int,
+    gh: int,
+    *,
+    chebyshev: bool,
+) -> set[tuple[int, int]]:
     out: set[tuple[int, int]] = set()
     if r < 0:
         return out
     for bx, by in beacons:
         for y in range(by - r, by + r + 1):
             for x in range(bx - r, bx + r + 1):
-                if abs(x - bx) + abs(y - by) <= r:
-                    if 0 <= x < gw and 0 <= y < gh:
-                        out.add((x, y))
+                if chebyshev:
+                    in_ball = max(abs(x - bx), abs(y - by)) <= r
+                else:
+                    in_ball = abs(x - bx) + abs(y - by) <= r
+                if in_ball and 0 <= x < gw and 0 <= y < gh:
+                    out.add((x, y))
     return out
 
 
@@ -341,13 +351,19 @@ class _BnSt:
     flagged: frozenset[tuple[int, int]]
 
 
-def _bn_bfs_plan(level: Level, *, max_nodes: int = 800_000) -> list[tuple[str, ...]] | None:
+def _bn_bfs_plan(
+    level: Level,
+    *,
+    chebyshev: bool = False,
+    shrink_radius_on_beacon: bool = True,
+    max_nodes: int = 800_000,
+) -> list[tuple[str, ...]] | None:
     walls, (sx, sy), budget0, radius0, steps0, gw, gh = _bn_parse(level)
     raw = level.get_data("hidden") or []
     hidden = frozenset(tuple(int(t) for t in p) for p in raw)
 
     def revealed(st: _BnSt) -> set[tuple[int, int]]:
-        return _bn_revealed(st.beacons, st.radius, gw, gh)
+        return _bn_revealed(st.beacons, st.radius, gw, gh, chebyshev=chebyshev)
 
     start = _BnSt(sx, sy, budget0, radius0, (), frozenset())
     if start.flagged == hidden:
@@ -395,7 +411,7 @@ def _bn_bfs_plan(level: Level, *, max_nodes: int = 800_000) -> list[tuple[str, .
 
         if st.budget > 0:
             nb = st.beacons + ((st.px, st.py),)
-            nr = max(0, st.radius - 1)
+            nr = max(0, st.radius - 1) if shrink_radius_on_beacon else st.radius
             nst = _BnSt(st.px, st.py, st.budget - 1, nr, nb, st.flagged)
             if nst not in seen:
                 seen.add(nst)
@@ -405,7 +421,7 @@ def _bn_bfs_plan(level: Level, *, max_nodes: int = 800_000) -> list[tuple[str, .
     return None
 
 
-def record_bn03_registry_gif(
+def _record_bn_beacon_registry_gif(
     game_id: str,
     root: Path,
     *,
@@ -418,6 +434,8 @@ def record_bn03_registry_gif(
     target_levels = int(o.get("target_levels", 0))
     max_gif = int(o.get("max_gif_frames", 1400))
     level_hold = int(o.get("bn_level_hold_frames", 14))
+    chebyshev = bool(o.get("bn_reveal_chebyshev")) or game_id == "bn01"
+    shrink_r = bool(o.get("bn_shrink_radius_on_beacon", game_id == "bn03"))
 
     mod = load_stem_game_py(game_id, f"{game_id}_registry_bn")
     level_defs: list = mod.levels
@@ -426,9 +444,16 @@ def record_bn03_registry_gif(
 
     plans: list[list[tuple[str, ...]]] = []
     for i in range(L):
-        p = _bn_bfs_plan(level_defs[i])
+        p = _bn_bfs_plan(
+            level_defs[i],
+            chebyshev=chebyshev,
+            shrink_radius_on_beacon=shrink_r,
+            max_nodes=2_000_000,
+        )
         if p is None:
-            raise RuntimeError(f"{game_id}: level {i} has no bn03 BFS plan for registry GIF")
+            raise RuntimeError(
+                f"{game_id}: level {i} has no beacon BFS plan for registry GIF"
+            )
         plans.append(p)
 
     arc = offline_arcade(root)
@@ -494,8 +519,34 @@ def record_bn03_registry_gif(
     snap_repeats(12)
     _cap_gif_frames(images, max_gif)
     if verbose:
-        print(f"  {game_id}: bn03 registry GIF, {L} levels, {len(images)} frames")
+        print(f"  {game_id}: beacon registry GIF, {L} levels, {len(images)} frames")
     return res, images
+
+
+def record_bn01_registry_gif(
+    game_id: str,
+    root: Path,
+    *,
+    overrides: dict[str, Any] | None = None,
+    verbose: bool = False,
+    seed: int = 0,
+) -> tuple[Any, list]:
+    return _record_bn_beacon_registry_gif(
+        game_id, root, overrides=overrides, verbose=verbose, seed=seed
+    )
+
+
+def record_bn03_registry_gif(
+    game_id: str,
+    root: Path,
+    *,
+    overrides: dict[str, Any] | None = None,
+    verbose: bool = False,
+    seed: int = 0,
+) -> tuple[Any, list]:
+    return _record_bn_beacon_registry_gif(
+        game_id, root, overrides=overrides, verbose=verbose, seed=seed
+    )
 
 
 # --- bi01 diagonal slide ---
@@ -631,6 +682,7 @@ def record_bi01_registry_gif(
 
 REGISTRY_RECORDERS = {
     "ph03": record_ph03_registry_gif,
+    "bn01": record_bn01_registry_gif,
     "bn03": record_bn03_registry_gif,
     "bi01": record_bi01_registry_gif,
 }

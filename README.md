@@ -67,7 +67,7 @@ These games are designed to be easy for humans to solve, but very hard for moder
 
 - **Massive testing ground** — 200+ community games in [`GAMES.md`](GAMES.md) beside the [official ARC-AGI-3 list](https://docs.arcprize.org/available-games); train, test, and evaluate agents on varied unseen tasks for generalization.
 - **Fast prototyping** — Local offline `environment_files/`, agent step-through, and **`--mode human`** to learn win conditions by playing.
-- **LLM-friendly authoring** — [`AGENTS.md`](AGENTS.md) plus skills under [`.opencode/skills/`](.opencode/skills/) (mirrored at [`skills/`](skills/)): [create-arc-game](.opencode/skills/create-arc-game/SKILL.md), [play-arc-game](.opencode/skills/play-arc-game/SKILL.md).
+- **LLM-friendly authoring** — [`AGENTS.md`](AGENTS.md) plus skills under [`skills/`](skills/): [create-arc-game](skills/create-arc-game/SKILL.md), [play-arc-game](skills/play-arc-game/SKILL.md).
 - **Competition mode** — `uv run python run_game.py --competition` matches the real toolkit ([competition rules](https://docs.arcprize.org/toolkit/competition_mode)) before you submit.
 - **Official leaderboard** — With **`ARC_API_KEY`** and **`--online`**, runs can count on **[three.arcprize.org](https://three.arcprize.org/)** (see [API / leaderboard / competition](#api--leaderboard--competition) below).
 
@@ -151,13 +151,13 @@ uv run python run_game.py --competition \
 Example prompt (replace `{game_id}` and the bracketed design):
 
 ```
-Implement a new ARC-AGI-3 game {game_id} at environment_files/{game_id}/v1/. Follow AGENTS.md and .opencode/skills/create-arc-game/SKILL.md: static levels only, ARCBaseGame + metadata.json, register a row in GAMES.md. Game design: [grid size, entities, win/lose, which actions 1–7 do].
+Implement a new ARC-AGI-3 game {game_id} at environment_files/{game_id}/v1/. Follow AGENTS.md and skills/create-arc-game/SKILL.md: static levels only, ARCBaseGame + metadata.json, register a row in GAMES.md. Game design: [grid size, entities, win/lose, which actions 1–7 do].
 ```
 
-**Available skills** (under [`.opencode/skills/`](.opencode/skills/), mirrored at [`skills/`](skills/)):
+**Available skills** (under [`skills/`](skills/)):
 
-- **[create-arc-game](.opencode/skills/create-arc-game/SKILL.md)** — End-to-end game design and implementation (`environment_files/`, `ARCBaseGame`, `metadata.json`, `GAMES.md`) aligned with [`AGENTS.md`](AGENTS.md).
-- **[play-arc-game](.opencode/skills/play-arc-game/SKILL.md)** — Run and smoke-test local environments with `run_game.py` (list, random agent, human pygame, offline/online flags).
-- **[generate-arc-game-gif](.opencode/skills/generate-arc-game-gif/SKILL.md)** — GIF-ready `RenderableUserDisplay` and registry previews via `scripts/render_arc_game_gif.py`.
+- **[create-arc-game](skills/create-arc-game/SKILL.md)** — End-to-end game design and implementation (`environment_files/`, `ARCBaseGame`, `metadata.json`, `GAMES.md`) aligned with [`AGENTS.md`](AGENTS.md).
+- **[play-arc-game](skills/play-arc-game/SKILL.md)** — Run and smoke-test local environments with `run_game.py` (list, random agent, human pygame, offline/online flags).
+- **[generate-arc-game-gif](skills/generate-arc-game-gif/SKILL.md)** — GIF-ready `RenderableUserDisplay` and registry previews via `scripts/render_arc_game_gif.py`.
 
 Full checklist: [CONTRIBUTING.md](CONTRIBUTING.md#creating-a-new-game).

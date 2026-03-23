@@ -88,7 +88,7 @@ Actions are **abstract** - each game defines what they mean. The canonical mappi
 
 ## Capturing preview GIFs
 
-Use the repo’s **`scripts/render_arc_game_gif.py`** and the **`generate-arc-game-gif`** skill (`skills/generate-arc-game-gif/SKILL.md`, also under `.opencode/skills/` and `.agents/skills/`). Palette helpers live in **`scripts/gif_common.py`**.
+Use the repo’s **`scripts/render_arc_game_gif.py`** and the **`generate-arc-game-gif`** skill (`skills/generate-arc-game-gif/SKILL.md`). Palette helpers live in **`scripts/gif_common.py`**.
 
 ## Checking Game State
 

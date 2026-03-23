@@ -40,7 +40,7 @@ When you author games in this repo, treat **human solvability (given that shared
 
 **Steps**:
 1. Add entry to `GAMES.md` with all metadata columns
-2. If you discover a **reusable** pattern (not stem-specific), add a short bullet under **Lessons learned (cross-repo)** below; otherwise rely on `GAMES.md`, `{stem}.py`, and **`scripts/render_arc_game_gif.py`** (see skill **`generate-arc-game-gif`** in **`skills/`** / **`.opencode/skills/`** / **`.agents/skills/`**)
+2. If you discover a **reusable** pattern (not stem-specific), add a short bullet under **Lessons learned (cross-repo)** below; otherwise rely on `GAMES.md`, `{stem}.py`, and **`scripts/render_arc_game_gif.py`** (see skill **`generate-arc-game-gif`** in **`skills/`**)
 3. Optional: add **`assets/{stem}.gif`** using the **generate-arc-game-gif** skill (advancing levels + 1–2 fail clips, HUD in **`RenderableUserDisplay`**)
 
 ## Established Game Patterns
@@ -456,8 +456,8 @@ Condensed from many shipped stems. **Preview GIFs** use **`scripts/render_arc_ga
 |------|------------|
 | Mechanic summary | `GAMES.md` row + `{stem}.py` module docstring |
 | Preview / registry GIF | `scripts/render_arc_game_gif.py` + `registry_gif_lib`, `registry_gif_overrides.json` |
-| GIF-ready HUD audit | Skill **`generate-arc-game-gif`** (`skills/` / `.opencode/skills/` / `.agents/skills/`) |
-| Discovery-through-play / cold-start review | Skill **`check-arc-game-discoverable`** (`.opencode/skills/` / `.agents/skills/` / `.claude/skills/`) |
+| GIF-ready HUD audit | Skill **`generate-arc-game-gif`** (`skills/`) |
+| Discovery-through-play / cold-start review | Skill **`check-arc-game-discoverable`** (`skills/`) |
 | Solvability smoke | `scripts/verify_*solvability*.py` when one exists for your batch |
 
 ---

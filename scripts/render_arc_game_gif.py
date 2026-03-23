@@ -8,7 +8,7 @@
 
 Uses ``registry_gif_lib.record_registry_gif`` and ``registry_gif_overrides.json``.
 Games should expose a **GIF-ready** ``RenderableUserDisplay`` (see skill
-``.opencode/skills/generate-arc-game-gif/SKILL.md``).
+``skills/generate-arc-game-gif/SKILL.md``).
 
 **Pending mode** — quick GIF for empty/missing ``GAMES.md`` preview links:
   uv run python scripts/render_arc_game_gif.py --pending --all

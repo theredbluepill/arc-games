@@ -355,7 +355,7 @@ elif not sprite or not sprite.is_collidable:
 
 Registry GIFs live under **`assets/{stem}.gif`** (final frame **64×64**).
 
-1. **Design the HUD for capture** — Follow **`skills/generate-arc-game-gif/SKILL.md`** (same file under **`.opencode/skills/`** / **`.agents/skills/`**). Confirm `RenderableUserDisplay` is **GIF-ready** (stateful HUD, multi-frame click/ping feedback in **frame** space). Good references: **`environment_files/mm01/63be02fb/mm01.py`** (`Mm01UI.set_click`, top bar), **`environment_files/sq01/<version>/sq01.py`** (`Sq01UI`, grid→frame click FX).
+1. **Design the HUD for capture** — Follow **`skills/generate-arc-game-gif/SKILL.md`**. Confirm `RenderableUserDisplay` is **GIF-ready** (stateful HUD, multi-frame click/ping feedback in **frame** space). Good references: **`environment_files/mm01/63be02fb/mm01.py`** (`Mm01UI.set_click`, top bar), **`environment_files/sq01/<version>/sq01.py`** (`Sq01UI`, grid→frame click FX).
 2. **Record with the single script** — Do **not** add `scripts/render_<stem>_gif.py`. Run:
    ```bash
    uv run python scripts/render_arc_game_gif.py --stem <stem>

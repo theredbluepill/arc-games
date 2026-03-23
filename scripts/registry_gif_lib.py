@@ -1840,8 +1840,9 @@ def record_registry_gif(
     ext = lookup_external_recorder(game_id)
     if ext is not None:
         return ext(game_id, root, overrides=o, verbose=verbose, seed=seed)
-    target_levels = int(o.get("target_levels", 0))  # 0 = min(3, n_levels)
-    max_total_steps = int(o.get("max_total_steps", 1400))
+    # Default target levels: up to 4 authored levels (skill: clear level ramp + later difficulty).
+    target_levels = int(o.get("target_levels", 0))  # 0 = min(4, n_levels)
+    max_total_steps = int(o.get("max_total_steps", 2200))
     max_idle = int(o.get("max_idle_between", 28))
     stagnation_trigger = int(o.get("stagnation_steps", 100))
     explore_steps = int(o.get("exploration_burst", 36))
@@ -1862,7 +1863,7 @@ def record_registry_gif(
     snap_repeats(6)
 
     n_authored = len(env._game._levels)
-    L = target_levels if target_levels > 0 else min(3, max(1, n_authored))
+    L = target_levels if target_levels > 0 else min(4, max(1, n_authored))
 
     fail_injected: set[int] = set()
     stagnation = 0
