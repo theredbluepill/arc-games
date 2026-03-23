@@ -8,11 +8,11 @@ that block once per stem under ``environment_files/``.
 Copy cells from this file into a new task notebook at:
 https://www.kaggle.com/benchmarks/tasks/new
 
-Paste the **bootstrap** from ``notebooks/README.md`` (``pip`` / ``uv run`` for
-Python 3.11 papermill) above or below this task code in the Kaggle notebook.
-Optionally run ``python3 benchmarks/kaggle/rebuild_kaggle_notebooks.py`` to emit
-``notebooks/*.ipynb`` (markdown + embedded task + bootstrap), or
-``uv run python benchmarks/kaggle/export_kaggle_notebooks_all_stems.py`` for
+Paste the **bootstrap** from ``notebooks/README.md`` (``pip`` + ``exec`` task script;
+**Python 3.12** Kaggle Notebook) above or below this task code.
+
+Regenerate checked-in notebooks with ``python3 benchmarks/kaggle/rebuild_kaggle_notebooks.py``
+(``notebooks/*.ipynb``) or ``python benchmarks/kaggle/export_kaggle_notebooks_all_stems.py`` for
 ``notebooks/all/arc-interactive-<stem>.ipynb``.
 
 Prerequisites:
@@ -26,7 +26,7 @@ For multiple tasks, duplicate the notebook or add cells that call each
 """
 
 # --- Cell 1: Install dependencies (run first) ---
-# Kaggle Benchmark bootstrap: see benchmarks/kaggle/notebooks/README.md
+# Kaggle Notebook 3.12 bootstrap: see benchmarks/kaggle/notebooks/README.md
 # Worker deps: see PIP_PKGS_KAGGLE_WORKER in rebuild_kaggle_notebooks.py.
 # !pip install -q arc-agi arcengine
 

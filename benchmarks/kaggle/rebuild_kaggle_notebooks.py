@@ -1,13 +1,12 @@
 #!/usr/bin/env python3
-"""Regenerate ``benchmarks/kaggle/notebooks/*.ipynb`` for Kaggle Benchmark (papermill) + local use.
+"""Regenerate ``benchmarks/kaggle/notebooks/*.ipynb`` for Kaggle Notebook (Python **3.12**).
 
-- **Python 3.12+ kernel:** ``pip install`` + ``exec(TASK_SCRIPT)`` in-process.
-- **Python 3.11 papermill workers:** ``pip install`` pinned ``uv`` (see ``UV_PIP_SPEC``) then
-  ``uv run --python 3.12`` so ``arc-agi`` (PyPI ``requires-python >= 3.12``) runs in a 3.12 subprocess.
+Bootstrap: ``pip install`` worker packages (see ``PIP_PKGS_KAGGLE_WORKER``), then
+``exec(TASK_SCRIPT)`` in-process. No ``uv`` subprocess.
 
 Template body is sliced from ``arc_kaggle_notebook_template.py``. Do **not** install PyPI
-``kaggle-benchmarks`` in the uv subprocess: it pins ``hishel==0.1.5``, which conflicts with
-``hishel.httpx`` required by ``/benchmarks/src/kaggle_benchmarks`` on the worker.
+``kaggle-benchmarks`` in pip alongside conflicting pins; the worker injects
+``/benchmarks/src/kaggle_benchmarks``.
 
 Usage::
 
@@ -29,12 +28,9 @@ ROOT = Path(__file__).resolve().parent
 TEMPLATE = ROOT / "arc_kaggle_notebook_template.py"
 NOTEBOOK_DIR = ROOT / "notebooks"
 
-# Pinned for reproducible ``pip install`` on Kaggle papermill (3.11) before ``uv run``.
-UV_PIP_SPEC = "uv==0.10.11"
-
 BOOTSTRAP_TAG = "[arc-benchmark-bootstrap]"
 
-# Single source of truth for both ``pip`` (3.12+) and ``uv run --with`` (3.11 path).
+# Packages installed by the notebook bootstrap before ``exec(TASK_SCRIPT)`` (Kaggle Notebook 3.12).
 PIP_PKGS_KAGGLE_WORKER: tuple[str, ...] = (
     "arc-agi",
     "arcengine",
@@ -62,18 +58,41 @@ def base_taskscript_body() -> str:
 
 CELL3 = "\n\n# --- Cell 3: Run one task (duplicate cell or notebook per task on Kaggle) ---\n"
 
+# Shared opening for benchmark notebooks (export script imports this).
+SECTION_12_MARKDOWN = dedent(
+    """
+    ## 1. What for?
+
+    > The intelligence of a system is a measure of its skill-acquisition efficiency over a scope of tasks, with respect to priors, experience, and generalization difficulty.
+    > — François Chollet, *[On the Measure of Intelligence](https://arxiv.org/abs/1911.01547)* (2019)
+
+    These games stress **reasoning, planning, and interactive control**—easy for many humans, hard for typical LLMs—rather than memorized templates. Same idea as **[ARC-AGI-3](https://arcprize.org/arc-agi/3/)**: **action efficiency** and generalization matter.
+
+    ## 2. Why use ARC-Interactive?
+
+    - **250+** games in **[GAMES.md](https://github.com/theredbluepill/arc-interactive/blob/main/GAMES.md)** alongside the [official ARC-AGI-3 list](https://docs.arcprize.org/available-games).
+    - Patterns in **[AGENTS.md](https://github.com/theredbluepill/arc-interactive/blob/main/AGENTS.md)** and skills under **[`.opencode/skills/`](https://github.com/theredbluepill/arc-interactive/tree/main/.opencode/skills)** (mirrored [`skills/`](https://github.com/theredbluepill/arc-interactive/tree/main/skills/)).
+    - Contribute via **[CONTRIBUTING.md](https://github.com/theredbluepill/arc-interactive/blob/main/CONTRIBUTING.md#creating-a-new-game)**.
+    """
+).strip()
+
+
 NOTEBOOKS: list[dict[str, str]] = [
     {
         "filename": "arc-interactive-ez01-go-up.ipynb",
         "md": dedent(
-            """
+            f"""
+            {SECTION_12_MARKDOWN}
+
+            ---
+
             # ARC benchmark: ez01 (Go Up)
 
-            **Kernels:** On **Python 3.12+**, installs `arc-agi` / `arcengine` and runs in this session.
-            **Kaggle Benchmark (papermill) on 3.11** cannot import `arc-agi`; this cell uses
-            **`uv run --python 3.12`** to run the same code under 3.12 (needs network for the first run).
+            **Kernel:** Python **3.12** (Kaggle Notebook). The code cell installs dependencies with `pip`, then runs the task.
 
-            Attach a dataset whose root contains **`environment_files/`** (see repo `benchmarks/kaggle/notebooks/README.md`).
+            Attach a dataset whose root contains **`environment_files/`**. Load games with [`Arcade`](https://docs.arcprize.org/toolkit/arc_agi) and `environments_dir` pointing at that tree (`OperationMode.OFFLINE` for local only).
+
+            See `benchmarks/kaggle/notebooks/README.md` for details.
             """
         ).strip(),
         "run": "arc_ez01_go_up.run(llm=kbench.llm, seed=0, max_steps=30)",
@@ -81,12 +100,16 @@ NOTEBOOKS: list[dict[str, str]] = [
     {
         "filename": "arc-interactive-sk01-sokoban.ipynb",
         "md": dedent(
-            """
+            f"""
+            {SECTION_12_MARKDOWN}
+
+            ---
+
             # ARC benchmark: sk01 (Sokoban)
 
-            **Kernels:** Same as ez01 notebook — **3.12+** in-process, **3.11** via **`uv run --python 3.12`**.
+            **Kernel:** Python **3.12** (Kaggle Notebook). Attach **`environment_files/`** via **+ Add data**.
 
-            Attach **`environment_files/`** via **+ Add data**.
+            [`Arcade`](https://docs.arcprize.org/toolkit/arc_agi) + `OperationMode.OFFLINE` + local `environments_dir`.
             """
         ).strip(),
         "run": "arc_sk01_sokoban.run(llm=kbench.llm, seed=0, max_steps=200)",
@@ -94,12 +117,16 @@ NOTEBOOKS: list[dict[str, str]] = [
     {
         "filename": "arc-interactive-tt01-collect.ipynb",
         "md": dedent(
-            """
+            f"""
+            {SECTION_12_MARKDOWN}
+
+            ---
+
             # ARC benchmark: tt01 (Collect)
 
-            **Kernels:** Same as ez01 notebook — **3.12+** in-process, **3.11** via **`uv run --python 3.12`**.
+            **Kernel:** Python **3.12** (Kaggle Notebook). Attach **`environment_files/`** via **+ Add data**.
 
-            Attach **`environment_files/`** via **+ Add data**.
+            [`Arcade`](https://docs.arcprize.org/toolkit/arc_agi) + `OperationMode.OFFLINE` + local `environments_dir`.
             """
         ).strip(),
         "run": "arc_tt01_collect.run(llm=kbench.llm, seed=0, max_steps=200)",
@@ -107,12 +134,16 @@ NOTEBOOKS: list[dict[str, str]] = [
     {
         "filename": "arc-interactive-sv01-survive.ipynb",
         "md": dedent(
-            """
+            f"""
+            {SECTION_12_MARKDOWN}
+
+            ---
+
             # ARC benchmark: sv01 (Survive)
 
-            **Kernels:** Same as ez01 notebook — **3.12+** in-process, **3.11** via **`uv run --python 3.12`**.
+            **Kernel:** Python **3.12** (Kaggle Notebook). Attach **`environment_files/`** via **+ Add data**.
 
-            Attach **`environment_files/`** via **+ Add data**.
+            [`Arcade`](https://docs.arcprize.org/toolkit/arc_agi) + `OperationMode.OFFLINE` + local `environments_dir`.
             """
         ).strip(),
         "run": "arc_sv01_survive.run(llm=kbench.llm, seed=0, max_steps=80)",
@@ -123,7 +154,6 @@ NOTEBOOKS: list[dict[str, str]] = [
 def _bootstrap_cell_source_lines() -> list[str]:
     """Lines of Python source for ``_bootstrap()`` embedded in the notebook (no leading cell header)."""
     tag = BOOTSTRAP_TAG
-    n = len(PIP_PKGS_KAGGLE_WORKER)
     lines: list[str] = [
         "def _bootstrap() -> None:",
         "    def _log(msg: str) -> None:",
@@ -140,55 +170,24 @@ def _bootstrap_cell_source_lines() -> list[str]:
         "    env = os.environ.copy()",
         '    _log(f"kernel {sys.version_info.major}.{sys.version_info.minor} exec={sys.executable}")',
         "",
-        "    if sys.version_info >= (3, 12):",
-        '        _log("pip install worker deps (verbose pip; no -q)")',
-        "        subprocess.check_call(",
-        "            [",
-        "                sys.executable,",
-        '                "-m",',
-        '                "pip",',
-        '                "install",',
+        '    _log("pip install worker deps (Kaggle Notebook 3.12)")',
+        "    subprocess.check_call(",
+        "        [",
+        "            sys.executable,",
+        '            "-m",',
+        '            "pip",',
+        '            "install",',
     ]
     for pkg in PIP_PKGS_KAGGLE_WORKER:
-        lines.append(f'                "{pkg}",')
+        lines.append(f'            "{pkg}",')
     lines.extend(
         [
-            "            ],",
-            "            env=env,",
-            "        )",
-            '        _log("pip finished; exec TASK_SCRIPT as __main__")',
-            '        exec(compile(code, str(out), "exec"), {"__name__": "__main__"})',
-            '        _log("exec returned")',
-            "        return",
-            "",
-            f'    _log("kernel < 3.12: pip install {UV_PIP_SPEC}")',
-            "    subprocess.check_call(",
-            f'        [sys.executable, "-m", "pip", "install", "-q", "{UV_PIP_SPEC}"],',
-            "        env=env,",
-            "    )",
-            '    _log(f"uv run --python 3.12 with '
-            + str(n)
-            + ' --with pkgs -> {out.name}")',
-            "    subprocess.check_call(",
-            "        [",
-            "            sys.executable,",
-            '            "-m",',
-            '            "uv",',
-            '            "run",',
-            '            "--python",',
-            '            "3.12",',
-        ]
-    )
-    for pkg in PIP_PKGS_KAGGLE_WORKER:
-        lines.extend(['            "--with",', f'            "{pkg}",'])
-    lines.extend(
-        [
-            '            "python",',
-            "            str(out),",
             "        ],",
             "        env=env,",
             "    )",
-            '    _log("uv subprocess exited ok")',
+            '    _log("pip finished; exec TASK_SCRIPT as __main__")',
+            '    exec(compile(code, str(out), "exec"), {"__name__": "__main__"})',
+            '    _log("exec returned")',
         ]
     )
     return lines
@@ -251,7 +250,7 @@ def build_notebook(md: str, code: str) -> dict:
 
 def main() -> None:
     print("[rebuild_kaggle_notebooks]", "template:", TEMPLATE, flush=True)
-    print("[rebuild_kaggle_notebooks]", "worker pip/uv packages:", len(PIP_PKGS_KAGGLE_WORKER), flush=True)
+    print("[rebuild_kaggle_notebooks]", "worker pip packages:", len(PIP_PKGS_KAGGLE_WORKER), flush=True)
     NOTEBOOK_DIR.mkdir(parents=True, exist_ok=True)
     base = base_taskscript_body()
     for spec in NOTEBOOKS:

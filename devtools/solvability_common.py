@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-import json
+import importlib.util
 import re
 import sys
 from pathlib import Path
@@ -15,8 +15,6 @@ ENV_DIR = ROOT / "environment_files"
 
 if str(SCRIPTS) not in sys.path:
     sys.path.insert(0, str(SCRIPTS))
-
-import importlib.util
 
 from env_resolve import (  # noqa: E402
     environment_dir,

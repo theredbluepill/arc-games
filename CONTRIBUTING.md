@@ -153,6 +153,28 @@ Add entry to [GAMES.md](GAMES.md):
 uv run python run_game.py --game mygame --version auto
 ```
 
+### 6. Registry distinctiveness (similarity)
+
+After adding or heavily refactoring multiple stems, or bulk-editing shared templates, regenerate the automated scan so false “same levels” or ambiguous cross-family pairs surface early:
+
+```bash
+uv run python devtools/similar_games_report.py --only-games-md --top-k 12 --min-score 0.25
+```
+
+Optional: add `--suspicious-min-score 0.40` when you want **smaller** overlap components (stronger edges) without raising the main pair threshold. Outputs land in [`devtools/reports/similar_games.md`](devtools/reports/similar_games.md) and [`devtools/reports/similar_games.json`](devtools/reports/similar_games.json).
+
+**Triage** — For high-scoring or suspicious pairs, follow [`devtools/SIMILARITY_TRIAGE.md`](devtools/SIMILARITY_TRIAGE.md): compare `step()` and HUD; if `same_levels_fingerprint` is true across unrelated prefixes, diff `levels = …` sources; prefer **GAMES.md** lead + **metadata** (`tags`, `physics_rules`) before large refactors; smoke affected stems with [`devtools/smoke_games.py`](devtools/smoke_games.py); append one line to **Resolved notes** when a cluster is closed.
+
+**New stem checklist** (also in the [create-arc-game](skills/create-arc-game/SKILL.md) skill):
+
+- [ ] **GAMES.md** row: first sentence states the **unique** rule; for `xx02` / `xx03`, prefix **Variant of `xx01`.** where helpful.
+- [ ] **`metadata.json`**: `description`, `tags`, and `physics_rules` (if used) match `step()`.
+- [ ] **HUD** encodes the main constraint the agent/human cannot infer from tiles alone.
+- [ ] Avoid **verbatim** `levels = …` one-liners copied from unrelated stems (raises false level fingerprint).
+- [ ] Run `smoke_games.py` for the new stem; regenerate the similarity report if the change is large.
+
+CI uploads an **advisory** report artifact (no fail gate) on relevant PRs — [`.github/workflows/similar-games-report.yml`](.github/workflows/similar-games-report.yml).
+
 ## Key Patterns
 
 ### Camera
@@ -220,6 +242,7 @@ Optional local checks (not in CI by default):
 
 Other automation:
 
+- **Similar games report (advisory)** — [`devtools/similar_games_report.py`](devtools/similar_games_report.py) on [`similar-games-report.yml`](.github/workflows/similar-games-report.yml): Jaccard-style code overlap + level fingerprints from `GAMES.md` / `environment_files/`; downloads `similar_games.md` / `.json` from the workflow run artifact. Does **not** fail PRs; use [`devtools/SIMILARITY_TRIAGE.md`](devtools/SIMILARITY_TRIAGE.md) to interpret results.
 - **Registry check** — [`devtools/check_registry.py`](devtools/check_registry.py) on [`pr-registry.yml`](.github/workflows/pr-registry.yml): `metadata.json` shape, `game_id` / `local_dir`, `GAMES.md` rows vs disk (reference stems `vc33` / `ls20` / `ft09` are intentionally omitted from the table; see script).
 - **Ruff** — [`pr-ruff.yml`](.github/workflows/pr-ruff.yml) runs on `devtools/` (including `devtools/scripts/`), `run_game.py`, and related paths when those appear in the PR diff; use **Actions → PR Ruff → Run workflow** for a full pass on that surface.
 - **Labels** — [`labeler.yml`](.github/labeler.yml) (via [`labeler` workflow](.github/workflows/labeler.yml)) tags PRs by area (`game`, `documentation`, `ci`, `devtools`).
@@ -233,5 +256,6 @@ Maintainers: turn on **required status checks** for `main` as described in [`.gi
 
 - [ARC-AGI-3 Docs](https://docs.arcprize.org/add_game)
 - [AGENTS.md](AGENTS.md) — implementation patterns and pitfalls
+- [SIMILARITY_TRIAGE.md](devtools/SIMILARITY_TRIAGE.md) — interpreting the similar-games report and resolving false positives
 - [Game Registry](GAMES.md)
 - Agent skills (mirrored under **`skills/`**, **`.opencode/skills/`**, **`.agents/skills/`**): **create-arc-game**, **play-arc-game**, **generate-arc-game-gif**

@@ -1,0 +1,42 @@
+# Advisory similar-games scan (no fail gate). Upload markdown + JSON for maintainer triage.
+name: Similar games report
+
+on:
+  pull_request:
+    paths:
+      - "environment_files/**"
+      - "GAMES.md"
+      - "devtools/similar_games_report.py"
+      - ".github/workflows/similar-games-report.yml"
+  workflow_dispatch:
+  schedule:
+    # Weekly Sunday 06:00 UTC
+    - cron: "0 6 * * 0"
+
+concurrency:
+  group: similar-games-${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  report:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Generate similar games report
+        run: |
+          python3 devtools/similar_games_report.py \
+            --only-games-md \
+            --top-k 12 \
+            --min-score 0.25
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: similar-games-report
+          path: |
+            devtools/reports/similar_games.md
+            devtools/reports/similar_games.json
+          if-no-files-found: error

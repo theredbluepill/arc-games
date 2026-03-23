@@ -14,6 +14,11 @@ Many games in this repo map `ACTION1`–`ACTION4` to **grid movement**—that is
 - Prefer a **new two-letter prefix** (`xx01`) when the verb is genuinely new (e.g. `nw01` arrow tiles, `bd01` no-revisit).
 - Use **`xx02` / `xx03` only** for alternate rules **within** the same family (`pb`, `fs`, `tp`, `ic`, `va` alongside their `xx01`). Cap at **`03`** unless a project plan explicitly adds `04`+ (keeps variants meaningfully distinct).
 
+### Registry similarity (distinctiveness)
+
+- **After** multi-stem or template-heavy changes, run `uv run python devtools/similar_games_report.py --only-games-md --top-k 12 --min-score 0.25` (optional: `--suspicious-min-score 0.40`). See [devtools/SIMILARITY_TRIAGE.md](../../devtools/SIMILARITY_TRIAGE.md) for triage steps and **Resolved notes**.
+- **New stem checklist:** [GAMES.md](../../GAMES.md) lead sentence states the unique rule; `metadata.json` tags / `physics_rules` match `step()`; HUD shows constraints not obvious from tiles; avoid copy-pasting unrelated `levels = …` literals; smoke with [`devtools/smoke_games.py`](../../devtools/smoke_games.py). On large changes, regenerate the report.
+
 ## Game Structure
 
 ```

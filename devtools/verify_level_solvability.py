@@ -30,8 +30,6 @@ for p in (str(ROOT), str(SCRIPTS), str(DEVTOOLS)):
         sys.path.insert(0, p)
 
 from arc_agi import Arcade, OperationMode  # noqa: E402
-from arcengine import GameState  # noqa: E402
-
 from solvability_common import (  # noqa: E402
     canonical_version_for_stem,
     full_game_id_canonical,
@@ -44,6 +42,7 @@ from solvers.partial_obs import partial_obs_verdict  # noqa: E402
 from solvers.push_switch import verify_push_stem, verify_switch_stem  # noqa: E402
 from solvers.registry import (  # noqa: E402
     PLANNER_NOTE,
+    SIMULATION_NOTE,
     STOCHASTIC_NOTE,
     SolverKind,
     engine_bfs_limits,
@@ -62,6 +61,7 @@ def _verify_one_level(
     num_levels: int,
     *,
     quick: bool = False,
+    full_bfs: bool = False,
 ) -> LevelVerdict:
     t0 = time.perf_counter()
     kind = solver_kind_for_stem(stem)
@@ -104,6 +104,15 @@ def _verify_one_level(
             status=VerdictStatus.TOOLING_GAP,
             solver="planner_skip",
             notes=PLANNER_NOTE,
+        )
+
+    if kind == SolverKind.SIMULATION_GAP:
+        return LevelVerdict(
+            stem=stem,
+            level_index=level_index,
+            status=VerdictStatus.TOOLING_GAP,
+            solver="simulation_skip",
+            notes=SIMULATION_NOTE,
         )
 
     if kind == SolverKind.PUSH:
@@ -188,7 +197,28 @@ def _verify_one_level(
             notes="ACTION7 present: undo/extra semantics not modeled in BFS",
         )
 
-    max_nodes, max_depth, max_click = engine_bfs_limits(stem, quick=quick)
+    gw, gh = env._game.current_level.grid_size
+    cells = max(0, gw) * max(0, gh)
+    if (
+        kind == SolverKind.ENGINE_BFS
+        and 6 in avail
+        and cells > 12 * 12
+    ):
+        return LevelVerdict(
+            stem=stem,
+            level_index=level_index,
+            status=VerdictStatus.TOOLING_GAP,
+            solver="engine_bfs",
+            notes=(
+                f"large grid ({gw}×{gh}) with ACTION6: branch factor too high for "
+                "generic engine BFS; use ENGINE_BFS_ACTION6_ONLY stem mapping or a "
+                "dedicated solver."
+            ),
+        )
+
+    max_nodes, max_depth, max_click = engine_bfs_limits(
+        stem, quick=quick, full=full_bfs
+    )
     allowed = {6} if kind == SolverKind.ENGINE_BFS_ACTION6_ONLY else None
 
     bfs = engine_bfs_single_level(
@@ -247,7 +277,7 @@ def _verdict_to_dict(v: LevelVerdict) -> dict:
     return d
 
 
-def _verify_stem_job(stem: str, quick: bool) -> list[LevelVerdict]:
+def _verify_stem_job(stem: str, quick: bool, full_bfs: bool) -> list[LevelVerdict]:
     """Process-pool entry: one Arcade instance per stem."""
     arc = Arcade(
         environments_dir=str(ROOT / "environment_files"),
@@ -256,7 +286,7 @@ def _verify_stem_job(stem: str, quick: bool) -> list[LevelVerdict]:
     out: list[LevelVerdict] = []
     try:
         version = canonical_version_for_stem(stem)
-        full = full_game_id_canonical(stem)
+        gid = full_game_id_canonical(stem)
         n = level_count_from_stem_module(stem, version)
         if n is None:
             return [
@@ -270,7 +300,16 @@ def _verify_stem_job(stem: str, quick: bool) -> list[LevelVerdict]:
             ]
         for li in range(n):
             out.append(
-                _verify_one_level(arc, stem, version, full, li, n, quick=quick)
+                _verify_one_level(
+                    arc,
+                    stem,
+                    version,
+                    gid,
+                    li,
+                    n,
+                    quick=quick,
+                    full_bfs=full_bfs,
+                )
             )
     except Exception as e:
         out.append(
@@ -335,6 +374,11 @@ def main() -> int:
         action="store_true",
         help="Lower BFS node/depth caps (faster, more tooling_gap exhaust hits)",
     )
+    parser.add_argument(
+        "--full",
+        action="store_true",
+        help="Raise BFS node/depth caps (slower, fewer false exhaust/tooling hits)",
+    )
     args = parser.parse_args()
 
     if args.all:
@@ -355,7 +399,7 @@ def main() -> int:
         for stem in stems:
             try:
                 version = canonical_version_for_stem(stem)
-                full = full_game_id_canonical(stem)
+                gid = full_game_id_canonical(stem)
                 n = level_count_from_stem_module(stem, version)
                 if n is None:
                     rows.append(
@@ -367,13 +411,22 @@ def main() -> int:
                             notes="could not read levels from module",
                         )
                     )
+                    print(f"[solvability] {stem} inventory_error", flush=True)
                     continue
                 for li in range(n):
                     rows.append(
                         _verify_one_level(
-                            arc, stem, version, full, li, n, quick=args.quick
+                            arc,
+                            stem,
+                            version,
+                            gid,
+                            li,
+                            n,
+                            quick=args.quick,
+                            full_bfs=args.full,
                         )
                     )
+                print(f"[solvability] {stem} ok ({n} levels)", flush=True)
             except Exception as e:
                 rows.append(
                     LevelVerdict(
@@ -388,7 +441,8 @@ def main() -> int:
         ctx = multiprocessing.get_context("spawn")
         with ProcessPoolExecutor(max_workers=args.jobs, mp_context=ctx) as ex:
             futs = {
-                ex.submit(_verify_stem_job, stem, args.quick): stem for stem in stems
+                ex.submit(_verify_stem_job, stem, args.quick, args.full): stem
+                for stem in stems
             }
             stem_results: dict[str, list[LevelVerdict]] = {}
             for fut in as_completed(futs):

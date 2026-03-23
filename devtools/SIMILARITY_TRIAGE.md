@@ -20,9 +20,14 @@ High **composite** scores are hints, not proof of redundancy.
 
 ## Triage steps (per high-scoring pair)
 
+Contributor-facing checklist (duplicated for PR authors): [CONTRIBUTING.md §6](../CONTRIBUTING.md).
+
 1. **Read both `{stem}.py` docstrings and `step()`** — Is the rule difference clear from observation and fair per [AGENTS.md](../AGENTS.md)?
-2. **Compare levels** — Same layout with a small rule delta can be valid (e.g. `ml02` / `ml03`). Same layout *and* same transition logic is a red flag.
-3. **Smoke load** — `uv run python devtools/smoke_games.py` (or `run_game.py`) after any edit.
+2. **Compare HUD** — Does the overlay encode the main constraint a player/agent cannot infer from tiles alone?
+3. **Compare levels** — If `same_levels_fingerprint` is true across **unrelated** prefixes, diff `levels = …` sources; same layout with a small rule delta can be valid (e.g. `ml02` / `ml03`). Same layout *and* same transition logic is a red flag.
+4. **Prefer docs first** — Sharpen the **GAMES.md** lead and **metadata** (`tags`, `physics_rules`) before large refactors when the code already differs but the registry reads the same.
+5. **Smoke load** — `uv run python devtools/smoke_games.py` (or `run_game.py`) after any edit.
+6. **Close the loop** — Append one line to **Resolved notes** below when a cluster is no longer ambiguous.
 
 ## Improvement matrix
 
@@ -36,8 +41,10 @@ High **composite** scores are hints, not proof of redundancy.
 ## Regenerating the report
 
 ```bash
-uv run python devtools/similar_games_report.py --top-k 12 --min-score 0.25
+uv run python devtools/similar_games_report.py --only-games-md --top-k 12 --min-score 0.25
 ```
+
+CI uses the same flags (stdlib-only `python3` in [`.github/workflows/similar-games-report.yml`](../.github/workflows/similar-games-report.yml)) and uploads `devtools/reports/similar_games.{md,json}` as an artifact—no PR fail gate.
 
 Or run the same command from a local `Makefile` if you keep one (the repo gitignores `Makefile` so it stays out of version control).
 
@@ -53,6 +60,7 @@ The Markdown report includes **Suspicious overlap components** (connected compon
 - **Registry pass**: Many **Variant of `xy01`** prefixes and pipe/HUD clarifications were added in [GAMES.md](../GAMES.md); plumbing stems gained distinct **metadata tags** / **physics_rules** strings.
 - **wm\* vs sv\***: Identical `levels = [create_level(i) for i in range(1, 6)]` text caused a false **levels** match; **wm01–wm03** now use `(1, 2, 3, 4, 5)` so the fingerprint differs without changing gameplay.
 - **Priority batch (coverage / dp–dv / meters / sand / P2 blurbs)**: [GAMES.md](../GAMES.md) revisit-rule leads for **va01, bd01, hm01, gl01, tr01, vp01, cf01**; **dp01**/**dv01** HUD corner cues + descriptions; **bt01**/**tm01** contrast + **bt01** HUD marker; **cq01**/**tw01**/**vp01**/**pw01**; **sp01**/**sp04**/**ab01** + metadata; **pb04**/**sk04** mechanics + grid **10×10**; adjacency/drill/melt/dig/swap; escort/chase; **gp01**/**lo01**/**lo05**; **bl01**/**rc01**, **fg01**/**kb01**, **pb01**/**sk01**, **lf01**/**rh01**, **rb01**/**tf01**.
+- **Registry maintenance (2026-03)**: [CONTRIBUTING.md](../CONTRIBUTING.md) §6 adds the similarity report command, new-stem checklist, and triage pointers; advisory CI uploads the report via [similar-games-report.yml](../.github/workflows/similar-games-report.yml); the [create-arc-game](../skills/create-arc-game/SKILL.md) skill cross-links this doc and the command.
 
 ## Reference stems
 

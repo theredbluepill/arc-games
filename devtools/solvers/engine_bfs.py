@@ -3,8 +3,8 @@
 from __future__ import annotations
 
 from collections import deque
+from collections.abc import Callable, Iterable
 from dataclasses import dataclass
-from typing import Callable, Iterable
 
 from arcengine import GameAction, GameState
 
@@ -69,6 +69,7 @@ def engine_bfs_single_level(
     max_depth: int,
     max_click_cells: int,
     allowed_action_ids: set[int] | None = None,
+    extra_state_key: Callable[[object], bytes] | None = None,
 ) -> BFSResult:
     """Return whether level ``level_index`` can be cleared from a reset + ``set_level``."""
     g = env._game
@@ -77,7 +78,6 @@ def engine_bfs_single_level(
     def replay(path: list[tuple[int, dict]]) -> tuple[bool, object | None]:
         env.reset()
         g.set_level(level_index)
-        start_lc = env.observation_space.levels_completed
         res = None
         for aid, data in path:
             act = _GAME_ACTION_BY_ID[aid]
@@ -117,7 +117,8 @@ def engine_bfs_single_level(
         li = g.level_index
         lc = env.observation_space.levels_completed
         st = env.observation_space.state
-        return (li, lc, _frame_key(env), st)
+        ex = extra_state_key(env) if extra_state_key else b""
+        return (li, lc, _frame_key(env), st, ex)
 
     while q:
         path = q.popleft()

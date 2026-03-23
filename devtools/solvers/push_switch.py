@@ -17,7 +17,6 @@ from registry_gif_lib import (  # noqa: E402
     push_puzzle_plan,
     switch_door_plan,
 )
-
 from solvability_common import load_stem_game_module  # noqa: E402
 
 _INT_TO_ACT: dict[int, GameAction] = {

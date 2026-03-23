@@ -16,9 +16,9 @@ Does **not** overwrite the four canonical notebooks from
 
 Usage::
 
-    uv run python benchmarks/kaggle/export_kaggle_notebooks_all_stems.py
-    uv run python benchmarks/kaggle/export_kaggle_notebooks_all_stems.py -o benchmarks/kaggle/notebooks/all
-    uv run python benchmarks/kaggle/export_kaggle_notebooks_all_stems.py --stems ez01,sk01 --no-probe
+    python benchmarks/kaggle/export_kaggle_notebooks_all_stems.py
+    python benchmarks/kaggle/export_kaggle_notebooks_all_stems.py -o benchmarks/kaggle/notebooks/all
+    python benchmarks/kaggle/export_kaggle_notebooks_all_stems.py --stems ez01,sk01 --no-probe
 """
 
 from __future__ import annotations
@@ -53,8 +53,11 @@ _SHARED_END = "# <<<KAGGLE_TASK_SHARED_END>>>"
 
 
 def extract_shared_fragment(template_text: str) -> str:
-    i = template_text.index(_SHARED_BEGIN)
-    j = template_text.index(_SHARED_END)
+    # Markers also appear in the module docstring; slice the code cell only.
+    anchor = "# --- Cell 2: Task and wrapper ---"
+    region_start = template_text.index(anchor)
+    i = template_text.index(_SHARED_BEGIN, region_start)
+    j = template_text.index(_SHARED_END, i + len(_SHARED_BEGIN))
     after = template_text.find("\n", i) + 1
     return template_text[after:j].rstrip()
 
@@ -136,7 +139,7 @@ def probe_grid_size(stem: str) -> int:
     except ImportError as e:
         raise SystemExit(
             "arc-agi / arcengine required for --probe (default). "
-            "Install with `uv sync` or pass --no-probe."
+            "Install with `pip install arc-agi` (see https://docs.arcprize.org) or pass --no-probe."
         ) from e
 
     arc = Arcade(
@@ -219,7 +222,7 @@ def main() -> int:
     ap.add_argument(
         "--no-probe",
         action="store_true",
-        help="Do not load Arcade; use grid_size from overrides or %s" % DEFAULT_GRID_FALLBACK,
+        help=f"Do not load Arcade; use grid_size from overrides or {DEFAULT_GRID_FALLBACK}",
     )
     ap.add_argument(
         "--dry-run",
@@ -267,11 +270,14 @@ def main() -> int:
         task_py = build_task_py(shared, stem, title=title, grid_size=grid, max_steps=ms)
         code = reb.bootstrap_cell_from_task(task_py)
         md = (
+            f"{reb.SECTION_12_MARKDOWN}\n\n---\n\n"
             f"# ARC benchmark: **{stem}**\n\n"
             f"{title}\n\n"
-            "**Kernels:** Python **3.12+** in-process, or **3.11** papermill via **`uv run --python 3.12`** "
-            "(see `benchmarks/kaggle/notebooks/README.md`).\n\n"
-            "Attach a dataset whose root contains **`environment_files/`** with this stem.\n"
+            "**Kernel:** Python **3.12** (Kaggle Notebook). The code cell runs `pip install` then the task.\n\n"
+            "Attach a dataset whose root contains **`environment_files/`** (this stem must be present). "
+            "Use [`Arcade`](https://docs.arcprize.org/toolkit/arc_agi) with "
+            "`environments_dir` and `OperationMode.OFFLINE` for local games.\n\n"
+            "See `benchmarks/kaggle/notebooks/README.md`.\n"
         )
         nb = reb.build_notebook(md, code)
         fname = f"arc-interactive-{stem}.ipynb"
