@@ -68,6 +68,7 @@ These games are designed to be easy for humans to solve, but very hard for moder
 - **Massive testing ground** — 200+ community games in [`GAMES.md`](GAMES.md) beside the [official ARC-AGI-3 list](https://docs.arcprize.org/available-games); train, test, and evaluate agents on varied unseen tasks for generalization.
 - **Fast prototyping** — Local offline `environment_files/`, agent step-through, and **`--mode human`** to learn win conditions by playing.
 - **LLM-friendly authoring** — [`AGENTS.md`](AGENTS.md) plus skills under [`skills/`](skills/): [create-arc-game](skills/create-arc-game/SKILL.md), [play-arc-game](skills/play-arc-game/SKILL.md).
+- **Human–AI discoverable tasks** — Community games are authored toward goals and rules learnable **through play** (observation + actions + consequences), not from external docs alone, under the **same** interface for humans and agents—see [check-arc-game-discoverable](skills/check-arc-game-discoverable/SKILL.md) for the review bar.
 - **Competition mode** — `uv run python run_game.py --competition` matches the real toolkit ([competition rules](https://docs.arcprize.org/toolkit/competition_mode)) before you submit.
 - **Official leaderboard** — With **`ARC_API_KEY`** and **`--online`**, runs can count on **[three.arcprize.org](https://three.arcprize.org/)** (see [API / leaderboard / competition](#api--leaderboard--competition) below).
 
@@ -159,5 +160,6 @@ Implement a new ARC-AGI-3 game {game_id} at environment_files/{game_id}/v1/. Fol
 - **[create-arc-game](skills/create-arc-game/SKILL.md)** — End-to-end game design and implementation (`environment_files/`, `ARCBaseGame`, `metadata.json`, `GAMES.md`) aligned with [`AGENTS.md`](AGENTS.md).
 - **[play-arc-game](skills/play-arc-game/SKILL.md)** — Run and smoke-test local environments with `run_game.py` (list, random agent, human pygame, offline/online flags).
 - **[generate-arc-game-gif](skills/generate-arc-game-gif/SKILL.md)** — GIF-ready `RenderableUserDisplay` and registry previews via `scripts/render_arc_game_gif.py`.
+- **[check-arc-game-discoverable](skills/check-arc-game-discoverable/SKILL.md)** — Review whether goals and mechanics are inferable through play under the shared human/agent interface (not repo prose as the teacher).
 
 Full checklist: [CONTRIBUTING.md](CONTRIBUTING.md#creating-a-new-game).
