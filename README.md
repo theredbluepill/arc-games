@@ -162,6 +162,6 @@ Implement a new ARC-AGI-3 game {game_id} at environment_files/{game_id}/v1/. Fol
 - **[play-arc-game](skills/play-arc-game/SKILL.md)** — Run and smoke-test local environments with `run_game.py` (list, random agent, human pygame, offline/online flags).
 - **[generate-arc-game-gif](skills/generate-arc-game-gif/SKILL.md)** — GIF-ready `RenderableUserDisplay` and registry previews via `scripts/render_arc_game_gif.py`.
 - **[check-arc-game-discoverable](skills/check-arc-game-discoverable/SKILL.md)** — Review whether goals and mechanics are inferable through play under the shared human/agent interface (not repo prose as the teacher).
-- **[check-arc-game-solvable](skills/check-arc-game-solvable/SKILL.md)** — Mechanical per-level solvability via `devtools/verify_level_solvability.py` and stem-specific proofs (e.g. torus Lights Out GF(2) in `devtools/solvers/torus_lights_gf2.py`).
+- **[check-arc-game-solvable](skills/check-arc-game-solvable/SKILL.md)** — Mechanical per-level solvability under the shipped rules via `devtools/verify_level_solvability.py`.
 
 Full checklist: [CONTRIBUTING.md](CONTRIBUTING.md#creating-a-new-game).
