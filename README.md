@@ -67,6 +67,7 @@ These games are designed to be easy for humans to solve, but very hard for moder
 
 - **Massive testing ground** — 200+ community games in [`GAMES.md`](GAMES.md) beside the [official ARC-AGI-3 list](https://docs.arcprize.org/available-games); train, test, and evaluate agents on varied unseen tasks for generalization.
 - **Fast prototyping** — Local offline `environment_files/`, agent step-through, and **`--mode human`** to learn win conditions by playing.
+- **New joiner friendly** — Tutorial stems **ez01**–**ez04** in [`GAMES.md`](GAMES.md) teach ARC-AGI-3 movement, goals, and the shared human/agent action interface before challenging difficulty / official ARC-AGI-3 games.
 - **LLM-friendly authoring** — [`AGENTS.md`](AGENTS.md) plus skills under [`skills/`](skills/): [create-arc-game](skills/create-arc-game/SKILL.md), [play-arc-game](skills/play-arc-game/SKILL.md).
 - **Human–AI discoverable tasks** — Goals and rules are intended to be learnable **through play** (observation, actions, consequences), not from docs alone, under the **same** interface for humans and agents; see [check-arc-game-discoverable](skills/check-arc-game-discoverable/SKILL.md).
 - **Mechanical solvability checks** — Per-level winnability under the shipped rules via [`devtools/verify_level_solvability.py`](devtools/verify_level_solvability.py); see [check-arc-game-solvable](skills/check-arc-game-solvable/SKILL.md).
