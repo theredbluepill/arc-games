@@ -57,7 +57,7 @@ fw01,fw01,yes,yes,• 1-4: Move • 6: Splash
 gp02,generic,no,yes,• 1-4: No-op • 6: Click erase
 hd01,generic,no,no,• 1-4: Move • 5: Charge on station
 kn01,generic,no,no,• 1-4: Knight move • 5: Toggle bank
-lo02,generic,no,yes,• 1-4: No-op • 6: Click
+lo02,lo02,yes,yes,• 1-4: No-op • 6: Click
 mc01,mc01,yes,yes,• 1-4: Joint move • 5: Swap lead
 ng01,generic,no,yes,• 1-4: Cursor • 6: Click cycle cell
 ob01,generic,no,no,• 1-4: Move active • 5: Cycle active
@@ -121,7 +121,7 @@ fi01,generic,yes,no,• 1-4: Move • 5: Place break
 ul03,generic,no,no,• 1-4: Move
 wm03,generic,no,yes,• 6: Click
 ms03,generic,no,yes,• 1-4: Move • 6: Flag
-lo03,generic,no,yes,• 1-4: No-op • 6: Click
+lo03,lo03,yes,yes,• 1-4: No-op • 6: Click
 pt03,generic,no,yes,• 6: Click band
 sy03,generic,no,yes,• 6: Place/remove
 mm03,generic,no,yes,• 6: Click

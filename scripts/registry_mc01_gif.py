@@ -32,24 +32,33 @@ _MOVE_DELTAS: dict[int, tuple[int, int]] = {
     4: (1, 0),
 }
 
+# Cleared per ``record_mc01_registry_gif`` run; keyed by live ``Level`` id + goal + state.
+_mc01_dist_cache: dict[tuple[int, tuple[int, int, int, int], tuple[int, int, int, int, int]], int | None] = {}
 
-def _mc01_cell_blocks_move(
-    level: Level,
-    gw: int,
-    gh: int,
-    nx: int,
-    ny: int,
-    self_xy: tuple[int, int],
-    other_xy: tuple[int, int],
-) -> bool:
+
+def _mc01_wall_at(level: Level, gw: int, gh: int, nx: int, ny: int) -> bool:
     if not (0 <= nx < gw and 0 <= ny < gh):
         return True
     sp = level.get_sprite_at(nx, ny, ignore_collidable=True)
-    if not sp:
-        return False
-    if "wall" in sp.tags:
+    return bool(sp and "wall" in sp.tags)
+
+
+def _mc01_blocked_tgt(
+    level: Level,
+    gw: int,
+    gh: int,
+    tx: int,
+    ty: int,
+    ignore_xy: tuple[int, int],
+    p1xy: tuple[int, int],
+    p2xy: tuple[int, int],
+) -> bool:
+    """Match ``Mc01._blocked`` using abstract p1/p2 cells (not live sprite grid)."""
+    if _mc01_wall_at(level, gw, gh, tx, ty):
         return True
-    if "player" in sp.tags and (nx, ny) == other_xy:
+    if (tx, ty) == p1xy and (tx, ty) != ignore_xy:
+        return True
+    if (tx, ty) == p2xy and (tx, ty) != ignore_xy:
         return True
     return False
 
@@ -64,21 +73,22 @@ def _mc01_apply_action(
     act: int,
 ) -> tuple[int, int, int, int, int] | None:
     gw, gh = level.grid_size
+    p1xy, p2xy = (a, b), (c, d)
     if act == 5:
         return (a, b, c, d, 1 - lead)
     if act not in (1, 2, 3, 4):
         return None
     dx, dy = _MOVE_DELTAS[act]
     if lead == 0:
-        o0, o1 = (a, b), (c, d)
+        o0, o1 = p1xy, p2xy
     else:
-        o0, o1 = (c, d), (a, b)
+        o0, o1 = p2xy, p1xy
     t1 = (o0[0] + dx, o0[1] + dy)
     t2 = (o1[0] + dx, o1[1] + dy)
     if t1 == o1 and t2 == o0:
         return (c, d, a, b, lead)
-    if _mc01_cell_blocks_move(level, gw, gh, t1[0], t1[1], o0, o1) or _mc01_cell_blocks_move(
-        level, gw, gh, t2[0], t2[1], o1, o0
+    if _mc01_blocked_tgt(level, gw, gh, t1[0], t1[1], o0, p1xy, p2xy) or _mc01_blocked_tgt(
+        level, gw, gh, t2[0], t2[1], o1, p1xy, p2xy
     ):
         return None
     if lead == 0:
@@ -97,6 +107,37 @@ def _mc01_is_goal(state: tuple[int, int, int, int, int], goal4: tuple[int, int, 
     return (a, b, c, d) == goal4
 
 
+def _mc01_shortest_distance_to_goal(
+    level: Level,
+    start: tuple[int, int, int, int, int],
+    goal4: tuple[int, int, int, int],
+) -> int | None:
+    """Minimum number of actions from ``start`` to a state matching ``goal4``."""
+    if _mc01_is_goal(start, goal4):
+        return 0
+    ckey = (id(level), goal4, start)
+    if ckey in _mc01_dist_cache:
+        return _mc01_dist_cache[ckey]
+    q: deque[tuple[int, int, int, int, int]] = deque([start])
+    dist: dict[tuple[int, int, int, int, int], int] = {start: 0}
+    out: int | None = None
+    while q:
+        st = q.popleft()
+        d0 = dist[st]
+        if _mc01_is_goal(st, goal4):
+            out = d0
+            break
+        a, b, c, d, ld = st
+        for act in (1, 2, 3, 4, 5):
+            nst = _mc01_apply_action(level, a, b, c, d, ld, act)
+            if nst is None or nst in dist:
+                continue
+            dist[nst] = d0 + 1
+            q.append(nst)
+    _mc01_dist_cache[ckey] = out
+    return out
+
+
 def _mc01_bfs_first_action(
     level: Level,
     start: tuple[int, int, int, int, int],
@@ -104,37 +145,26 @@ def _mc01_bfs_first_action(
 ) -> GameAction | None:
     if _mc01_is_goal(start, goal4):
         return None
-    q: deque[tuple[int, int, int, int, int]] = deque([start])
-    prev: dict[
-        tuple[int, int, int, int, int],
-        tuple[tuple[int, int, int, int, int], int] | None,
-    ] = {start: None}
-    found: tuple[int, int, int, int, int] | None = None
-
-    while q:
-        st = q.popleft()
-        if _mc01_is_goal(st, goal4):
-            found = st
-            break
-        a, b, c, d, ld = st
-        for act in (1, 2, 3, 4, 5):
-            nst = _mc01_apply_action(level, a, b, c, d, ld, act)
-            if nst is None:
-                continue
-            if nst not in prev:
-                prev[nst] = (st, act)
-                q.append(nst)
-
-    if found is None:
+    d0 = _mc01_shortest_distance_to_goal(level, start, goal4)
+    if d0 is None:
         return None
-    cur = found
-    while True:
-        info = prev[cur]
-        assert info is not None
-        pstate, act = info
-        if pstate == start:
-            return _NUM_TO_ACT[act]
-        cur = pstate
+    a, b, c, d, ld = start
+    # Prefer actions that lie on a shortest path; tie-break favors swap then moves
+    # (5,1,2,3,4) so GIF does not pick a 2-cycle when another shortest branch exists.
+    best: tuple[int, int, GameAction] | None = None
+    for rank, act in enumerate((5, 1, 2, 3, 4)):
+        nst = _mc01_apply_action(level, a, b, c, d, ld, act)
+        if nst is None:
+            continue
+        dn = _mc01_shortest_distance_to_goal(level, nst, goal4)
+        if dn is None:
+            continue
+        if dn != d0 - 1:
+            continue
+        cand = (dn, rank, _NUM_TO_ACT[act])
+        if best is None or cand < best:
+            best = cand
+    return best[2] if best else None
 
 
 def _mc01_blocked_move_actions(
@@ -181,6 +211,7 @@ def record_mc01_registry_gif(
     verbose: bool = False,
     seed: int = 0,
 ) -> tuple[Any, list]:
+    _mc01_dist_cache.clear()
     _ = seed
     o = dict(overrides or {})
     max_gif = int(o.get("max_gif_frames", 520))

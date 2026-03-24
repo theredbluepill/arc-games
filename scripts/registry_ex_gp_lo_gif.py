@@ -1,13 +1,16 @@
 """Registry GIF recorders for ex01 (exit hold), gp01 (grid paint), lo01 (Lights Out).
 
 Includes fail beats (wrong hold / bogus clicks) and multi-level scripted solves.
+
+``lo02`` / ``lo03``: torus Lights Out with GF(2) scripted solves, off-grid miss + wasteful click.
 """
 
 from __future__ import annotations
 
+import sys
 from collections import deque
 from pathlib import Path
-from typing import Any
+from typing import Any, Literal
 
 from arcengine import GameAction, GameState
 
@@ -322,6 +325,160 @@ def _lo01_solve_from(
     raise RuntimeError("lo01: unsolvable from this configuration")
 
 
+def _torus_devtools_on_path(root: Path) -> None:
+    d = str(root.resolve() / "devtools")
+    if d not in sys.path:
+        sys.path.insert(0, d)
+
+
+def _lo_torus_solution_clicks(
+    g: Any, mode: Literal["orth", "king"], root: Path
+) -> list[tuple[int, int]]:
+    _torus_devtools_on_path(root)
+    from solvers.torus_lights_gf2 import solve_clicks_mask
+
+    gw, gh = g._gw, g._gh
+    lit = set(g._lit)
+    walls = set(g._walls)
+    ok, mask = solve_clicks_mask(lit, walls, gw, gh, mode=mode)
+    if not ok:
+        raise RuntimeError("torus lights: unsolvable from current state")
+    clicks: list[tuple[int, int]] = []
+    for gy in range(gh):
+        for gx in range(gw):
+            if (mask >> (gy * gw + gx)) & 1:
+                clicks.append((gx, gy))
+    return clicks
+
+
+def _record_lo_torus_registry_gif(
+    game_id: str,
+    root: Path,
+    *,
+    overrides: dict[str, Any] | None,
+    verbose: bool,
+    seed: int,
+    toggle_mode: Literal["orth", "king"],
+    ui_attr: str,
+) -> tuple[Any, list]:
+    _ = seed
+    o = dict(overrides or {})
+    max_gif = int(o.get("max_gif_frames", 720))
+    mod = load_stem_game_py(game_id, f"{game_id}_reg")
+    ui_cls = getattr(mod, ui_attr)
+    burn = int(o.get("click_burn_frames", ui_cls.CLICK_ANIM_FRAMES))
+    n_lv = len(mod.levels)
+    L = int(o.get("target_levels", 0)) or min(4, n_lv)
+    level_defs = mod.levels[: max(1, L)]
+
+    arc = offline_arcade(root)
+    env = arc.make(full_game_id_for_stem(game_id), seed=0, render_mode=None)
+    res = env.reset()
+    images: list = []
+    res_box: list[Any] = [res]
+
+    def snap_repeats(times: int) -> None:
+        fr = getattr(res_box[0], "frame", None) or []
+        if fr:
+            append_frame_repeats(images, fr[0], times)
+
+    snap_repeats(8)
+    step_abort = False
+    try:
+        for li, lv_def in enumerate(level_defs):
+            g = env._game
+            if g.level_index != li:
+                raise RuntimeError(
+                    f"{game_id}: want level {li}, got {g.level_index}"
+                )
+            gw, gh = lv_def.grid_size
+
+            if li == 0:
+                # Fail 1: display coords miss the grid (ripple only).
+                res_box[0] = safe_env_step(
+                    env,
+                    A6,
+                    reasoning={},
+                    data={"x": -50, "y": -50},
+                )
+                snap_repeats(2)
+                _burn_after_click(env, res_box, snap_repeats, burn)
+                # Fail 2: in-grid click that scrambles the board (not on shortest solve).
+                bx, by = min(2, gw - 1), min(2, gh - 1)
+                walls_here = {(s.x, s.y) for s in lv_def.get_sprites() if "wall" in s.tags}
+                if (bx, by) not in walls_here:
+                    _gp01_click(env, g, bx, by, res_box, snap_repeats, burn)
+
+            moves = _lo_torus_solution_clicks(g, toggle_mode, root)
+            for gx, gy in moves:
+                if g.level_index != li:
+                    break
+                _gp01_click(env, g, gx, gy, res_box, snap_repeats, burn)
+
+            snap_repeats(10 if li < len(level_defs) - 1 else 8)
+            res = res_box[0]
+            lc = getattr(res, "levels_completed", 0) or 0
+            if li < len(level_defs) - 1 and lc != li + 1:
+                raise RuntimeError(
+                    f"{game_id}: after L{li + 1} want lc {li + 1}, got {lc}"
+                )
+        if (getattr(res_box[0], "levels_completed", 0) or 0) < len(level_defs):
+            raise RuntimeError(f"{game_id}: incomplete")
+    except _StepAbort as ex:
+        step_abort = True
+        if verbose:
+            print(f"  {game_id}: torus lights GIF step abort ({ex})")
+
+    snap_repeats(8)
+    if step_abort and not images:
+        res_box[0] = env.reset()
+        fr = getattr(res_box[0], "frame", None) or []
+        if fr:
+            append_frame_repeats(images, fr[0], 24)
+    _cap_gif_frames(images, max_gif)
+    if verbose:
+        print(f"  {game_id}: torus lights-out GIF, {len(images)} frames")
+    return res_box[0], images
+
+
+def record_lo02_registry_gif(
+    game_id: str,
+    root: Path,
+    *,
+    overrides: dict[str, Any] | None,
+    verbose: bool,
+    seed: int,
+) -> tuple[Any, list]:
+    return _record_lo_torus_registry_gif(
+        game_id,
+        root,
+        overrides=overrides,
+        verbose=verbose,
+        seed=seed,
+        toggle_mode="orth",
+        ui_attr="Lo02UI",
+    )
+
+
+def record_lo03_registry_gif(
+    game_id: str,
+    root: Path,
+    *,
+    overrides: dict[str, Any] | None,
+    verbose: bool,
+    seed: int,
+) -> tuple[Any, list]:
+    return _record_lo_torus_registry_gif(
+        game_id,
+        root,
+        overrides=overrides,
+        verbose=verbose,
+        seed=seed,
+        toggle_mode="king",
+        ui_attr="Lo03UI",
+    )
+
+
 def record_lo01_registry_gif(
     game_id: str,
     root: Path,
@@ -408,4 +565,6 @@ REGISTRY_RECORDERS = {
     "ex01": record_ex01_registry_gif,
     "gp01": record_gp01_registry_gif,
     "lo01": record_lo01_registry_gif,
+    "lo02": record_lo02_registry_gif,
+    "lo03": record_lo03_registry_gif,
 }

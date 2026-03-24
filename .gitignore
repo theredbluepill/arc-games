@@ -10,7 +10,9 @@ devtools/reports/
 .DS_Store
 __pycache__/
 .worktrees/
+
 # Local / draft material — never commit (e.g. Kaggle quickstarter notebooks)
+# Intented to ignore - do not touch unless explicitly requested
 docs/
 
 # Local kaggle_benchmarks task run exports

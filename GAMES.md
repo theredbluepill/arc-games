@@ -1,6 +1,6 @@
 # Games
 
-Human-edited registry for this repo. To **enumerate installable packages** from `environment_files/` (full `game_id` + title), run `uv run python run_game.py --list` — it uses [`Arcade.get_environments()`](https://docs.arcprize.org/toolkit/list-games) when the toolkit supports it. In code: `Arcade(environments_dir="environment_files", operation_mode=OperationMode.OFFLINE).get_environments()`. **Hand-play** (WASD, click for ACTION6, etc.): `uv run python run_game.py --game <stem> --version auto --mode human` — **pygame** window via `scripts/human_play_pygame.py`.
+Human-edited registry for this repo. **Onboarding:** **ez01**–**ez04** are ARC-AGI-3 movement tutorials for new joiners. To **enumerate installable packages** from `environment_files/` (full `game_id` + title), run `uv run python run_game.py --list` — it uses [`Arcade.get_environments()`](https://docs.arcprize.org/toolkit/list-games) when the toolkit supports it. In code: `Arcade(environments_dir="environment_files", operation_mode=OperationMode.OFFLINE).get_environments()`. **Hand-play** (WASD, click for ACTION6, etc.): `uv run python run_game.py --game <stem> --version auto --mode human` — **pygame** window via `scripts/human_play_pygame.py`.
 
 | Game | Category | Grid | Levels | Description | Preview | Actions |
 |------|----------|------|--------|-------------|---------|---------|

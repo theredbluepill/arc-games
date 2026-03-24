@@ -40,9 +40,9 @@
     "max_gif_frames": 900
   },
   "mc01": {
-    "target_levels": 4,
+    "target_levels": 5,
     "mc01_fail_hold_frames": 6,
-    "mc01_level_hold_frames": 20,
+    "mc01_level_hold_frames": 40,
     "gif_duration_ms": 150,
     "max_gif_frames": 900
   },
@@ -492,5 +492,17 @@
     "kn01_fail_hold_frames": 5,
     "kn01_level_hold_frames": 16,
     "gif_duration_ms": 170
+  },
+  "lo02": {
+    "target_levels": 4,
+    "gif_duration_ms": 160,
+    "max_gif_frames": 720,
+    "click_burn_frames": 16
+  },
+  "lo03": {
+    "target_levels": 4,
+    "gif_duration_ms": 160,
+    "max_gif_frames": 720,
+    "click_burn_frames": 16
   }
 }
