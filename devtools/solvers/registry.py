@@ -11,6 +11,7 @@ from .survival_wave3 import REFLEX_TOOLING_GAP_STEMS, SURVIVAL_INFLATED_STEMS
 class SolverKind(StrEnum):
     ENGINE_BFS = "engine_bfs"
     ENGINE_BFS_ACTION6_ONLY = "engine_bfs_action6_only"
+    TORUS_LIGHTS_GF2 = "torus_lights_gf2"
     PUSH = "push"
     PB03 = "pb03"
     SWITCH_ALL = "switch_all"
@@ -94,15 +95,19 @@ STOCHASTIC_NOTE = (
 
 # Paint / Lights-Out style: subset state space makes naive per-cell ACTION6 BFS
 # intractable and slow; skip rather than emit false counterexamples.
-LATTICE_TOGGLE_TOOLING_STEMS: frozenset[str] = frozenset({"gp02", "lo02"})
+LATTICE_TOGGLE_TOOLING_STEMS: frozenset[str] = frozenset({"gp02"})
 LATTICE_TOGGLE_NOTE = (
     "lattice_toggle_tooling: generic per-cell ACTION6 BFS over paint/light subset "
     "state is not run (exponential space / multi-minute levels); use a dedicated "
     "witness or local linear algebra for Lights Out."
 )
 
+TORUS_LIGHTS_GF2_STEMS: frozenset[str] = frozenset({"lo02", "lo03"})
+
 
 def solver_kind_for_stem(stem: str) -> SolverKind:
+    if stem in TORUS_LIGHTS_GF2_STEMS:
+        return SolverKind.TORUS_LIGHTS_GF2
     if stem in LATTICE_TOGGLE_TOOLING_STEMS:
         return SolverKind.TOOLING_GAP
     if stem in PARTIAL_OBS_STEMS:

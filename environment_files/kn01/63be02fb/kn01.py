@@ -21,6 +21,17 @@ BANK_B = ((-1, -2), (-1, 2), (1, -2), (1, 2))
 class Kn01UI(RenderableUserDisplay):
     def __init__(self, bank: int) -> None:
         self._bank = bank
+        self._blocked = 0
+
+    def clear_feedback(self) -> None:
+        self._blocked = 0
+
+    def flash_blocked(self, frames: int = 8) -> None:
+        self._blocked = max(self._blocked, frames)
+
+    def tick_blocked(self) -> None:
+        if self._blocked > 0:
+            self._blocked -= 1
 
     def update(self, bank: int) -> None:
         self._bank = bank
@@ -46,6 +57,8 @@ class Kn01UI(RenderableUserDisplay):
                 for xx in range(5):
                     self._rp(frame, h, w, ox + xx, oy + yy, 5)
             self._rp(frame, h, w, ox + 2 + dx, oy + 2 + dy, 10)
+        if self._blocked > 0:
+            self._rp(frame, h, w, w - 3, h - 1, 8)
         return frame
 
 
@@ -113,9 +126,11 @@ class Kn01(ARCBaseGame):
     def on_set_level(self, level: Level) -> None:
         self._player = self.current_level.get_sprites_by_tag("player")[0]
         self._bank = 0
+        self._ui.clear_feedback()
         self._ui.update(self._bank)
 
     def step(self) -> None:
+        self._ui.tick_blocked()
         aid = self.action.id.value
 
         if aid == 5:
@@ -133,10 +148,12 @@ class Kn01(ARCBaseGame):
         nx, ny = self._player.x + dx, self._player.y + dy
         gw, gh = self.current_level.grid_size
         if not (0 <= nx < gw and 0 <= ny < gh):
+            self._ui.flash_blocked()
             self.complete_action()
             return
         sp = self.current_level.get_sprite_at(nx, ny, ignore_collidable=True)
         if sp and "wall" in sp.tags:
+            self._ui.flash_blocked()
             self.complete_action()
             return
         self._player.set_position(nx, ny)

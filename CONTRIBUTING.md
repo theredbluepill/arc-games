@@ -2,6 +2,41 @@
 
 This guide covers how to run and create games for the ARC-AGI-3 benchmark. You can implement games by hand or **use an AI coding agent** (Cursor, Copilot, etc.) with the files linked below—the repo is set up so agents can follow one skill and land a complete game.
 
+## Table of contents
+
+- [Ways to contribute](#ways-to-contribute)
+- [Prerequisites](#prerequisites)
+- [Running games](#running-games)
+  - [List available games](#list-available-games)
+  - [Run a game](#run-a-game)
+  - [Interactive play](#interactive-play)
+  - [Auto mode (random actions)](#auto-mode-random-actions)
+- [Creating a new game](#creating-a-new-game)
+  - [AI-assisted workflow](#ai-assisted-workflow-recommended-for-speed)
+- [Key patterns](#key-patterns)
+  - [Camera](#camera)
+  - [Action space](#action-space)
+  - [Target collection](#target-collection)
+- [Repository structure](#repository-structure)
+- [Issues and pull requests](#issues-and-pull-requests)
+- [Documentation](#documentation)
+
+## Ways to contribute
+
+You do not have to ship a full game to help. Pick a track that matches your goal; [AGENTS.md](AGENTS.md) and the skills under [`skills/`](skills/) apply to both humans and agents.
+
+| Track | What you might do | Primary references |
+|-------|-------------------|--------------------|
+| **New or updated games** | Add a stem under `environment_files/`, register in [GAMES.md](GAMES.md), metadata, smoke tests | [skills/create-arc-game/SKILL.md](skills/create-arc-game/SKILL.md), [AGENTS.md](AGENTS.md) |
+| **Playtesting and repro** | Run games locally, file issues with repro steps, verify regressions | [skills/play-arc-game/SKILL.md](skills/play-arc-game/SKILL.md), [run_game.py](run_game.py) |
+| **Preview GIFs and registry media** | HUD-ready captures, `registry_gif_*`, `assets/*.gif` | [skills/generate-arc-game-gif/SKILL.md](skills/generate-arc-game-gif/SKILL.md), [scripts/render_arc_game_gif.py](scripts/render_arc_game_gif.py) |
+| **Design review (discoverability)** | Cold-start clarity; goals and rules learnable from observation; fair shared interface for humans and agents | [skills/check-arc-game-discoverable/SKILL.md](skills/check-arc-game-discoverable/SKILL.md) |
+| **Mechanical solvability** | Per-level winnability under the real `step()` rules; complements discoverability | [skills/check-arc-game-solvable/SKILL.md](skills/check-arc-game-solvable/SKILL.md), [`devtools/verify_level_solvability.py`](devtools/verify_level_solvability.py) |
+| **Tooling and CI** | `devtools/`, workflows, registry checks, similarity reports | [Issues and pull requests](#issues-and-pull-requests), [`devtools/`](devtools/) |
+| **Documentation** | README, this guide, [GAMES.md](GAMES.md) rows, triage guides | [Documentation](#documentation), [devtools/SIMILARITY_TRIAGE.md](devtools/SIMILARITY_TRIAGE.md) |
+
+The **create-arc-game**, **play-arc-game**, **generate-arc-game-gif**, **check-arc-game-discoverable**, and **check-arc-game-solvable** skills live under repo root **`skills/`**. **`.opencode/skills/`**, **`.agents/skills/`**, and **`.claude/skills/`** are symlinks to **`skills/`** for different tool layouts—use whichever path your tool resolves best.
+
 ## Prerequisites
 
 This project uses [uv](https://github.com/astral-sh/uv) for dependency management.
@@ -45,9 +80,12 @@ Point your agent at the same conventions humans use:
 |----------|----------------|
 | [AGENTS.md](AGENTS.md) | Camera/UI patterns, abstract actions, common bugs, testing checklist, palette |
 | [skills/create-arc-game/SKILL.md](skills/create-arc-game/SKILL.md) | End-to-end steps: layout, sprites, levels, `step()`, metadata, registry |
+| [skills/play-arc-game/SKILL.md](skills/play-arc-game/SKILL.md) | Running and validating games locally (`run_game.py` modes, controls) |
 | [skills/generate-arc-game-gif/SKILL.md](skills/generate-arc-game-gif/SKILL.md) | Preview GIFs: `RenderableUserDisplay` GIF-readiness, `scripts/render_arc_game_gif.py` |
+| [skills/check-arc-game-discoverable/SKILL.md](skills/check-arc-game-discoverable/SKILL.md) | Discovery-through-play review: goals and rules fair from observation |
+| [skills/check-arc-game-solvable/SKILL.md](skills/check-arc-game-solvable/SKILL.md) | Mechanical solvability: `devtools/verify_level_solvability.py`, reports |
 
-The **create-arc-game** and **play-arc-game** skills (and **generate-arc-game-gif** for previews, **check-arc-game-discoverable** for discovery-through-play review) live under repo root **`skills/`**. **`.opencode/skills/`**, **`.agents/skills/`**, and **`.claude/skills/`** are symlinks to **`skills/`** for tool layouts—use whichever path your tool resolves best.
+See [Ways to contribute](#ways-to-contribute) for how these map to contribution types and symlink paths.
 
 **Minimal prompt you can paste:** *Implement a new ARC-AGI-3 game `{game_id}` at `environment_files/{game_id}/v1/`. Follow [AGENTS.md](AGENTS.md) and [skills/create-arc-game/SKILL.md](skills/create-arc-game/SKILL.md): static levels only, `ARCBaseGame` + `metadata.json`, register a row in [GAMES.md](GAMES.md). Game design: [grid size, entities, win/lose, which actions 1–7 do].*
 
@@ -217,7 +255,7 @@ arc-interactive/
 │   ├── ez01/<ver>/
 │   ├── tt01/<ver>/
 │   └── ...
-├── skills/                  # Agent skills (create-arc-game, play-arc-game, …); canonical copy
+├── skills/                  # Agent skills (create / play / gif / discoverable / solvable); canonical copy
 ├── .opencode/skills/        # Symlink → ../skills (OpenCode)
 ├── .agents/skills/          # Symlink → ../skills (Cursor agents)
 ├── .claude/skills/          # Symlink → ../skills (Claude Code)
@@ -260,4 +298,4 @@ Maintainers: turn on **required status checks** for `main` as described in [`.gi
 - [AGENTS.md](AGENTS.md) — implementation patterns and pitfalls
 - [SIMILARITY_TRIAGE.md](devtools/SIMILARITY_TRIAGE.md) — interpreting the similar-games report and resolving false positives
 - [Game Registry](GAMES.md)
-- Agent skills (**`skills/`** at repo root; **`.opencode/skills/`** / **`.agents/skills/`** / **`.claude/skills/`** symlink there): **create-arc-game**, **play-arc-game**, **generate-arc-game-gif**, **check-arc-game-discoverable**
+- Agent skills (**`skills/`** at repo root; **`.opencode/skills/`** / **`.agents/skills/`** / **`.claude/skills/`** symlink there): **create-arc-game**, **play-arc-game**, **generate-arc-game-gif**, **check-arc-game-discoverable**, **check-arc-game-solvable**

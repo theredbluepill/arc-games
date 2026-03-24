@@ -1,0 +1,68 @@
+"""Torus Lights Out GF(2) helpers match lo02/lo03 level data."""
+
+from __future__ import annotations
+
+import sys
+import unittest
+from pathlib import Path
+
+ROOT = Path(__file__).resolve().parents[1]
+SCRIPTS = ROOT / "scripts"
+DEVTOOLS = ROOT / "devtools"
+for p in (str(ROOT), str(SCRIPTS), str(DEVTOOLS)):
+    if p not in sys.path:
+        sys.path.insert(0, p)
+
+from solvability_common import (  # noqa: E402
+    canonical_version_for_stem,
+    load_stem_game_module,
+)
+from solvers.torus_lights_gf2 import (  # noqa: E402
+    apply_click,
+    arc_level_is_solvable,
+    is_solvable,
+    solve_clicks_mask,
+)
+
+
+def _cell_index(gw: int, gx: int, gy: int) -> int:
+    return gy * gw + gx
+
+
+class TorusLightsGf2Tests(unittest.TestCase):
+    def test_lo02_lo03_all_levels_solvable(self) -> None:
+        for stem, mode in (("lo02", "orth"), ("lo03", "king")):
+            ver = canonical_version_for_stem(stem)
+            mod = load_stem_game_module(stem, ver, f"_test_torus_{stem}")
+            for i, lvl in enumerate(mod.levels):
+                with self.subTest(stem=stem, level=i):
+                    self.assertTrue(
+                        arc_level_is_solvable(lvl, mode=mode),
+                        f"{stem} level {i} should be GF(2)-solvable",
+                    )
+
+    def test_solution_mask_clears_state_lo02_level4(self) -> None:
+        stem = "lo02"
+        ver = canonical_version_for_stem(stem)
+        mod = load_stem_game_module(stem, ver, "_test_torus_lo02_l4")
+        lvl = mod.levels[4]
+        gw, gh = lvl.grid_size
+        raw = lvl.get_data("lights_on") or []
+        lit = {(int(p[0]), int(p[1])) for p in raw}
+        walls = {(s.x, s.y) for s in lvl.get_sprites_by_tag("wall")}
+        ok, mask = solve_clicks_mask(lit, walls, gw, gh, mode="orth")
+        self.assertTrue(ok, "expected a GF(2) solution")
+        working = set(lit)
+        for gy in range(gh):
+            for gx in range(gw):
+                if (mask >> _cell_index(gw, gx, gy)) & 1:
+                    apply_click(working, gw, gh, gx, gy, walls, mode="orth")
+        self.assertEqual(len(working), 0)
+
+    def test_known_unsolvable_orth_pattern(self) -> None:
+        bad = {(1, 1), (2, 1), (1, 2), (2, 2)}
+        self.assertFalse(is_solvable(bad, set(), 5, 5, mode="orth"))
+
+
+if __name__ == "__main__":
+    unittest.main()

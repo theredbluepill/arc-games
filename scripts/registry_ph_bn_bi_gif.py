@@ -1,4 +1,4 @@
-"""Registry GIF recorders for ph03 (field XOR + clicks), bn03 (beacon + flag), bi01 (bishop slide)."""
+"""Registry GIF recorders for ph03 (field XOR + clicks), bn01/bn02/bn03 (beacon + flag), bi01 (bishop slide)."""
 
 from __future__ import annotations
 
@@ -339,6 +339,71 @@ def _bn_walkable(
     return (x, y) not in walls
 
 
+def _bn_shortest_move_ops(
+    walls: set[tuple[int, int]],
+    gw: int,
+    gh: int,
+    start: tuple[int, int],
+    goal: tuple[int, int],
+) -> list[tuple[str, ...]] | None:
+    """Cardinal shortest path as ('M', action_num) ops; None if unreachable."""
+    sx, sy = start
+    gx, gy = goal
+    if (sx, sy) == (gx, gy):
+        return []
+    q: deque[tuple[int, int, list[tuple[str, ...]]]] = deque([(sx, sy, [])])
+    seen: set[tuple[int, int]] = {(sx, sy)}
+    while q:
+        x, y, path = q.popleft()
+        for dx, dy, anum in BN_CARD:
+            nx, ny = x + dx, y + dy
+            if not _bn_walkable(walls, gw, gh, nx, ny):
+                continue
+            if (nx, ny) in seen:
+                continue
+            npath = path + [("M", str(anum))]
+            if (nx, ny) == (gx, gy):
+                return npath
+            seen.add((nx, ny))
+            q.append((nx, ny, npath))
+    return None
+
+
+def _bn01_registry_visit_plan(level: Level) -> list[tuple[str, ...]] | None:
+    """Short registry plan for bn01: walk to each hidden (nearest-neighbor), beacon, flag."""
+    walls, (sx, sy), *_rest = _bn_parse(level)
+    gw, gh = level.grid_size
+    raw = level.get_data("hidden") or []
+    targets = [tuple(int(t) for t in p) for p in raw]
+    if not targets:
+        return []
+    pos = (sx, sy)
+    plan: list[tuple[str, ...]] = []
+    remaining = set(targets)
+    while remaining:
+        nx = min(remaining, key=lambda t: abs(t[0] - pos[0]) + abs(t[1] - pos[1]))
+        seg = _bn_shortest_move_ops(walls, gw, gh, pos, nx)
+        if seg is None:
+            return None
+        plan.extend(seg)
+        plan.append(("B",))
+        plan.append(("F", str(nx[0]), str(nx[1])))
+        pos = nx
+        remaining.remove(nx)
+    return plan
+
+
+def _bn_fail_open_cell(level: Level) -> tuple[int, int]:
+    gw, gh = level.grid_size
+    walls = {(sp.x, sp.y) for sp in level.get_sprites() if "wall" in sp.tags}
+    hidden = {tuple(int(t) for t in p) for p in (level.get_data("hidden") or [])}
+    for x in range(gw):
+        for y in range(gh):
+            if (x, y) not in walls and (x, y) not in hidden:
+                return x, y
+    return 0, 0
+
+
 @dataclass(frozen=True)
 class _BnSt:
     """BFS state: steps are not part of the key — each edge costs one step; check len(plan) <= max_steps at goal."""
@@ -349,6 +414,14 @@ class _BnSt:
     radius: int
     beacons: tuple[tuple[int, int], ...]
     flagged: frozenset[tuple[int, int]]
+
+
+def _bn_state_key(st: _BnSt, *, shrink_radius_on_beacon: bool) -> tuple:
+    """When radius does not shrink, beacon order does not affect light — collapse permutations."""
+    bkey: tuple | frozenset = (
+        st.beacons if shrink_radius_on_beacon else frozenset(st.beacons)
+    )
+    return (st.px, st.py, st.budget, st.radius, bkey, st.flagged)
 
 
 def _bn_bfs_plan(
@@ -369,19 +442,24 @@ def _bn_bfs_plan(
     if start.flagged == hidden:
         return []
 
+    def sk(st: _BnSt) -> tuple:
+        return _bn_state_key(st, shrink_radius_on_beacon=shrink_radius_on_beacon)
+
+    start_k = sk(start)
     q: deque[_BnSt] = deque([start])
-    parent: dict[_BnSt, tuple[_BnSt, tuple[str, ...]]] = {}
-    seen: set[_BnSt] = {start}
+    parent: dict[tuple, tuple[tuple, tuple[str, ...]]] = {}
+    seen: set[tuple] = {start_k}
     nodes = 0
 
     while q and nodes < max_nodes:
         st = q.popleft()
         nodes += 1
+        st_k = sk(st)
         if st.flagged == hidden:
             seq: list[tuple[str, ...]] = []
-            cur = st
-            while cur != start:
-                cur, op = parent[cur]
+            cur_k = st_k
+            while cur_k != start_k:
+                cur_k, op = parent[cur_k]
                 seq.append(op)
             seq.reverse()
             if len(seq) <= steps0:
@@ -394,9 +472,10 @@ def _bn_bfs_plan(
                 continue
             nf = frozenset(st.flagged | {(gx, gy)})
             nst = _BnSt(st.px, st.py, st.budget, st.radius, st.beacons, nf)
-            if nst not in seen:
-                seen.add(nst)
-                parent[nst] = (st, ("F", str(gx), str(gy)))
+            nk = sk(nst)
+            if nk not in seen:
+                seen.add(nk)
+                parent[nk] = (st_k, ("F", str(gx), str(gy)))
                 q.append(nst)
 
         for dx, dy, anum in BN_CARD:
@@ -404,18 +483,20 @@ def _bn_bfs_plan(
             if not _bn_walkable(walls, gw, gh, nx, ny):
                 continue
             nst = _BnSt(nx, ny, st.budget, st.radius, st.beacons, st.flagged)
-            if nst not in seen:
-                seen.add(nst)
-                parent[nst] = (st, ("M", str(anum)))
+            nk = sk(nst)
+            if nk not in seen:
+                seen.add(nk)
+                parent[nk] = (st_k, ("M", str(anum)))
                 q.append(nst)
 
         if st.budget > 0:
             nb = st.beacons + ((st.px, st.py),)
             nr = max(0, st.radius - 1) if shrink_radius_on_beacon else st.radius
             nst = _BnSt(st.px, st.py, st.budget - 1, nr, nb, st.flagged)
-            if nst not in seen:
-                seen.add(nst)
-                parent[nst] = (st, ("B",))
+            nk = sk(nst)
+            if nk not in seen:
+                seen.add(nk)
+                parent[nk] = (st_k, ("B",))
                 q.append(nst)
 
     return None
@@ -444,6 +525,12 @@ def _record_bn_beacon_registry_gif(
 
     plans: list[list[tuple[str, ...]]] = []
     for i in range(L):
+        if game_id == "bn01":
+            ms_cap = int(level_defs[i].get_data("max_steps") or 500)
+            visit = _bn01_registry_visit_plan(level_defs[i])
+            if visit is not None and len(visit) <= ms_cap:
+                plans.append(visit)
+                continue
         p = _bn_bfs_plan(
             level_defs[i],
             chebyshev=chebyshev,
@@ -472,6 +559,17 @@ def _record_bn_beacon_registry_gif(
         nonlocal res
         res = safe_env_step(env, act, reasoning={}, data=data or {})
         snap_repeats(1)
+
+    def run_plan(plan_ops: list[tuple[str, ...]], gw_: int, gh_: int) -> None:
+        for op in plan_ops:
+            if op[0] == "M":
+                step_bn(_PUSH_ACTION[int(op[1])])
+            elif op[0] == "B":
+                step_bn(GameAction.ACTION5)
+            else:
+                gx, gy = int(op[1]), int(op[2])
+                cx, cy = grid_cell_center_display(gx, gy, grid_w=gw_, grid_h=gh_)
+                step_bn(GameAction.ACTION6, data={"x": cx, "y": cy})
 
     lvl0 = level_defs[0]
     gw0, gh0 = lvl0.grid_size
@@ -505,15 +603,24 @@ def _record_bn_beacon_registry_gif(
             res = env.reset()
             snap_repeats(10)
 
-        for op in plan:
-            if op[0] == "M":
-                step_bn(_PUSH_ACTION[int(op[1])])
-            elif op[0] == "B":
-                step_bn(GameAction.ACTION5)
-            else:
-                gx, gy = int(op[1]), int(op[2])
-                cx, cy = grid_cell_center_display(gx, gy, grid_w=gw, grid_h=gh)
-                step_bn(GameAction.ACTION6, data={"x": cx, "y": cy})
+        if game_id == "bn01" and li == 1 and plan:
+            warm2 = 0
+            for op in plan:
+                if warm2 >= 3:
+                    break
+                if op[0] == "M":
+                    step_bn(_PUSH_ACTION[int(op[1])])
+                    warm2 += 1
+            fx2, fy2 = _bn_fail_open_cell(lvl)
+            cx2, cy2 = grid_cell_center_display(fx2, fy2, grid_w=gw, grid_h=gh)
+            step_bn(GameAction.ACTION6, data={"x": cx2, "y": cy2})
+            snap_repeats(18)
+            res = env.reset()
+            snap_repeats(10)
+            run_plan(plans[0], gw0, gh0)
+            snap_repeats(level_hold)
+
+        run_plan(plan, gw, gh)
         snap_repeats(level_hold)
 
     snap_repeats(12)
@@ -521,6 +628,19 @@ def _record_bn_beacon_registry_gif(
     if verbose:
         print(f"  {game_id}: beacon registry GIF, {L} levels, {len(images)} frames")
     return res, images
+
+
+def record_bn01_registry_gif(
+    game_id: str,
+    root: Path,
+    *,
+    overrides: dict[str, Any] | None = None,
+    verbose: bool = False,
+    seed: int = 0,
+) -> tuple[Any, list]:
+    return _record_bn_beacon_registry_gif(
+        game_id, root, overrides=overrides, verbose=verbose, seed=seed
+    )
 
 
 def record_bn02_registry_gif(
@@ -682,6 +802,7 @@ def record_bi01_registry_gif(
 
 REGISTRY_RECORDERS = {
     "ph03": record_ph03_registry_gif,
+    "bn01": record_bn01_registry_gif,
     "bn02": record_bn02_registry_gif,
     "bn03": record_bn03_registry_gif,
     "bi01": record_bi01_registry_gif,

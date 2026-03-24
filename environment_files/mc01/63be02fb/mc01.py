@@ -18,6 +18,17 @@ CAM = 16
 class Mc01UI(RenderableUserDisplay):
     def __init__(self, lead: int) -> None:
         self._lead = lead
+        self._blocked = 0
+
+    def clear_feedback(self) -> None:
+        self._blocked = 0
+
+    def flash_blocked(self, frames: int = 8) -> None:
+        self._blocked = max(self._blocked, frames)
+
+    def tick_blocked(self) -> None:
+        if self._blocked > 0:
+            self._blocked -= 1
 
     def update(self, lead: int) -> None:
         self._lead = lead
@@ -34,6 +45,8 @@ class Mc01UI(RenderableUserDisplay):
         frame[h - 2, 4] = c
         frame[h - 2, 5] = c
         frame[h - 3, 4] = c
+        if self._blocked > 0:
+            frame[h - 1, w - 3] = 8
         return frame
 
 
@@ -97,10 +110,13 @@ def mk(
 
 levels = [
     # Narrow corridor teaches joint motion before open layouts.
-    mk((2, 8), (3, 8), (12, 7), (12, 9), [(x, 6) for x in range(16) if x != 8], 1),
+    # Goals must match the start (p2−p1) offset — here (1,0) — under tandem + swap.
+    mk((2, 8), (3, 8), (12, 8), (13, 8), [(x, 6) for x in range(16) if x != 8], 1),
     mk((1, 1), (14, 1), (1, 14), (14, 14), [(8, y) for y in range(16) if y != 7], 2),
-    mk((2, 2), (13, 2), (2, 13), (13, 13), [(x, 8) for x in range(16) if x != 8], 3),
-    mk((0, 0), (15, 15), (7, 7), (8, 8), [], 4),
+    # Vertical wall with gap at (8,8); same-row start/goals (lead order around the slit).
+    mk((2, 8), (3, 8), (12, 8), (13, 8), [(8, y) for y in range(16) if y != 8], 3),
+    # Empty grid: offset (1,0) preserved from start to goals.
+    mk((0, 0), (1, 0), (14, 8), (15, 8), [], 4),
     mk((4, 4), (11, 4), (4, 11), (11, 11), [(8, y) for y in range(16)], 5),
 ]
 
@@ -121,6 +137,7 @@ class Mc01(ARCBaseGame):
         self._p1 = self.current_level.get_sprites_by_tag("p1")[0]
         self._p2 = self.current_level.get_sprites_by_tag("p2")[0]
         self._lead = 0
+        self._ui.clear_feedback()
         self._ui.update(self._lead)
 
     def _blocked(self, x: int, y: int, ignore: Sprite | None) -> bool:
@@ -134,6 +151,7 @@ class Mc01(ARCBaseGame):
         return False
 
     def step(self) -> None:
+        self._ui.tick_blocked()
         aid = self.action.id.value
         if aid == 5:
             self._lead = 1 - self._lead
@@ -164,6 +182,7 @@ class Mc01(ARCBaseGame):
         elif self._blocked(t1[0], t1[1], order[0]) or self._blocked(
             t2[0], t2[1], order[1]
         ):
+            self._ui.flash_blocked()
             self.complete_action()
             return
         else:

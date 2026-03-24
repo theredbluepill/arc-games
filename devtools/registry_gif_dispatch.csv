@@ -51,14 +51,14 @@ ll01,wl_ll,no,yes,• 1–4: No-op • 5: Step CA • 6: Toggle cell
 wl01,wl_ll,no,yes,• 1–4: Move • 6: Place/remove my wall
 dd01,generic,no,no,• 1–4: Move • 5: Pickup / deliver / ping
 ph01,generic,no,yes,• 1–4: No-op • 5: Blur step • 6: Increment phase
-bn01,generic,yes,yes,• 1–4: Move • 5: Beacon • 6: Flag
-dl01,generic,no,no,• 1-4: Enqueue move • 5: Clear queue
-fw01,generic,no,yes,• 1-4: Move • 6: Splash
+bn01,bn01,yes,yes,• 1–4: Move • 5: Beacon • 6: Flag
+dl01,dl01,no,no,• 1-4: Enqueue move • 5: Clear queue
+fw01,fw01,yes,yes,• 1-4: Move • 6: Splash
 gp02,generic,no,yes,• 1-4: No-op • 6: Click erase
 hd01,generic,no,no,• 1-4: Move • 5: Charge on station
 kn01,generic,no,no,• 1-4: Knight move • 5: Toggle bank
 lo02,generic,no,yes,• 1-4: No-op • 6: Click
-mc01,generic,no,no,• 1-4: Joint move • 5: Swap lead
+mc01,mc01,yes,yes,• 1-4: Joint move • 5: Swap lead
 ng01,generic,no,yes,• 1-4: Cursor • 6: Click cycle cell
 ob01,generic,no,no,• 1-4: Move active • 5: Cycle active
 pu01,generic,no,yes,• 1-4: No-op • 6: Toggle pipe
@@ -210,28 +210,28 @@ sq04,sq04,yes,yes,• 6: Click block
 sq05,sq05,yes,yes,• 6: Click block
 pt04,generic,no,yes,• 1–4: No-op • 6: Select / swap
 pt05,generic,no,yes,• 1–4: No-op • 6: Header
-sy04,generic,yes,yes,• 6: Toggle mirror
+sy04,batch218,yes,yes,• 6: Toggle mirror
 dm04,generic,no,yes,• 6: Pick 3 cells
 pk02,generic,no,yes,• 5: No-op • 6: Edge
 fl04,generic,no,yes,• 1–4: Move • 6: Path
 lw04,generic,no,yes,• 1–4: Move • 6: Path
-sf04,generic,yes,yes,• 5: Rotate • 6: Paint
-sp04,generic,yes,yes,• 1–4: No-op • 6: Add grain
+sf04,batch218,yes,yes,• 5: Rotate • 6: Paint
+sp04,batch218,yes,yes,• 1–4: No-op • 6: Add grain
 ll04,generic,no,yes,• 5: Gen • 6: Toggle
-ab01,generic,yes,yes,• 1–4: No-op • 6: Add grain
-df04,generic,yes,yes,• 5: Tick • 6: Vent
-ih01,generic,yes,yes,• 5: Tick • 6: Toggle heater
-tc04,generic,yes,yes,• 5: Step • 6: Rotate
-zm04,generic,yes,yes,• 5: Strain • 6: Block
+ab01,batch218,yes,yes,• 1–4: No-op • 6: Add grain
+df04,batch218,yes,yes,• 5: Tick • 6: Vent
+ih01,batch218,yes,yes,• 5: Tick • 6: Toggle heater
+tc04,batch218,yes,yes,• 5: Step • 6: Rotate
+zm04,batch218,yes,yes,• 5: Strain • 6: Block
 pu04,generic,no,yes,• 1–4: No-op • 6: Cycle
 pd04,generic,no,yes,• 6: Toggle
 ck04,generic,no,yes,• 6: Rotate
-rp04,generic,no,yes,• 5: Pulse • 6: Toggle
-ph04,generic,no,no,• 5: Step
+rp04,batch218,no,yes,• 5: Pulse • 6: Toggle
+ph04,batch218,yes,no,• 5: Step
 ml04,generic,no,yes,• 5: Fire • 6: Mirror
 pj04,generic,no,yes,• 5: Bolt • 6: Mirror
 wm04,generic,no,yes,• 6: Click
-sg04,generic,no,yes,• 5–6: Timing
+sg04,sg_cw,yes,yes,• 5–6: Timing
 ng04,generic,no,yes,• 6: Edit
 bn04,generic,no,yes,• 5: Axis • 6: Flag
 sk04,generic,no,yes,• 6: Pull crate
@@ -241,7 +241,7 @@ hn04,generic,no,no,• 1–4: Peg • 5: Pick/drop
 kv04,generic,no,no,• 1–4: Cycle • 5: Check
 rs04,generic,no,yes,• 5: Phase • 6: Clear
 ms04,generic,no,yes,• 6: Flag
-cw01,generic,no,yes,• 6: Toggle literal
+cw01,sg_cw,yes,yes,• 6: Toggle literal
 cx01,generic,no,yes,• 6: Toggle gate
 cu01,generic,no,yes,• 5: Tool • 6: Place
 cv01,generic,no,yes,• 6: Cycle

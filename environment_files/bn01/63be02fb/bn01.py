@@ -126,7 +126,8 @@ def mk(
 
 
 levels = [
-    mk([], (32, 32), [(40, 40), (50, 20), (20, 50)], 6, 10, 500, 1),
+    # Level 1: ghosts within Chebyshev radius of spawn (one beacon reveals all).
+    mk([], (32, 32), [(38, 32), (32, 40), (26, 30)], 6, 10, 500, 1),
     mk([(x, 32) for x in range(64) if x % 7 not in (0, 1)], (8, 32), [(55, 10), (55, 55), (10, 55)], 8, 9, 600, 2),
     mk(
         [(16, y) for y in range(64) if y % 5 != 0]

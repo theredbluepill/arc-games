@@ -35,6 +35,7 @@ from solvability_common import (  # noqa: E402
     full_game_id_canonical,
     level_count_from_stem_module,
     list_environment_stems,
+    load_stem_game_module,
     parse_games_md_stems,
 )
 from solvers.engine_bfs import engine_bfs_single_level  # noqa: E402
@@ -51,6 +52,7 @@ from solvers.registry import (  # noqa: E402
     engine_bfs_limits,
     solver_kind_for_stem,
 )
+from solvers.torus_lights_gf2 import arc_level_is_solvable  # noqa: E402
 from solvers.survival_wave3 import WAVE3_REFLEX_NOTE  # noqa: E402
 from solvers.types import LevelVerdict, VerdictStatus  # noqa: E402
 
@@ -71,6 +73,42 @@ def _verify_one_level(
 
     if kind == SolverKind.PARTIAL_OBS:
         return partial_obs_verdict(stem, level_index)
+
+    if kind == SolverKind.TORUS_LIGHTS_GF2:
+        try:
+            mod = load_stem_game_module(stem, version, f"_torus_gf2_verify_{stem}")
+        except Exception as e:
+            return LevelVerdict(
+                stem=stem,
+                level_index=level_index,
+                status=VerdictStatus.ERROR,
+                solver="torus_lights_gf2",
+                notes=f"load_stem_game_module: {e}",
+                extra={"seconds": time.perf_counter() - t0},
+            )
+        levels_attr = getattr(mod, "levels", None)
+        if levels_attr is None or not (
+            0 <= level_index < len(levels_attr)  # type: ignore[arg-type]
+        ):
+            return LevelVerdict(
+                stem=stem,
+                level_index=level_index,
+                status=VerdictStatus.ERROR,
+                solver="torus_lights_gf2",
+                notes="missing or short levels[] in module",
+                extra={"seconds": time.perf_counter() - t0},
+            )
+        mode = "orth" if stem == "lo02" else "king"
+        lvl = levels_attr[level_index]
+        ok = arc_level_is_solvable(lvl, mode=mode)
+        return LevelVerdict(
+            stem=stem,
+            level_index=level_index,
+            status=VerdictStatus.PROVED if ok else VerdictStatus.COUNTEREXAMPLE,
+            solver="torus_lights_gf2",
+            notes="GF(2) torus Lights Out (orthogonal)" if mode == "orth" else "GF(2) torus Lights Out (king)",
+            extra={"seconds": time.perf_counter() - t0},
+        )
 
     if kind == SolverKind.TOOLING_GAP:
         if stem in LATTICE_TOGGLE_TOOLING_STEMS:

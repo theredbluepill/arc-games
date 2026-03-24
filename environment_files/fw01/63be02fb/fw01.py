@@ -1,4 +1,4 @@
-"""Wildfire: fire spreads to random orth neighbors every few steps. ACTION6 splashes water (3×3) removing fire. Reach the green exit."""
+"""Wildfire: fire spreads to random orth neighbors every few steps. ACTION6 splashes water (3×3) removing fire. Standing on fire (walk or spread) loses; reach the green exit."""
 
 from __future__ import annotations
 
@@ -210,6 +210,9 @@ class Fw01(ARCBaseGame):
     def _fire_cells(self) -> set[tuple[int, int]]:
         return {(s.x, s.y) for s in self.current_level.get_sprites_by_tag("fire")}
 
+    def _burning_player(self) -> bool:
+        return (self._player.x, self._player.y) in self._fire_cells()
+
     def _spread(self) -> None:
         fc = list(self._fire_cells())
         if not fc:
@@ -225,8 +228,6 @@ class Fw01(ARCBaseGame):
             if sp and ("wall" in sp.tags or "goal" in sp.tags):
                 continue
             if sp and "fire" in sp.tags:
-                continue
-            if sp and "player" in sp.tags:
                 continue
             self.current_level.add_sprite(sprites["fire"].clone().set_position(nx, ny))
 
@@ -250,6 +251,11 @@ class Fw01(ARCBaseGame):
             self._tick += 1
             if self._tick % self._every == 0:
                 self._spread()
+            if self._burning_player():
+                self.lose()
+                self._sync_ui()
+                self.complete_action()
+                return
             self._sync_ui()
             self.complete_action()
             return
@@ -273,8 +279,6 @@ class Fw01(ARCBaseGame):
             sp = self.current_level.get_sprite_at(nx, ny, ignore_collidable=True)
             if sp and "wall" in sp.tags:
                 pass
-            elif sp and "fire" in sp.tags:
-                pass
             else:
                 self._player.set_position(nx, ny)
 
@@ -282,9 +286,7 @@ class Fw01(ARCBaseGame):
         if self._tick % self._every == 0:
             self._spread()
 
-        px, py = self._player.x, self._player.y
-        here = self.current_level.get_sprite_at(px, py, ignore_collidable=True)
-        if here and "fire" in here.tags:
+        if self._burning_player():
             self.lose()
             self._sync_ui()
             self.complete_action()

@@ -29,7 +29,29 @@
     "gif_duration_ms": 220
   },
   "fe02": {
-    "gif_duration_ms": 180
+    "gif_duration_ms": 180,
+    "target_levels": 4
+  },
+  "fw01": {
+    "fw01_level_hold_frames": 22,
+    "fw01_move_repeat_frames": 2,
+    "fw01_splash_repeat_frames": 3,
+    "gif_duration_ms": 140,
+    "max_gif_frames": 900
+  },
+  "mc01": {
+    "target_levels": 4,
+    "mc01_fail_hold_frames": 6,
+    "mc01_level_hold_frames": 20,
+    "gif_duration_ms": 150,
+    "max_gif_frames": 900
+  },
+  "cw01": {
+    "target_levels": 4,
+    "gif_duration_ms": 200
+  },
+  "sg04": {
+    "gif_duration_ms": 200
   },
   "rp02": {
     "gif_duration_ms": 180
@@ -88,6 +110,10 @@
     "target_levels": 4,
     "max_total_steps": 2400,
     "gif_duration_ms": 180
+  },
+  "ph04": {
+    "gif_duration_ms": 180,
+    "registry_218_ph04_steps": 110
   },
   "cs01": {
     "gif_duration_ms": 180
@@ -425,7 +451,11 @@
     "gif_duration_ms": 175
   },
   "bn01": {
-    "min_frames": 16
+    "min_frames": 16,
+    "target_levels": 3,
+    "max_gif_frames": 2200,
+    "bn_level_hold_frames": 16,
+    "gif_duration_ms": 130
   },
   "tb02": {
     "min_frames": 20
@@ -457,5 +487,10 @@
     "target_levels": 4,
     "sq03_level_hold_frames": 22,
     "gif_duration_ms": 180
+  },
+  "kn01": {
+    "kn01_fail_hold_frames": 5,
+    "kn01_level_hold_frames": 16,
+    "gif_duration_ms": 170
   }
 }
